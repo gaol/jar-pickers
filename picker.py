@@ -1,21 +1,25 @@
-#!/bin/python
+#!/usr/bin/python
 
 import sys
 import os
 import os.path
-import urlgrabber
-import urlgrabber.progress
+
+#import urlgrabber
+
+import urllib
 import optparse
 import zipfile
 import re
 import shutil
-import yaml
 import ConfigParser
-
-
-DOWNLOAD_TMP_DIR = "tmp"
-DEBUG = False
+import json
 VERSION_RE = re.compile(r'\-\d')
+DEBUG = False
+
+# location defaults
+DOWNLOAD_TMP_DIR = "%s/tmp" % os.getcwd()
+DATA_DIR = "%s/data" % os.getcwd()
+GROUPID_FILE = "%s/groupids.ini" % DATA_DIR
 
 def debug(message):
   if DEBUG == True:
@@ -30,17 +34,17 @@ def downloadZip(url, output):
   """
   Downloads zip file from specified zip url
   """
+  if os.path.isfile(output):
+    info("File: %s exist already. Download skipped." % output)
+    return
   try:
-      if os.path.isfile(output):
-        info("File: %s exist already. Download skipped." % output)
-        return
-      info('Downloading from %s to file: %s' % (url, output))
-      urlgrabber.urlgrab(url, filename=output, progress_obj=urlgrabber.progress.TextMeter())
-      info('Download completed.' )
+    info('Downloading from %s to file: %s' % (url, output))
+    #urlgrabber.urlgrab(url, filename=output, progress_obj=urlgrabber.progress.TextMeter())
+    urllib.urlretrieve(url, output)
+    info('Download completed.' )
   except:
-      info('Could not download %s.' % url)
-      print sys.exc_info()[0]
-      sys.exit(1)
+    info("Exception on dowloading the zip file: %s" % url)
+    print sys.exec_info()[0]
 # end of downloadZip
 
 
@@ -52,12 +56,12 @@ def unzipFile(zipFile, dir):
     info('Unzipping the zip file: %s to directory: %s' % (zipFile, dir))
     zf = zipfile.ZipFile(zipFile, "r")
     zf.extractall(dir)
+    zf.close()
+    info('Unzipping zip file completed')
   except:
-    info("Can't unzip the zip file: %s" % zipFile)
+    info("Exception on extracting the zip file: %s" % zipFile)
     print sys.exec_info()[0]
-    sys.exit(1)
 # end of unzip
-
 
 def getJarList(dir):
   """
@@ -80,22 +84,29 @@ def getArtifactInfo(jar):
   groupId = None
   artifactId = None
   version = None
-  zf=zipfile.ZipFile(jar)
   pomExist = False
   debug("Try to read pom.properties from jar: %s" % jar)
-  for name in zf.namelist():
-    # find pom.properties
-    if "pom.properties" in name:
-      debug("Find pom.properties in jar: %s" % jar)
-      zxf=zf.open(name)
-      pomExist = True
-      for line in zxf.readlines():
-        if "groupId=" in line:
-          groupId = line[line.index("=") + 1:].rstrip('\n').rstrip('\r')
-        if "artifactId=" in line:
-          artifactId= line[line.index("=") + 1:].rstrip('\n').rstrip('\r')
-        if "version=" in line:
-          version = line[line.index("=")+ 1:].rstrip('\n').rstrip('\r')
+  try:
+    zf=zipfile.ZipFile(jar)
+    for name in zf.namelist():
+      # find pom.properties
+      if "pom.properties" in name:
+        debug("Find pom.properties in jar: %s" % jar)
+        zxf=zf.open(name)
+        pomExist = True
+        for line in zxf.readlines():
+          if "groupId=" in line:
+            groupId = line[line.index("=") + 1:].rstrip('\n').rstrip('\r')
+          if "artifactId=" in line:
+            artifactId= line[line.index("=") + 1:].rstrip('\n').rstrip('\r')
+          if "version=" in line:
+            version = line[line.index("=")+ 1:].rstrip('\n').rstrip('\r')
+        zxf.close()
+    zf.close()
+  except:
+    info("Error when reading pom.properties from jar: %s " % jar)
+    print sys.exec_info()[0]
+    pomExist = False
 
   if pomExist is False:
     jarFileName = os.path.basename(jar)[:-4]
@@ -109,42 +120,123 @@ def getArtifactInfo(jar):
   return groupId, artifactId, version
 #end of getArtifactInfo
 
-def getGroupId(artifactId, version):
+
+class Picker():
   """
-  Gets groupId according to the artifactId, it is used when the groupId can't be found during the zip parse.
+  Picker class is used to picks jar information.
   """
-  config = ConfigParser.ConfigParser()
-  config.read("data/groupids.ini")
-  try:
-    return config.get('groupids', "%s_%s" % (artifactId, version[:1]))
-  except ConfigParser.NoOptionError:
-    try:
-      return config.get('groupids', artifactId)
-    except ConfigParser.NoOptionError:
+  def __init__(self):
+    self.tmpDir = DOWNLOAD_TMP_DIR
+    self.debug = False
+    self.groupIdFile = GROUPID_FILE
+    self.dataDir = DATA_DIR
+  #end of init
+
+  def setTmpDir(self, tmpDir):
+    if not tmpDir is None:
+      self.tmpDir = tmpDir
+  #end
+
+  def setDebug(self, debug):
+    if not debug is None:
+      self.debug = debug
+  #end
+
+  def setGroupIdFile(self, groupIdFile):
+    if not groupIdFile is None:
+      self.groupIdFile = groupIdFile
+  #end
+
+  def setDataDir(self, dataDir):
+    if not dataDir is None:
+      self.dataDir = dataDir
+  #end
+
+  def getGroupId(self, artifactId, version):
+    """
+    Gets groupId according to the artifactId, it is used when the groupId can't be found during the zip parse.
+    """
+    config = ConfigParser.ConfigParser()
+    if not os.path.exists(self.groupIdFile):
+      info("group id file does not exist.")
       return None
-#end of getGroupId
+    config.read(self.groupIdFile)
+    try:
+      return config.get('groupids', "%s_%s" % (artifactId, version[:1]))
+    except ConfigParser.NoOptionError:
+      try:
+        return config.get('groupids', artifactId)
+      except ConfigParser.NoOptionError:
+        return None
+  #end of getGroupId
+
+  def picks(self, request):
+    """
+    Starts to pick jars information up.
+    request is the dict data which contains name, version, milestone, urls
+    name : the name of the product
+    version : the version of the product
+    milestone : the milestone of the product, this is optional
+    urls : the urls where to download the product zip files
+    """
+    if request is None:
+      raise Exception("No request information")
+    name = request.get("name", None)
+    version = request.get("version", None)
+    milestone = request.get("milestone", None)
+    urls = request.get("urls", [])
+
+    if name is None or version is None or (urls is None or len(urls) == 0):
+      raise Exception("Invalid request. name,version,urls must be provided")
+    
+    if not os.path.exists(self.tmpDir):
+      info("Download temporary directory does not exist, create it.")
+      os.makedirs(self.tmpDir)
+
+    artifacts = []
+    for url in urls:
+      fileName = "%s/%s" % (self.tmpDir, os.path.basename(url))
+      downloadZip(url, fileName)
+      dirName = "%s/tmp-%s" % (self.tmpDir, os.path.basename(url))
+      unzipFile(fileName, dirName)
+      for jar in getJarList(dirName):
+        groupId, artifactId, artiVersion = getArtifactInfo(jar)
+        if artifactId is None or artiVersion is None:
+          info("WARNING: Can't parse jar: %s" % jar)
+          break
+        if groupId is None:
+          groupId = self.getGroupId(artifactId, artiVersion)
+        if groupId is None:
+          info("No groupId found in jar file: %s" % os.path.basename(jar))
+        artifactstr = "%s:%s:%s" % (groupId, artifactId, artiVersion)
+        if not artifactstr in artifacts:
+          artifacts.append(artifactstr)
+      info("Remove the template directory: %s" % dirName)
+      shutil.rmtree(dirName)
+
+    if not os.path.exists(self.dataDir):
+      info("Data directory does not exist, create it.")
+      os.makedirs(self.dataDir)
+    outputFile = "%s/%s-%s-%s.json" % (self.dataDir, name, version, milestone)
+    if milestone is None:
+      outputFile = "%s/%s-%s.json" % (self.dataDir, name, version)
+    output = file(outputFile, 'w')
+    json.dump({"name" : name, "version" : version, "milestone" : milestone, "urls" : urls, "artifacts" : artifacts}, output, indent = 2)
+    output.flush()
+    output.close()
+    info("Checking jars completed. ")
+
+  #end of picks
+
+#end of Picker
 
 def listValues(option, opt, value, parser):
   setattr(parser.values, option.dest, value.split(','))
 #end of listValues
 
-class ArtifactBills(yaml.YAMLObject):
-  """
-   Class which contains information for yaml dump.
-  """
-  yaml_tag = u'!ArtifactBills'
-  def __init__(self, name, version, milestone, urls, artifacts):
-    self.name = name
-    self.version = version
-    self.milestone = milestone 
-    self.urls = urls 
-    self.artifacts = artifacts
-
-#end of class ArtifactBills
-
 def main():
   """
-   Main entrance.
+   Main entrance for command line.
   """
   parser = optparse.OptionParser(usage='%prog [options]')
   parser.add_option('--debug', dest='debug', help='Print debug message', action='store_true', default = True)
@@ -153,46 +245,18 @@ def main():
   parser.add_option('-m', '--milestone', dest='milestone', help='Specify JBoss product milestone')
   parser.add_option('-u', '--urls', dest='urls', type='string', help='Specify zip files url.', action='callback', callback=listValues)
   options, args = parser.parse_args()
-  DEBUG = options.debug
+  debug = options.debug
   name = options.name
-  prdVersion = options.version
+  version = options.version
   milestone = options.milestone
   urls= options.urls
-  if name is None or prdVersion is None or (urls is None or len(urls) == 0):
+  if name is None:
     parser.print_help()
     sys.exit(1)
-    
-  if not os.path.exists(DOWNLOAD_TMP_DIR):
-    debug("Download temporary directory does not exist, create it.")
-    os.makedirs(DOWNLOAD_TMP_DIR)
-  
-  artifacts = []
-  for url in urls:
-    fileName = "%s/%s" % (DOWNLOAD_TMP_DIR, os.path.basename(url))
-    downloadZip(url, fileName)
-    dirName = "%s/tmp-%s" % (DOWNLOAD_TMP_DIR, os.path.basename(url))
-    unzipFile(fileName, dirName)
-    for jar in getJarList(dirName):
-      groupId, artifactId, version = getArtifactInfo(jar)
-      if artifactId is None or version is None:
-        info("WARNING: Can't parse jar: %s" % jar)
-        break
-      if groupId is None:
-        groupId = getGroupId(artifactId, version)
-      if groupId is None:
-        info("No groupId found in jar file: %s" % os.path.basename(jar))
-      artifactstr = "%s:%s:%s" % (groupId, artifactId, version)
-      if not artifactstr in artifacts:
-        artifacts.append(artifactstr)
-    shutil.rmtree(dirName)
-
-  artifactBills = ArtifactBills(name, prdVersion, milestone, urls, artifacts)
-  outputFile = "data/%s-%s-%s.yaml" % (name, prdVersion, milestone)
-  if milestone is None:
-    outputFile = "data/%s-%s.yaml" % (name, prdVersion)
-  output = file(outputFile, 'w')
-  yaml.dump(artifactBills, output, default_flow_style=False )
-  info("Checking jars completed. ")
+  picker = Picker()
+  picker.picks({"name" : name, "version" : version, "milestone" : milestone, "urls" : urls})
 #end of main
 
-main()
+
+if __name__ == '__main__':
+  main()
