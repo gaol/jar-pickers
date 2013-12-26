@@ -21,6 +21,10 @@ DOWNLOAD_TMP_DIR = "%s/tmp" % os.getcwd()
 DATA_DIR = "%s/data" % os.getcwd()
 GROUPID_FILE = "%s/groupids.ini" % DATA_DIR
 
+# RESULT KEY
+SUSPECT_JARS = "suspect_jars"
+JSON_DATA = "jsonData"
+
 def debug(message):
   if DEBUG == True:
     print message
@@ -193,6 +197,7 @@ class Picker():
       info("Download temporary directory does not exist, create it.")
       os.makedirs(self.tmpDir)
 
+    result = {SUSPECT_JARS : []}
     artifacts = []
     for url in urls:
       fileName = "%s/%s" % (self.tmpDir, os.path.basename(url))
@@ -203,11 +208,13 @@ class Picker():
         groupId, artifactId, artiVersion = getArtifactInfo(jar)
         if artifactId is None or artiVersion is None:
           info("WARNING: Can't parse jar: %s" % jar)
+          result[SUSPECT_JARS].append("Error: %s" % os.path.basename(jar))
           break
         if groupId is None:
           groupId = self.getGroupId(artifactId, artiVersion)
         if groupId is None:
           info("No groupId found in jar file: %s" % os.path.basename(jar))
+          result[SUSPECT_JARS].append("No GroupId: %s" % os.path.basename(jar))
         artifactstr = "%s:%s:%s" % (groupId, artifactId, artiVersion)
         if not artifactstr in artifacts:
           artifacts.append(artifactstr)
@@ -221,10 +228,13 @@ class Picker():
     if milestone is None:
       outputFile = "%s/%s-%s.json" % (self.dataDir, name, version)
     output = file(outputFile, 'w')
-    json.dump({"name" : name, "version" : version, "milestone" : milestone, "urls" : urls, "artifacts" : artifacts}, output, indent = 2)
+    jsonData = {"name" : name, "version" : version, "milestone" : milestone, "urls" : urls, "artifacts" : artifacts}
+    result[JSON_DATA] = jsonData
+    json.dump(jsonData, output, indent = 2)
     output.flush()
     output.close()
     info("Checking jars completed. ")
+    return result
 
   #end of picks
 
@@ -254,7 +264,7 @@ def main():
     parser.print_help()
     sys.exit(1)
   picker = Picker()
-  picker.picks({"name" : name, "version" : version, "milestone" : milestone, "urls" : urls})
+  print picker.picks({"name" : name, "version" : version, "milestone" : milestone, "urls" : urls})
 #end of main
 
 

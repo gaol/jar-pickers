@@ -2,6 +2,7 @@
 #
 #  This is the main entrance of the vertx verticle
 #
+import os
 import vertx
 from core.event_bus import EventBus
 from picker import Picker
@@ -33,7 +34,25 @@ def msg_handler(message):
   if not dataDir is None: picker.setDataDir(dataDir)
   if not debug is None: picker.setDebug(debug)
   if not groupIdFile is None: picker.setGroupIdFile(groupIdFile)
-  picker.picks(body)
+  name = body.get("name",None)
+  version = body.get("version",None)
+  milestone = body.get("milestone",None)
+  override = body.get('override', False)
+  fileName = "%s/%s-%s-%s.json" % (picker.dataDir, name, version, milestone)
+  if milestone is None:
+    fileName = "%s/%s-%s.json" % (picker.dataDir, name, version)
+  if os.path.exists(fileName):
+    if override is True or override == "True":
+      vertx.logger().info("Will override existed file")
+    else:
+      vertx.logger().warn("The request product version has been collected already.")
+      message.reply("The request product version has been collected already, use 'override = True' request to proceed.")
+      return
+  try:    
+    result = picker.picks(body)
+    message.reply(result)
+  except Exception, err:
+    message.reply(err)
   
 # end of msg_handler
 
