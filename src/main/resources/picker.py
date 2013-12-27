@@ -13,6 +13,7 @@ import re
 import shutil
 import ConfigParser
 import json
+
 VERSION_RE = re.compile(r'\-\d')
 DEBUG = False
 
@@ -48,7 +49,7 @@ def downloadZip(url, output):
     info('Download completed.' )
   except:
     info("Exception on dowloading the zip file: %s" % url)
-    print sys.exec_info()[0]
+    print sys.exc_info()[0]
 # end of downloadZip
 
 
@@ -64,7 +65,7 @@ def unzipFile(zipFile, dir):
     info('Unzipping zip file completed')
   except:
     info("Exception on extracting the zip file: %s" % zipFile)
-    print sys.exec_info()[0]
+    print sys.exc_info()[0]
 # end of unzip
 
 def getJarList(dir):
@@ -109,7 +110,7 @@ def getArtifactInfo(jar):
     zf.close()
   except:
     info("Error when reading pom.properties from jar: %s " % jar)
-    print sys.exec_info()[0]
+    print sys.exc_info()[0]
     pomExist = False
 
   if pomExist is False:

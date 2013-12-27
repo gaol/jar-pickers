@@ -95,9 +95,6 @@ task copyMod( type:Copy, dependsOn: 'classes', description: 'Assemble the module
   into "build/mods/$moduleName"
   from compileJava
   from 'src/main/resources'
-  from 'mod.json'
-  from 'main.py'
-  from 'picker.py'
   into( 'lib' ) {
     from configurations.compile
   }

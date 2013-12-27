@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-#  This is the main entrance of the vertx verticle
+#  This is the listen verticle used to listen to the event to pick jars up
 #
 import os
 import vertx
@@ -52,7 +52,7 @@ def msg_handler(message):
     result = picker.picks(body)
     message.reply(result)
   except Exception, err:
-    message.reply(err)
+    message.reply("Error:" + err.message)
   
 # end of msg_handler
 
