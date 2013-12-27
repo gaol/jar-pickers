@@ -4,29 +4,44 @@
 #  It will be deployed by the main verticle.
 #
 import os
+import json
+
 import vertx
 from core.event_bus import EventBus
 from java.lang import Throwable
+
 from main import DEFAULT
+import picker
 
 host = DEFAULT.DEFAULT_HOST
 port = DEFAULT.DEFAULT_PORT
 
-download_tmp_dir = None
-debug = None
-dataDir = None
-groupIdFile = None
+download_tmp_dir = DEFAULT.DOWNLOAD_TMP_DIR
+debug = DEFAULT.DEBUG
+dataDir = DEFAULT.DATA_DIR
+groupIdFile = DEFAULT.GROUPID_FILE
 
 config = vertx.config()
 if not config is None:
   host = config.get('host', DEFAULT.DEFAULT_HOST)
   port = config.get('port', DEFAULT.DEFAULT_PORT)
   commonConfig = config.get('common', None)
-    if not commonConifg is None:
-      download_tmp_dir = commonConfig.get('tmpDir', DEFAULT.DOWNLOAD_TMP_DIR)
-      dataDir = commonConfig.get('dataDir', DEFAULT.DATA_DIR)
-      debug = commonConfig.get('debug', DEFAULT.DEBUG)
-      groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
+  if not commonConfig is None:
+    download_tmp_dir = commonConfig.get('tmpDir', DEFAULT.DOWNLOAD_TMP_DIR)
+    dataDir = commonConfig.get('dataDir', DEFAULT.DATA_DIR)
+    debug = commonConfig.get('debug', DEFAULT.DEBUG)
+    groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
+
+
+def getJsonDataList(dir):
+  jsons = []
+  for root, dirs, files in os.walk(dir):
+    for file in files:
+      if file.endswith(".json"):
+        jsons.append(os.path.join(root, file))
+  return jsons
+#end of getJsonDataList
+
 
 def reply_handler(message):
   EventBus.send(DEFAULT.PICKER_REPLY_ADDRESS, message.body)
@@ -47,15 +62,13 @@ def pickerRequest(request):
     request.response.put_header('Content-Type', 'text/plain')
     message = {"name" : name, "version" : version, "milestone" : milestone, "urls" : urls}
     EventBus.send(DEFAULT.PICKER_ADDRESS, message,reply_handler)
-    request.response.write_str("Request Submitted.")
     request.response.status_code = 200
     request.response.status_message = "OK"
+    request.response.end("Request Submitted.")
   except Throwable, err:
-    request.response.write_str("Failed to submit the request.")
     request.response.status_code = 500
     request.response.status_message = err.message
-  finally:
-    request.response.end()
+    request.response.end("Failed to submit the request.")
 #end of pickerRequest
 
 def printRequestInfo(request, end=True):
@@ -78,7 +91,6 @@ def queryJar(request):
   """
   Search which product versions does the request jar belongs to
   """
-  request.response.put_header('Content-Type', 'application/json')
   name = request.params.get('name', None)
   version = request.params.get('version', None)
   if name is None:
@@ -86,8 +98,23 @@ def queryJar(request):
     request.response.status_message = "Bad Request"
     request.response.end("Bad Request")
     return
-  
-  
+  searchKey = ":%s:" % name
+  if not version is None: searcykey = ":%s:%s" % (name, version)
+  jsons = getJsonDataList(dataDir)
+  products = []
+  for jsonFile in jsons:
+    data = json.load(file(jsonFile))
+    artifacts = data['artifacts']
+    for arti in artifacts:
+      if searchKey in arti:
+        product = {"jar" : arti, "name" : data['name'], "full-name" : picker.getProductFullName(data['name'].upper()), "version" : data['version'], "milestone" : data['milestone'], "urls" : data['urls']}
+        products.append(product)
+        break
+
+  request.response.put_header('Content-Type', 'application/json')
+  request.response.status_code = 200
+  request.response.status_message = "OK"
+  request.response.end(str(products))
   
 #end of queryJar
 

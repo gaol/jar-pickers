@@ -123,14 +123,26 @@ def getArtifactInfo(jar):
 #end of getArtifactInfo
 
 
-def getProductNames(productFile):
+def getProducts():
   config = ConfigParser.ConfigParser()
-  config.read(productFile)
+  config.read(DEFAULT.PRODUCTS_FILE)
+  return config
+#end of getProducts
+
+def getProductNames():
+  config = getProducts()
   names = []
   for key,value in config.items("products"):
-    names.append(key)
+    names.append(key.upper())
   return names
 #end of getProductNames
+
+
+def getProductFullName(name):
+  config = getProducts()
+  for key, value in config.items("products"):
+    if key.upper() == name: return value
+#end of getProductFullName
 
 class Picker():
   """
@@ -184,8 +196,7 @@ class Picker():
     if not os.path.exists(self.dataDir):
       info("Data directory does not exist, create it.")
       os.makedirs(self.dataDir)
-    productsFile = file(DEFAULT.PRODUCTS_FILE, 'r')
-    return name in getProductNames(productsFile)
+    return name in getProductNames()
   # end of isNameExist
 
   def picks(self, request):
@@ -208,7 +219,7 @@ class Picker():
       raise Exception("Invalid request. name,version,urls must be provided")
     
     name = name.upper()
-    if not isNameExist(name): raise Exception("%s is not supported yet, contact administrator to add it please." % name)
+    if not self.isNameExist(name) is True: raise Exception("%s is not supported yet, contact administrator to add it please." % name)
 
     if not os.path.exists(self.tmpDir):
       info("Download temporary directory does not exist, create it.")

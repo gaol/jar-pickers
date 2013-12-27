@@ -5,22 +5,23 @@
 import os
 import vertx
 from core.event_bus import EventBus
+import picker
 from picker import Picker
 from main import DEFAULT
 
-download_tmp_dir = None
-debug = None
-dataDir = None
-groupIdFile = None
+download_tmp_dir = DEFAULT.DOWNLOAD_TMP_DIR
+debug = DEFAULT.DEBUG
+dataDir = DEFAULT.DATA_DIR
+groupIdFile = DEFAULT.GROUPID_FILE
 
 config = vertx.config()
 if not config is None:
   commonConfig = config.get('common', None)
-    if not commonConifg is None:
-      download_tmp_dir = commonConfig.get('tmpDir', DEFAULT.DOWNLOAD_TMP_DIR)
-      dataDir = commonConfig.get('dataDir', DEFAULT.DATA_DIR)
-      debug = commonConfig.get('debug', DEFAULT.DEBUG)
-      groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
+  if not commonConfig is None:
+    download_tmp_dir = commonConfig.get('tmpDir', DEFAULT.DOWNLOAD_TMP_DIR)
+    dataDir = commonConfig.get('dataDir', DEFAULT.DATA_DIR)
+    debug = commonConfig.get('debug', DEFAULT.DEBUG)
+    groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
 
 picker.DEBUG = debug
 
