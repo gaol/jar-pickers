@@ -96,7 +96,7 @@ def queryJar(request):
   if name is None:
     request.response.status_code = 404
     request.response.status_message = "Bad Request"
-    request.response.end("Bad Request")
+    request.response.end("Bad Request: name must be provided")
     return
   searchKey = ":%s:" % name
   if not version is None: searcykey = ":%s:%s" % (name, version)
@@ -118,6 +118,40 @@ def queryJar(request):
   
 #end of queryJar
 
+
+def queryProduct(request):
+  """
+  Search which artifacts one product version has.
+  """
+  name = request.params.get("name", None)
+  version = request.params.get("version", None)
+  milestone = request.params.get("milestone", None)
+  if name is None or version is None:
+    request.response.status_code = 404
+    request.response.status_message = "Bad Request"
+    request.response.end("Bad Request: name and version must be provided")
+    return
+  fileName = "%s/%s-%s.json" % (dataDir, name.upper(), version)
+  if milestone is not None: fileName = "%s/%s-%s-%s.json" % (dataDir, name.upper(), version, milestone)
+  artifacts = []
+  if not os.path.exists(fileName):
+    request.response.status_code = 400
+    request.response.status_message = "Not Found"
+    request.response.end("Not Found: File: %s does not exist." % fileName)
+    return
+  data = json.load(file(fileName))
+  for arti in data['artifacts']:
+    artiKey = "%s-%s.jar" % (arti.split(":")[1], arti.split(":")[2])
+    if not artiKey in artifacts: artifacts.append(artiKey)
+  
+  request.response.put_header('Content-Type', 'application/json')
+  request.response.status_code = 200
+  request.response.status_message = "OK"
+  request.response.end(str(artifacts))
+
+#end of queryProduct
+
+
 server = vertx.create_http_server()
 
 @server.request_handler
@@ -127,6 +161,8 @@ def request_handler(request):
       pickerRequest(request)
     elif request.path.endswith('/jar.do'):
       queryJar(request)
+    elif request.path.endswith('/product.do'):
+      queryProduct(request)
     else:
       printRequestInfo(request)
   except Throwable, err:
@@ -134,6 +170,7 @@ def request_handler(request):
     request.response.status_code = 500
     request.response.status_message = "Inner Error"
     request.response.end()
+    request.response.close()
 #end of request_handler
 
 
