@@ -26,6 +26,9 @@ GROUPID_FILE = "%s/groupids.ini" % DATA_DIR
 SUSPECT_JARS = "suspect_jars"
 JSON_DATA = "jsonData"
 
+# proudcts file list
+PRODUCTS_FILE = "products.json"
+
 def debug(message):
   if DEBUG == True:
     print message
@@ -126,6 +129,13 @@ def getArtifactInfo(jar):
 #end of getArtifactInfo
 
 
+def getProductNames(productFile):
+  data = json.load(productFile)
+  names = []
+  for d in data: names.append(d['short_name'])
+  return names
+#end of getProductNames
+
 class Picker():
   """
   Picker class is used to picks jar information.
@@ -175,6 +185,19 @@ class Picker():
         return None
   #end of getGroupId
 
+
+  def isNameExist(self, name):
+    """
+    Check whether the name will be supported for the collection.
+    The name will be capitalized.
+    """
+    if not os.path.exists(self.dataDir):
+      info("Data directory does not exist, create it.")
+      os.makedirs(self.dataDir)
+    productsFile = file("%s/%s" % (this.dataDir, PRODUCTS_FILE), 'r')
+    return name in getProductNames(productsFile)
+  # end of isNameExist
+
   def picks(self, request):
     """
     Starts to pick jars information up.
@@ -194,6 +217,9 @@ class Picker():
     if name is None or version is None or (urls is None or len(urls) == 0):
       raise Exception("Invalid request. name,version,urls must be provided")
     
+    name = name.upper()
+    if not isNameExist(name): raise Exception("%s is not supported yet, contact administrator to add it please." % name)
+
     if not os.path.exists(self.tmpDir):
       info("Download temporary directory does not exist, create it.")
       os.makedirs(self.tmpDir)
