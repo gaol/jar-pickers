@@ -114,7 +114,7 @@ def queryJar(request):
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
-  request.response.end(str(products))
+  request.response.end(json.dumps(products, indent = 2))
   
 #end of queryJar
 
@@ -147,7 +147,7 @@ def queryProduct(request):
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
-  request.response.end(str(artifacts))
+  request.response.end(json.dumps(artifacts, indent = 2))
 
 #end of queryProduct
 
