@@ -6,9 +6,7 @@ import os
 import vertx
 from core.event_bus import EventBus
 from picker import Picker
-
-# This is the address registred to listen which will trigger the jar picker
-PICKER_ADDRESS = "jar-picker-address"
+from main import DEFAULT
 
 download_tmp_dir = None
 debug = None
@@ -17,10 +15,14 @@ groupIdFile = None
 
 config = vertx.config()
 if not config is None:
-  download_tmp_dir = config.get('tmpDir', None)
-  dataDir = config.get('dataDir', None)
-  debug = config.get('debug', None)
-  groupIdFile = config.get('groupIdFile', None)
+  commonConfig = config.get('common', None)
+    if not commonConifg is None:
+      download_tmp_dir = commonConfig.get('tmpDir', DEFAULT.DOWNLOAD_TMP_DIR)
+      dataDir = commonConfig.get('dataDir', DEFAULT.DATA_DIR)
+      debug = commonConfig.get('debug', DEFAULT.DEBUG)
+      groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
+
+picker.DEBUG = debug
 
 #
 # message handler
@@ -32,7 +34,6 @@ def msg_handler(message):
   picker = Picker()
   if not download_tmp_dir is None: picker.setTmpDir(download_tmp_dir)
   if not dataDir is None: picker.setDataDir(dataDir)
-  if not debug is None: picker.setDebug(debug)
   if not groupIdFile is None: picker.setGroupIdFile(groupIdFile)
   name = body.get("name",None)
   version = body.get("version",None)
@@ -56,4 +57,4 @@ def msg_handler(message):
   
 # end of msg_handler
 
-EventBus.register_handler(PICKER_ADDRESS, handler=msg_handler)
+EventBus.register_handler(DEFAULT.PICKER_ADDRESS, handler=msg_handler)

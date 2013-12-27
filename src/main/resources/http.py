@@ -5,26 +5,32 @@
 #
 import os
 import vertx
-from core import javautils
 from core.event_bus import EventBus
 from java.lang import Throwable
+from main import DEFAULT
 
-# This is the address registred to listen which will trigger the jar picker
-PICKER_ADDRESS = "jar-picker-address"
-PICKER_REPLY_ADDRESS = "jar-picker-reply-address"
+host = DEFAULT.DEFAULT_HOST
+port = DEFAULT.DEFAULT_PORT
 
-host = 'localhost'
-port = 8090
+download_tmp_dir = None
+debug = None
+dataDir = None
+groupIdFile = None
 
 config = vertx.config()
 if not config is None:
-  host = config.get('host', 'localhost')
-  port = config.get('port', 8090)
+  host = config.get('host', DEFAULT.DEFAULT_HOST)
+  port = config.get('port', DEFAULT.DEFAULT_PORT)
+  commonConfig = config.get('common', None)
+    if not commonConifg is None:
+      download_tmp_dir = commonConfig.get('tmpDir', DEFAULT.DOWNLOAD_TMP_DIR)
+      dataDir = commonConfig.get('dataDir', DEFAULT.DATA_DIR)
+      debug = commonConfig.get('debug', DEFAULT.DEBUG)
+      groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
 
 def reply_handler(message):
-  EventBus.send(PICKER_REPLY_ADDRESS, message.body)
-  print "reply message to reply address:\n"
-  print message.body
+  EventBus.send(DEFAULT.PICKER_REPLY_ADDRESS, message.body)
+  if not debug is None: print message.body
     
 #end of reply_handler
 
@@ -40,7 +46,7 @@ def pickerRequest(request):
   try:
     request.response.put_header('Content-Type', 'text/plain')
     message = {"name" : name, "version" : version, "milestone" : milestone, "urls" : urls}
-    EventBus.send(PICKER_ADDRESS, message,reply_handler)
+    EventBus.send(DEFAULT.PICKER_ADDRESS, message,reply_handler)
     request.response.write_str("Request Submitted.")
     request.response.status_code = 200
     request.response.status_message = "OK"
@@ -67,6 +73,24 @@ def printRequestInfo(request, end=True):
   if end is True: request.response.end(str)
 #end of printRequestInfo
 
+
+def queryJar(request):
+  """
+  Search which product versions does the request jar belongs to
+  """
+  request.response.put_header('Content-Type', 'application/json')
+  name = request.params.get('name', None)
+  version = request.params.get('version', None)
+  if name is None:
+    request.response.status_code = 404
+    request.response.status_message = "Bad Request"
+    request.response.end("Bad Request")
+    return
+  
+  
+  
+#end of queryJar
+
 server = vertx.create_http_server()
 
 @server.request_handler
@@ -74,6 +98,8 @@ def request_handler(request):
   try:
     if request.path.endswith('/picker.do'):
       pickerRequest(request)
+    elif request.path.endswith('/jar.do'):
+      queryJar(request)
     else:
       printRequestInfo(request)
   except Throwable, err:

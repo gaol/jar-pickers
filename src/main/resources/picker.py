@@ -14,20 +14,14 @@ import shutil
 import ConfigParser
 import json
 
+from main import DEFAULT
+
 VERSION_RE = re.compile(r'\-\d')
 DEBUG = False
-
-# location defaults
-DOWNLOAD_TMP_DIR = "%s/tmp" % os.getcwd()
-DATA_DIR = "%s/data" % os.getcwd()
-GROUPID_FILE = "%s/groupids.ini" % DATA_DIR
 
 # RESULT KEY
 SUSPECT_JARS = "suspect_jars"
 JSON_DATA = "jsonData"
-
-# proudcts file list
-PRODUCTS_FILE = "products.json"
 
 def debug(message):
   if DEBUG == True:
@@ -130,9 +124,11 @@ def getArtifactInfo(jar):
 
 
 def getProductNames(productFile):
-  data = json.load(productFile)
+  config = ConfigParser.ConfigParser()
+  config.read(productFile)
   names = []
-  for d in data: names.append(d['short_name'])
+  for key,value in config.items("products"):
+    names.append(key)
   return names
 #end of getProductNames
 
@@ -141,20 +137,14 @@ class Picker():
   Picker class is used to picks jar information.
   """
   def __init__(self):
-    self.tmpDir = DOWNLOAD_TMP_DIR
-    self.debug = False
-    self.groupIdFile = GROUPID_FILE
-    self.dataDir = DATA_DIR
+    self.tmpDir = DEFAULT.DOWNLOAD_TMP_DIR
+    self.groupIdFile = DEFAULT.GROUPID_FILE
+    self.dataDir = DEFAULT.DATA_DIR
   #end of init
 
   def setTmpDir(self, tmpDir):
     if not tmpDir is None:
       self.tmpDir = tmpDir
-  #end
-
-  def setDebug(self, debug):
-    if not debug is None:
-      self.debug = debug
   #end
 
   def setGroupIdFile(self, groupIdFile):
@@ -194,7 +184,7 @@ class Picker():
     if not os.path.exists(self.dataDir):
       info("Data directory does not exist, create it.")
       os.makedirs(self.dataDir)
-    productsFile = file("%s/%s" % (this.dataDir, PRODUCTS_FILE), 'r')
+    productsFile = file(DEFAULT.PRODUCTS_FILE, 'r')
     return name in getProductNames(productsFile)
   # end of isNameExist
 
