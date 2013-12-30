@@ -126,21 +126,21 @@ def getArtifactInfo(jar):
 def getProducts():
   config = ConfigParser.ConfigParser()
   config.read(DEFAULT.PRODUCTS_FILE)
-  return config
+  return config.items("products")
 #end of getProducts
 
 def getProductNames():
-  config = getProducts()
+  products = getProducts()
   names = []
-  for key,value in config.items("products"):
+  for key,value in products:
     names.append(key.upper())
   return names
 #end of getProductNames
 
 
 def getProductFullName(name):
-  config = getProducts()
-  for key, value in config.items("products"):
+  products = getProducts()
+  for key, value in products:
     if key.upper() == name: return value
 #end of getProductFullName
 

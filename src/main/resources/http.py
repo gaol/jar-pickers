@@ -20,6 +20,7 @@ download_tmp_dir = DEFAULT.DOWNLOAD_TMP_DIR
 debug = DEFAULT.DEBUG
 dataDir = DEFAULT.DATA_DIR
 groupIdFile = DEFAULT.GROUPID_FILE
+htmlDir = DEFAULT.HTML_DIR
 
 config = vertx.config()
 if not config is None:
@@ -31,6 +32,7 @@ if not config is None:
     dataDir = commonConfig.get('dataDir', DEFAULT.DATA_DIR)
     debug = commonConfig.get('debug', DEFAULT.DEBUG)
     groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
+    htmlDir = commonConfig.get('htmlDir', DEFAULT.HTML_DIR)
 
 
 def getJsonDataList(dir):
@@ -151,6 +153,76 @@ def queryProduct(request):
 
 #end of queryProduct
 
+def queryProductList(request):
+  """
+  Write products list back to client in json format
+  """
+  products = []
+  for name, fullName in picker.getProducts():
+    products.append({"name" : name, "fullname" : fullName})
+  request.response.put_header('Content-Type', 'application/json')
+  request.response.status_code = 200
+  request.response.status_message = "OK"
+  request.response.end(json.dumps(products, indent = 2))
+
+#end of queryProductList
+
+def queryProductVersions(request):
+  """
+  Write available versions of a product in json format. a list
+  """
+  name = request.params.get("name", None)
+  if name is None:
+    request.response.status_code = 404
+    request.response.status_message = "Bad Request"
+    request.response.end("Bad Request: name must be provided")
+    return
+
+  versions = []
+  jsons = getJsonDataList(dataDir)
+  products = []
+  for jsonFile in jsons:
+    data = json.load(file(jsonFile))
+    if name.upper() == data['name']:
+      versions.append({"version" : data['version']})
+  request.response.put_header('Content-Type', 'application/json')
+  request.response.status_code = 200
+  request.response.status_message = "OK"
+  request.response.end(json.dumps(versions, indent = 2))
+#end of queryProductVersions
+
+def queryProductMilestones(request):
+  """
+  Write available milestones of a product/version in json format. a list
+  """
+  name = request.params.get("name", None)
+  version = request.params.get("version", None)
+  if name is None:
+    request.response.status_code = 404
+    request.response.status_message = "Bad Request"
+    request.response.end("Bad Request: name must be provided")
+    return
+
+  milestones = []
+  jsons = getJsonDataList(dataDir)
+  products = []
+  for jsonFile in jsons:
+    data = json.load(file(jsonFile))
+    if name.upper() == data['name'] and (version is None or version == data['version'] ):
+      milestones.append({"milestone" : data['milestone']})
+  request.response.put_header('Content-Type', 'application/json')
+  request.response.status_code = 200
+  request.response.status_message = "OK"
+  request.response.end(json.dumps(milestones, indent = 2))
+#end of queryProductMilestones
+
+
+def sendFileBack(request):
+  """
+  Send file back
+  """
+  request.response.send_file(request.path[1:])
+#end of sendFileBack
 
 server = vertx.create_http_server()
 
@@ -163,6 +235,14 @@ def request_handler(request):
       queryJar(request)
     elif request.path.endswith('/product.do'):
       queryProduct(request)
+    elif request.path.endswith('/products.do'):
+      queryProductList(request)
+    elif request.path.endswith('/versions.do'):
+      queryProductVersions(request)
+    elif request.path.endswith('/milestones.do'):
+      queryProductMilestones(request)
+    elif request.path.startswith('/html/'):
+      sendFileBack(request)
     else:
       printRequestInfo(request)
   except Throwable, err:
