@@ -104,7 +104,7 @@ def queryJar(request):
     request.response.end("Bad Request: name must be provided")
     return
   searchKey = ":%s:" % name
-  if not version is None: searcykey = ":%s:%s" % (name, version)
+  if not version is None: searchKey = ":%s:%s" % (name, version)
   jsons = getJsonDataList(dataDir)
   products = []
   for jsonFile in jsons:
@@ -112,7 +112,7 @@ def queryJar(request):
     artifacts = data['artifacts']
     for arti in artifacts:
       if searchKey in arti:
-        product = {"jar" : arti, "name" : data['name'], "full-name" : picker.getProductFullName(data['name'].upper()), "version" : data['version'], "milestone" : data['milestone'], "urls" : data['urls']}
+        product = {"jar" : arti, "name" : data['name'], "full-name" : picker.getProductFullName(data['name'].upper()), "version" : data['version'], "milestone" : data['milestone']}
         products.append(product)
         break
 

@@ -237,7 +237,7 @@ class Picker():
         if artifactId is None or artiVersion is None:
           info("WARNING: Can't parse jar: %s" % jar)
           result[SUSPECT_JARS].append("Error: %s" % os.path.basename(jar))
-          break
+          continue
         if groupId is None:
           groupId = self.getGroupId(artifactId, artiVersion)
         if groupId is None:
