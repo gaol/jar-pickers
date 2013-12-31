@@ -243,7 +243,7 @@ class Picker():
         if groupId is None:
           info("No groupId found in jar file: %s" % os.path.basename(jar))
           result[SUSPECT_JARS].append("No GroupId: %s" % os.path.basename(jar))
-        artifactstr = "%s:%s:%s" % (groupId, artifactId, artiVersion)
+        artifactstr = "jar:%s:%s:%s" % (groupId, artifactId, artiVersion)
         if not artifactstr in artifacts:
           artifacts.append(artifactstr)
       info("Remove the template directory: %s" % dirName)

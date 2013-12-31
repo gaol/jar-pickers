@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
-  <title>Jars Information</title>
+  <title>Artifacts Information</title>
 
   <link rel="stylesheet" type="text/css" href="css/style.css" />
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -16,7 +16,7 @@
 
 <div style="clear:both;width:90%;height:5px;">&nbsp;</div>
 
-<h1>Jars Information for JBoss Middleware Products</h1>
+<h1>Artifacts Information for JBoss Middleware Products</h1>
 <div style="border-bottom:1px solid #ebebeb;height:3px;"></div>
 
 <p style="color: green"></p>
@@ -46,7 +46,7 @@
 
   <div>
     <div style="clear:both;width:90%;height:15px;">&nbsp;</div>
-    <div style="padding-left:20px;">Jars List: &nbsp;</div>
+    <div style="padding-left:20px;">Artifacts List of: &nbsp;<span id="currentProduct" style="font-size:14px; color: #48f;font-weight:bold;"></span></div>
     <div id="jars" style="padding-left:60px; line-height:1.8;">&nbsp;</div>
   </div>
 
@@ -67,8 +67,15 @@
   function fillJars(name, version, milestone){
      $.getJSON("/api/product.do?name=" + name + "&version=" + version + "&milestone=" + milestone, function(data){
        $("#jars").empty().append("&nbsp;");
+       var prdNameVersion = name + "-" + version;
+       if(milestone != '' && milestone != null && milestone != 'undefined') { prdNameVersion = prdNameVersion + "-" + milestone; }
+       $("#currentProduct").empty().append(prdNameVersion);
        for (var i in data){
-         var verEle = $('<div>').attr("version", version).attr("prodName",name).attr("milestone",milestone).attr("jarName", data[i]).append("<strong><a href=\"#\">" + data[i]+ "</a></strong>&nbsp;&nbsp;").click(function(){});
+         var dis = data[i].name + "-" + data[i].version;
+         if (data[i].type == 'jar') {
+            dis = dis + ".jar";
+         }
+         var verEle = $('<div>').attr("version", version).attr("prodName",name).attr("milestone",milestone).attr("artiName", data[i].name).attr("type", data[i].type).attr("artiVersion", data[i].version).append("<strong><a href=\"#\">" + dis + "</a></strong>&nbsp;&nbsp;").click(function(){});
          $("#jars").append(verEle);
        }
      });
@@ -83,6 +90,9 @@
        }
        if(data.length == 0){
          fillJars(name,version,'');
+       }
+       if(data.length > 0){
+         fillJars(name,version,data[0].milestone);
        }
      });
   }

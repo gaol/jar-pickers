@@ -137,7 +137,7 @@ def queryProduct(request):
     request.response.end("Bad Request: name and version must be provided")
     return
   fileName = "%s/%s-%s.json" % (dataDir, name.upper(), version)
-  if milestone is not None and (not milestone in ['','null','None']): fileName = "%s/%s-%s-%s.json" % (dataDir, name.upper(), version, milestone)
+  if milestone is not None and (not milestone in ['','null','None','undefined']): fileName = "%s/%s-%s-%s.json" % (dataDir, name.upper(), version, milestone)
   artifacts = []
   if not os.path.exists(fileName):
     request.response.status_code = 400
@@ -146,13 +146,20 @@ def queryProduct(request):
     return
   data = json.load(file(fileName))
   for arti in data['artifacts']:
-    artiKey = "%s-%s.jar" % (arti.split(":")[1], arti.split(":")[2])
+    artiKey = {}
+    artiKey['type'] = arti.split(":")[0]
+    if arti.split(":")[0] == 'jar':
+      artiKey['name'] = arti.split(":")[2]
+      artiKey['version'] = arti.split(":")[3]
+    elif arti.split(":")[0] == 'package':
+      artiKey['name'] = arti.split(":")[1]
+      artiKey['version'] = arti.split(":")[2]
     if not artiKey in artifacts: artifacts.append(artiKey)
   
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
-  request.response.end(json.dumps(artifacts, indent = 2))
+  request.response.end(json.dumps(sorted(artifacts), indent = 2))
 
 #end of queryProduct
 
@@ -166,7 +173,7 @@ def queryProductList(request):
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
-  request.response.end(json.dumps(products, indent = 2))
+  request.response.end(json.dumps(sorted(products), indent = 2))
 
 #end of queryProductList
 
@@ -192,7 +199,7 @@ def queryProductVersions(request):
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
-  request.response.end(json.dumps(versions, indent = 2))
+  request.response.end(json.dumps(sorted(versions), indent = 2))
 #end of queryProductVersions
 
 def queryProductMilestones(request):
@@ -213,12 +220,12 @@ def queryProductMilestones(request):
   for jsonFile in jsons:
     data = json.load(file(jsonFile))
     milestone = {"milestone" : data['milestone']}
-    if name.upper() == data['name'] and (version is None or version == data['version'] and (not data['milestone'] is None)):
+    if name.upper() == data['name'] and (version is None or version == data['version']):
       milestones.append(milestone)
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
-  request.response.end(json.dumps(milestones, indent = 2))
+  request.response.end(json.dumps(sorted(milestones), indent = 2))
 #end of queryProductMilestones
 
 
