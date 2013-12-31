@@ -34,6 +34,9 @@ if not config is None:
     groupIdFile = commonConfig.get('groupIdFile', DEFAULT.GROUPID_FILE)
     htmlDir = commonConfig.get('htmlDir', DEFAULT.HTML_DIR)
 
+if not port is None:
+  port = int(port)
+
 
 def getJsonDataList(dir):
   jsons = []
@@ -134,7 +137,7 @@ def queryProduct(request):
     request.response.end("Bad Request: name and version must be provided")
     return
   fileName = "%s/%s-%s.json" % (dataDir, name.upper(), version)
-  if milestone is not None: fileName = "%s/%s-%s-%s.json" % (dataDir, name.upper(), version, milestone)
+  if milestone is not None and (not milestone in ['','null','None']): fileName = "%s/%s-%s-%s.json" % (dataDir, name.upper(), version, milestone)
   artifacts = []
   if not os.path.exists(fileName):
     request.response.status_code = 400
@@ -183,8 +186,9 @@ def queryProductVersions(request):
   products = []
   for jsonFile in jsons:
     data = json.load(file(jsonFile))
-    if name.upper() == data['name']:
-      versions.append({"version" : data['version']})
+    version = {"version" : data['version']}
+    if name.upper() == data['name'] and (not version in versions):
+      versions.append(version)
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
@@ -208,8 +212,9 @@ def queryProductMilestones(request):
   products = []
   for jsonFile in jsons:
     data = json.load(file(jsonFile))
-    if name.upper() == data['name'] and (version is None or version == data['version'] ):
-      milestones.append({"milestone" : data['milestone']})
+    milestone = {"milestone" : data['milestone']}
+    if name.upper() == data['name'] and (version is None or version == data['version'] and (not data['milestone'] is None)):
+      milestones.append(milestone)
   request.response.put_header('Content-Type', 'application/json')
   request.response.status_code = 200
   request.response.status_message = "OK"
@@ -221,7 +226,10 @@ def sendFileBack(request):
   """
   Send file back
   """
-  request.response.send_file(request.path[1:])
+  fileName = request.path[1:]
+  if fileName == '': fileName = "html/index.html"
+  if fileName in ['html/','html']: fileName = "html/index.html"
+  request.response.send_file(fileName)
 #end of sendFileBack
 
 server = vertx.create_http_server()
@@ -241,7 +249,7 @@ def request_handler(request):
       queryProductVersions(request)
     elif request.path.endswith('/milestones.do'):
       queryProductMilestones(request)
-    elif request.path.startswith('/html/'):
+    elif request.path.startswith('/html/') or request.path in ['','/']:
       sendFileBack(request)
     else:
       printRequestInfo(request)
