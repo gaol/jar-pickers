@@ -1,10 +1,20 @@
-jar-pickers
+Trackers
 ===========
 
-Jar Pickers to record all jars information of a specific product version
+Trackers project aims to track all information of EAP and layered products like:
 
-It is a vertx module, using python language.
+   * Jar information
+      * groupId, artifactId, version of each jar
+      * which package does this jar belongs to
+      * Which build produces this jar
 
-But it needs jython 2.7 to work, you can download the jython 2.7 standalone from [[here][http://search.maven.org/remotecontent?filepath=org/python/jython-standalone/2.7-b1/jython-standalone-2.7-b1.jar]]
+   * Product Information
+      * Which build produces this product(including the full build command line)
+      * How many versions for a specific product
+      * What jars each product version has
 
+   * CVE issues
+      * Which CVEs affect our products
+      * Which jars does a specfic CVE affect
+      * In which jar version does this CVE is fixed
 
