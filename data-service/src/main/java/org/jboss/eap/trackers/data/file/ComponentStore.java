@@ -5,6 +5,7 @@ package org.jboss.eap.trackers.data.file;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
@@ -119,6 +120,36 @@ public class ComponentStore {
 				fileLock.lock.notify();
 			}
 		}
+	}
+
+	public List<Component> saveComponents(ProductVersion pv,
+			List<Component> components) throws IOException {
+		FileLock fileLock = initComponentStore(pv);
+		synchronized (fileLock.lock) {
+			ProductVersionComponents pvComps = new ProductVersionComponents();
+			pvComps.setComponents(components);
+			pvComps.setName(pv.getProduct().getName());
+			pvComps.setVersion(pv.getVersion());
+			String json = gson.toJson(pvComps);
+			
+			FileWriter writer = null;
+			try
+			{
+				writer = new FileWriter(fileLock.file);
+				writer.write(json);
+				writer.flush();
+			}
+			finally
+			{
+				if (writer != null)
+				{
+					writer.close();
+				}
+				fileLock.lock.notify();
+				
+			}
+		}
+		return components;
 	}
 	
 	

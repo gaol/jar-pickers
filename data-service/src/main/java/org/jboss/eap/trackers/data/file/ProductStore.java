@@ -13,6 +13,8 @@ import java.util.List;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -60,7 +62,10 @@ class ProductStore {
 	
 	private final Object lock = new Object();
 	
-	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	private final Gson gson = new GsonBuilder().
+			setPrettyPrinting().
+			setExclusionStrategies(new ProductExclusionStrategy()).
+			create();
 
 	ProductStore(File dir) throws IOException {
 		super();
@@ -172,6 +177,33 @@ class ProductStore {
 			this.lock.notify();
 		}
 		return products;
+	}
+	
+	private static class ProductExclusionStrategy implements ExclusionStrategy {
+
+		/* (non-Javadoc)
+		 * @see com.google.gson.ExclusionStrategy#shouldSkipField(com.google.gson.FieldAttributes)
+		 */
+		@Override
+		public boolean shouldSkipField(FieldAttributes f) {
+			Class<?> cls = f.getDeclaringClass();
+			if (cls.equals(ProductVersion.class) && 
+					f.getName().equals("product") && 
+					f.getDeclaredClass().equals(Product.class))
+			{
+				return true;
+			}
+			return false;
+		}
+
+		/* (non-Javadoc)
+		 * @see com.google.gson.ExclusionStrategy#shouldSkipClass(java.lang.Class)
+		 */
+		@Override
+		public boolean shouldSkipClass(Class<?> clazz) {
+			return false;
+		}
+
 	}
 
 }

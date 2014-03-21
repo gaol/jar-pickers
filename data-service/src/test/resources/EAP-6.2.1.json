@@ -7,13 +7,13 @@
       "name": "jboss-modules",
       "version": "1.2.2.Final-redhat-1",
       "groupId": "org.jboss.modules",
-      "buildinfo": "https://brewweb.devel.redhat.com/buildinfo?buildID=314067"
+      "buildInfo": "https://brewweb.devel.redhat.com/buildinfo?buildID=314067"
     },
     {
       "name": "jgroups",
       "version": "3.2.10.Final-redhat-2",
       "groupId": "org.jgroups",
-      "buildinfo": "https://brewweb.devel.redhat.com/buildinfo?buildID=314037"
+      "buildInfo": "https://brewweb.devel.redhat.com/buildinfo?buildID=314037"
     }
   ]
 }

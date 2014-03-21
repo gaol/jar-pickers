@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -168,8 +169,11 @@ public class FileBasedDataService implements DataService {
 
 	@Override
 	public List<Component> saveComponents(ProductVersion pv, List<Component> components) throws DataServiceException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return this.componentStore.saveComponents(pv, components);
+		} catch (IOException e) {
+			throw new DataServiceException("Can't save Components to product version: " + pv, e);
+		}
 	}
 	
 	@Override
@@ -177,6 +181,10 @@ public class FileBasedDataService implements DataService {
 			throws DataServiceException {
 		List<Component> components = loadComponent(pv);
 		boolean update = false;
+		if (components == null)
+		{
+			components = new ArrayList<Component>();
+		}
 		for (int i = 0; i < components.size(); i ++)
 		{
 			Component comp = components.get(i);
