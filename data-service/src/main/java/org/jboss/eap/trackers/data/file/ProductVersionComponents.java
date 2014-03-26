@@ -1,10 +1,13 @@
 /**
  * 
  */
-package org.jboss.eap.trackers.model;
+package org.jboss.eap.trackers.data.file;
 
 import java.io.Serializable;
 import java.util.List;
+
+import org.jboss.eap.trackers.model.Component;
+import org.jboss.eap.trackers.model.NameDescription;
 
 /**
  * @author lgao

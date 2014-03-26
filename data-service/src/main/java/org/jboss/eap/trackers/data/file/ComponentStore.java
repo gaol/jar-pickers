@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
-import org.jboss.eap.trackers.model.ProductVersionComponents;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
