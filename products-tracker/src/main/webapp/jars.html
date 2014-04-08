@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+  <title>Artifacts Information</title>
+
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+</head>
+<body>
+
+<div style="clear:both;width:90%;height:5px;">&nbsp;</div>
+
+<h1>Artifacts Information for JBoss Middleware Products</h1>
+<div style="border-bottom:1px solid #ebebeb;height:3px;"></div>
+
+<p style="color: green"></p>
+
+<div style="padding:20px;">
+  
+  <div style="clear:both;width:90%;height:15px;">&nbsp;</div>
+
+  <div style="width:90%;text-align:left;">
+    <div style="float:left;">Products: &nbsp;</div>
+    <div id="products" style="padding-left:80px;">&nbsp;</div>
+  </div>
+
+  <div style="border-bottom:1px solid #ebebeb;height:3px;"></div>
+
+  <div style="width:90%;text-align:left;">
+    <div style="float:left;">Versions: &nbsp;</div>
+    <div id="versions" style="padding-left:80px;">&nbsp;</div>
+  </div>
+
+  <div style="border-bottom:1px solid #ebebeb;height:3px;"></div>
+
+  <div style="width:90%;text-align:left;"></div>
+    <div style="float:left;">Milestones: &nbsp;</div>
+    <div id="milestones" style="padding-left:80px;">&nbsp;</div>
+  </div>
+
+  <div>
+    <div style="clear:both;width:90%;height:15px;">&nbsp;</div>
+    <div style="padding-left:20px;">Artifacts List of: &nbsp;<span id="currentProduct" style="font-size:14px; color: #48f;font-weight:bold;"></span></div>
+    <div id="jars" style="padding-left:60px; line-height:1.8;">&nbsp;</div>
+  </div>
+
+  <div style="clear:both;width:90%;height:15px;">&nbsp;</div>
+
+</div>
+
+<div style="clear:both;width:90%;height:15px;">&nbsp;</div>
+
+<div style="border-bottom:1px solid #ebebeb;height:3px;"></div>
+<div style="width:90%;padding-left:20px;text-align:left;">
+  Copyright &copy; 2013 Red Hat
+</div>
+<div style="clear:both;width:90%;height:15px;">&nbsp;</div>
+
+<script language="javascript">
+
+  function fillJars(name, version, milestone){
+     $.getJSON("/api/product.do?name=" + name + "&version=" + version + "&milestone=" + milestone, function(data){
+       $("#jars").empty().append("&nbsp;");
+       var prdNameVersion = name + "-" + version;
+       if(milestone != '' && milestone != null && milestone != 'undefined') { prdNameVersion = prdNameVersion + "-" + milestone; }
+       $("#currentProduct").empty().append(prdNameVersion);
+       for (var i in data){
+         var dis = data[i].name + "-" + data[i].version;
+         if (data[i].type == 'jar') {
+            dis = dis + ".jar";
+         }
+         var verEle = $('<div>').attr("version", version).attr("prodName",name).attr("milestone",milestone).attr("artiName", data[i].name).attr("type", data[i].type).attr("artiVersion", data[i].version).append("<strong><a href=\"#\">" + dis + "</a></strong>&nbsp;&nbsp;").click(function(){});
+         $("#jars").append(verEle);
+       }
+     });
+  }
+
+  function fillMilestones(name, version){
+     $.getJSON("/api/milestones.do?name=" + name + "&version=" + version, function(data){
+       $("#milestones").empty().append("&nbsp;");
+       for (var i in data){
+         var verEle = $('<span>').attr("version", version).attr("prodName",name).attr("milestone",data[i].milestone).append("<strong><a href=\"#\">" + data[i].milestone + "</a></strong>&nbsp;&nbsp;").click(function(){fillJars($(this).attr("prodName"), $(this).attr("version"), $(this).attr("milestone"));});
+         $("#milestones").append(verEle);
+       }
+       if(data.length == 0){
+         fillJars(name,version,'');
+       }
+       if(data.length > 0){
+         fillJars(name,version,data[0].milestone);
+       }
+     });
+  }
+
+  function fillVersions(name){
+     $.getJSON("/api/versions.do?name=" + name, function(data){
+       $("#versions").empty().append("&nbsp;");
+       $("#milestones").empty().append("&nbsp;");
+       for (var i in data){
+         var verEle = $('<span>').attr("prodName",name).attr("version",data[i].version).append("<strong><a href=\"#\">" + data[i].version+ "</a></strong>&nbsp;&nbsp;").click(function(){fillMilestones($(this).attr("prodName"), $(this).attr("version"));});
+         $("#versions").append(verEle);
+       }
+     });
+  }
+
+  function fillProducts() {
+     $.getJSON("/api/products.do", function(data){
+       for (var i in data){
+         var prdEle = $('<span>').attr("prodName",data[i].name).append("<strong><a href=\"#\">" + data[i].fullname + "</a></strong>&nbsp;&nbsp;").click(function(){fillVersions($(this).attr("prodName"));});
+         $("#products").append(prdEle);
+       }
+     });
+  }
+
+  $(document).ready(function(){
+     fillProducts();
+  });
+
+</script>
+
+</body>
+</html>
+

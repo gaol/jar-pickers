@@ -4,8 +4,6 @@ import java.util.List;
 
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -17,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import org.jboss.eap.trackers.client.ProductsTracker;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
+import org.jboss.eap.trackers.data.DataServiceFactory;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -27,12 +26,11 @@ import org.jboss.eap.trackers.model.ProductVersion;
  * 
  */
 @Path("/products")
-@ApplicationScoped
 @Stateless
 @Remote(ProductsTracker.class)
-public class ProductTrackerImpl implements ProductsTracker {
+public class ProductsTrackerImpl implements ProductsTracker {
 
-	@Inject DataService dataService;
+	private final DataService dataService = DataServiceFactory.createFileDataService();
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

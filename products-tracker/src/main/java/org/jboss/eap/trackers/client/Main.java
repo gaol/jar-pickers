@@ -10,6 +10,7 @@ import org.jboss.aesh.console.AeshConsole;
 import org.jboss.aesh.console.AeshConsoleBuilder;
 import org.jboss.aesh.console.Prompt;
 import org.jboss.aesh.console.command.Command;
+import org.jboss.aesh.console.command.CommandNotFoundException;
 import org.jboss.aesh.console.command.CommandResult;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
 import org.jboss.aesh.console.command.registry.AeshCommandRegistryBuilder;
@@ -74,6 +75,10 @@ public class Main {
 		CommandRegistry registry = new AeshCommandRegistryBuilder()
         .command(ExitCommand.class)
         .command(SearchProductsCommand.class)
+        .command(AddProductCommand.class)
+        .command(AddProductVersionCommand.class)
+        .command(RemoveProductVersionCommand.class)
+        .command(HelpCommand.class)
         .create();
 		
         AeshConsole aeshConsole = new AeshConsoleBuilder().settings(settings)
@@ -88,8 +93,31 @@ public class Main {
 
 		@Override
 		public CommandResult execute(CommandInvocation arg0) throws IOException {
-			System.out.println("Bye!");
+			arg0.getShell().out().println("Bye!");
 			arg0.stop();
+			return CommandResult.SUCCESS;
+		}
+		
+	}
+	
+	@CommandDefinition(name="help", description="Print this help")
+	private static class HelpCommand extends AbstractTrackerCommand {
+
+		@Override
+		public CommandResult execute(CommandInvocation ci) throws IOException {
+			StringBuilder sb = new StringBuilder();
+			sb.append("Commmands List:\n");
+			for (String cmdName: ci.getCommandRegistry().getAllCommandNames()) {
+				try {
+					Class<?> cmdCls = ci.getCommandRegistry().getCommand(cmdName, null).getCommand().getClass();
+					CommandDefinition cd = cmdCls.getAnnotation(CommandDefinition.class);
+					String help = cd.description();
+					sb.append("\t" + formatLens(cmdName + ":", 15) + "\t\t" + help + "\n");
+				} catch (CommandNotFoundException e) {
+					ci.getShell().err().println("Command: " + cmdName + " is not found!");
+				}
+			}
+			ci.getShell().out().println(sb.toString());
 			return CommandResult.SUCCESS;
 		}
 		

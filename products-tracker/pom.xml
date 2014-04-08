@@ -126,6 +126,7 @@
               WEB-INF/classes/org/jboss/eap/trackers/client/*Command.class,
               WEB-INF/classes/jboss-ejb-client.properties,
               WEB-INF/classes/beans.xml,
+              WEB-INF/classes/logging.properties,
               WEB-INF/lib/jboss-*.jar,
               WEB-INF/lib/args4j-*.jar,
               WEB-INF/lib/jansi-*.jar,

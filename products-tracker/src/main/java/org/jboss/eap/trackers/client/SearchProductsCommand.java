@@ -4,28 +4,23 @@
 package org.jboss.eap.trackers.client;
 
 import java.io.IOException;
-import java.util.Hashtable;
 import java.util.List;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.aesh.cl.CommandDefinition;
 import org.jboss.aesh.cl.Option;
-import org.jboss.aesh.console.command.Command;
 import org.jboss.aesh.console.command.CommandResult;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.model.Product;
-import org.jboss.eap.trackers.model.ProductVersion;
 
 /**
  * @author lgao
  *
  */
-@CommandDefinition(name="search-product", description="Search commands")
-public class SearchProductsCommand implements Command<CommandInvocation> {
+@CommandDefinition(name="searchproduct", description="Search commands")
+public class SearchProductsCommand extends AbstractTrackerCommand {
 
 	@Option(name="prodName", shortName='p', description = "Which product")
 	private String prdName;
@@ -36,30 +31,37 @@ public class SearchProductsCommand implements Command<CommandInvocation> {
 			ProductsTracker tracker = getTracker();
 			List<Product> allPrds = tracker.loadAllProducts();
 			StringBuilder sb = new StringBuilder();
-			sb.append("Products: ");
-			for (Product prd: allPrds)
+			Product prd = null;
+			if (allPrds == null || allPrds.size() == 0)
+			{
+				sb.append("No products in data store!");
+			}
+			else
 			{
 				if (prdName != null)
 				{
-					if (prdName.equals(prd.getShortName()))
+					prd = searchProduct(allPrds, prdName);
+					if (prd == null)
 					{
-						sb.append(prd.getShortName() + " ");
-						// append versions for single product
-						sb.append("[ ");
-						for (ProductVersion pv: prd.getVersions())
-						{
-							sb.append(pv.getVersion() + " ");
-						}
-						sb.append("]");
-						break;
+						sb.append("Product: " + prdName + " is not found!");
+					}
+					else
+					{
+						// list single product
+						sb.append(productString(prd));
 					}
 				}
 				else
 				{
-					sb.append(prd.getShortName() + " ");
+					// list all products
+					for (Product p: allPrds)
+					{
+						sb.append(productString(p));
+						sb.append("\n");
+					}
 				}
 			}
-			System.out.println(sb);
+			printMessage(ci, sb.toString());
 		} catch (DataServiceException e) {
 			e.printStackTrace();
 			return CommandResult.FAILURE;
@@ -68,19 +70,6 @@ public class SearchProductsCommand implements Command<CommandInvocation> {
 			return CommandResult.FAILURE;
 		}
 		return CommandResult.SUCCESS;
-	}
-
-	static ProductsTracker getTracker() throws NamingException {
-		final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
-        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        final Context context = new InitialContext(jndiProperties);
-        final String appName = "";
-        final String moduleName = "products-tracker";
-        final String distinctName = "";
-        final String beanName = "ProductTrackerImpl";
-        final String viewClassName = ProductsTracker.class.getName();
-        final String lookUpName = "ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName;
-		return (ProductsTracker)context.lookup(lookUpName);
 	}
 
 }

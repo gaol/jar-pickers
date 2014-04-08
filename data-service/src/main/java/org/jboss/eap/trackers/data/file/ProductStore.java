@@ -96,9 +96,17 @@ class ProductStore {
 				while (reader.hasNext())
 				{
 					Product prd = gson.fromJson(reader, Product.class);
-					for (ProductVersion pv: prd.getVersions())
+					if (prd.getVersions() != null)
 					{
-						pv.setProduct(prd);
+						for (ProductVersion pv: prd.getVersions())
+						{
+							if (pv == null)
+							{
+								throw new IllegalStateException("Data Corped!!, " +
+										"please check: products.json, on " + prd.getName());
+							}
+							pv.setProduct(prd);
+						}
 					}
 					products.add(prd);
 				}
