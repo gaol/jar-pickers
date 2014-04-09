@@ -12,6 +12,7 @@ import javax.naming.NamingException;
 
 import org.jboss.aesh.console.command.Command;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
+import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
 
@@ -79,6 +80,25 @@ public abstract class AbstractTrackerCommand implements Command<CommandInvocatio
 		for (ProductVersion pv: pvs) {
 			if (pv.getVersion().equals(v)) {
 				return pv;
+			}
+		}
+		return null;
+	}
+	
+
+	protected Component searchComp(List<Component> allComps, String groupId,
+			String compName, String compVer) {
+		// TODO Auto-generated method stub
+		if (allComps == null) {
+			return null;
+		}
+		for (Component comp: allComps) {
+			if (comp.getName().equals(compName) && comp.getVersion().equals(compVer)) {
+				if (groupId != null && comp.getGroupId() != null && groupId.equals(comp.getGroupId())) {
+					return comp;
+				} else if (groupId == null && comp.getGroupId() == null) {
+					return comp;
+				}
 			}
 		}
 		return null;

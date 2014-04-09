@@ -48,7 +48,7 @@ public class AddProductCommand extends AbstractTrackerCommand {
 			Product product = searchProduct(allProducts, name);
 			if (product != null && ! update) {
 				printMessage(ci, "Product: " + name + " was added already!");
-				printMessage(ci, "\tUse --update to force update!");
+				printMessage(ci, "Use --update to force update!");
 				return CommandResult.FAILURE;
 			}
 			if (product == null) { // added only
