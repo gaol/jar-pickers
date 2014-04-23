@@ -8,6 +8,7 @@ import java.util.List;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
+import org.jboss.eap.trackers.model.ProductVersion;
 
 /**
  * 
@@ -31,4 +32,5 @@ public interface ProductsTracker {
 	List<Component> saveComponent(List<Object> objs) throws DataServiceException;
 	
 	
+	List<Component> saveComponents(ProductVersion pv, List<Component> components) throws DataServiceException;
 }

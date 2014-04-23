@@ -95,6 +95,12 @@ public class ProductsTrackerImpl implements ProductsTracker {
 		return dataService.saveComponent(pv, component);
 	}
 	
+	@Override
+	public List<Component> saveComponents(ProductVersion pv,
+			List<Component> components) throws DataServiceException {
+		return this.dataService.saveComponents(pv, components);
+	}
+	
 	
 	// =========================================================================
 	//         Following are REST only methods.

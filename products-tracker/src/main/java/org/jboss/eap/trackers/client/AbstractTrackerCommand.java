@@ -88,7 +88,6 @@ public abstract class AbstractTrackerCommand implements Command<CommandInvocatio
 
 	protected Component searchComp(List<Component> allComps, String groupId,
 			String compName, String compVer) {
-		// TODO Auto-generated method stub
 		if (allComps == null) {
 			return null;
 		}
