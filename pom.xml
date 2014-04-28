@@ -58,6 +58,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.picketbox</groupId>
+        <artifactId>picketbox</artifactId>
+        <version>4.0.20.Final</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.jboss.eap.trackers</groupId>
         <artifactId>data-service</artifactId>
         <version>${project.version}</version>

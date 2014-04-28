@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.jboss.eap.trackers.client;
+package org.jboss.eap.trackers;
 
 import java.util.List;
 

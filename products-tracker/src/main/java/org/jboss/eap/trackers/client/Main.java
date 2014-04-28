@@ -37,15 +37,35 @@ public class Main {
 	}
 
 	
-	private void run() {
-		startConsole();
+	public static Prompt getConsolePrompt() {
+		Prompt prompt = new Prompt(new TerminalString("[guest](disconnected)$ ",
+                new TerminalColor(Color.RED, Color.DEFAULT, Color.Intensity.NORMAL)));
+		if (RemoteTrackerServiceInfo.INSTANCE.getHost() != null && RemoteTrackerServiceInfo.INSTANCE.getPort() != null) {
+			// connected
+			prompt = new Prompt(new TerminalString("[guest@" + RemoteTrackerServiceInfo.INSTANCE.getHost() + ":" + RemoteTrackerServiceInfo.INSTANCE.getPort() + "]$ ",
+	                new TerminalColor(Color.GREEN, Color.DEFAULT, Color.Intensity.NORMAL)));
+			if (RemoteTrackerServiceInfo.INSTANCE.getUserName() != null) {
+				// logged
+				prompt = new Prompt(new TerminalString("[" + RemoteTrackerServiceInfo.INSTANCE.getUserName() + "@" + RemoteTrackerServiceInfo.INSTANCE.getConnectionURI() + "]$ ",
+		                new TerminalColor(Color.BLUE, Color.DEFAULT, Color.Intensity.NORMAL)));
+			}
+		}
+		return prompt;
 	}
 	
+	private void run() {
+		startConsole();
+		reloadEjb();
+	}
+	
+	private void reloadEjb() {
+		RemoteTrackerServiceInfo.INSTANCE.reload();
+	}
+
 	private void startConsole() {
 		
 		Settings settings = new SettingsBuilder().logging(true).enableMan(true).create();
-		Prompt prompt = new Prompt(new TerminalString("[client@trackers]$ ",
-                new TerminalColor(Color.GREEN, Color.DEFAULT, Color.Intensity.BRIGHT)));
+		Prompt prompt = getConsolePrompt();
 		CommandRegistryHolder holder = new CommandRegistryHolder();
 		CommandRegistry registry = new AeshCommandRegistryBuilder()
         .command(ExitCommand.class)
@@ -57,6 +77,10 @@ public class Main {
         .command(SearchComponentCommand.class)
         .command(AddComponentCommand.class)
         .command(RemoveComponentCommand.class)
+        .command(LoginCommand.class)
+        .command(LogoutCommand.class)
+        .command(ConnectCommand.class)
+        .command(DisConnectCommand.class)
         .create();
 		holder.registry = registry;
 		

@@ -2,6 +2,8 @@ package org.jboss.eap.trackers.rest;
 
 import java.util.List;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.ws.rs.Consumes;
@@ -12,7 +14,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.jboss.eap.trackers.client.ProductsTracker;
+import org.jboss.eap.trackers.ProductsTracker;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.data.DataServiceFactory;
@@ -28,6 +30,7 @@ import org.jboss.eap.trackers.model.ProductVersion;
 @Path("/products")
 @Stateless
 @Remote(ProductsTracker.class)
+@PermitAll
 public class ProductsTrackerImpl implements ProductsTracker {
 
 	private final DataService dataService = DataServiceFactory.createFileDataService();
@@ -42,6 +45,7 @@ public class ProductsTrackerImpl implements ProductsTracker {
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@RolesAllowed("admin")
 	@Override
 	public List<Product> saveProduct(Product product)
 			throws DataServiceException {
@@ -87,6 +91,7 @@ public class ProductsTrackerImpl implements ProductsTracker {
 	@Path("/component")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@RolesAllowed("admin")
 	@Override
 	public List<Component> saveComponent(List<Object> objs)
 			throws DataServiceException {
@@ -95,6 +100,7 @@ public class ProductsTrackerImpl implements ProductsTracker {
 		return dataService.saveComponent(pv, component);
 	}
 	
+	@RolesAllowed("admin")
 	@Override
 	public List<Component> saveComponents(ProductVersion pv,
 			List<Component> components) throws DataServiceException {

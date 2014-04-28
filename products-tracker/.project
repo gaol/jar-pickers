@@ -2,7 +2,9 @@
 <projectDescription>
   <name>products-tracker</name>
   <comment>A tool to track all JBoss products artifacts information. NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
-  <projects/>
+  <projects>
+    <project>data-service</project>
+  </projects>
   <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>

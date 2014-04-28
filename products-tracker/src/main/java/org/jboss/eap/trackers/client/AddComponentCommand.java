@@ -13,6 +13,7 @@ import org.jboss.aesh.cl.CommandDefinition;
 import org.jboss.aesh.cl.Option;
 import org.jboss.aesh.console.command.CommandResult;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
+import org.jboss.eap.trackers.ProductsTracker;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;

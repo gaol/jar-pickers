@@ -12,6 +12,7 @@ import javax.naming.NamingException;
 
 import org.jboss.aesh.console.command.Command;
 import org.jboss.aesh.console.command.invocation.CommandInvocation;
+import org.jboss.eap.trackers.ProductsTracker;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -113,6 +114,13 @@ public abstract class AbstractTrackerCommand implements Command<CommandInvocatio
         final String beanName = "ProductsTrackerImpl";
         final String viewClassName = ProductsTracker.class.getName();
         final String lookUpName = "ejb:" + appName + "/" + moduleName + "/" + distinctName + "/" + beanName + "!" + viewClassName;
-		return (ProductsTracker)context.lookup(lookUpName);
+        try {
+        	return (ProductsTracker)context.lookup(lookUpName);
+        } catch (NamingException e) {
+        	if (e.getMessage().indexOf("EJBCLIENT000025") != -1) {
+        		throw new NamingException("Please connect to remote server first!");
+        	}
+        	throw e;
+        }
 	}
 }

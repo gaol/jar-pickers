@@ -24,6 +24,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.picketbox</groupId>
+      <artifactId>picketbox</artifactId>
+    </dependency>
+
+    <dependency>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-ejb-client-bom</artifactId>
         <type>pom</type>
