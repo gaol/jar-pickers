@@ -5,6 +5,15 @@ package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
+
 /**
  * @author lgao
  *
@@ -13,102 +22,122 @@ import java.io.Serializable;
  * A component can be a Jar artifact, or a package like: tomcat 7.0.35, etc.
  * 
  */
-public class Component extends NameDescription implements Serializable  {
+@Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "version"})})
+public class Component implements Serializable  {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 574882341062177555L;
 
-	public Component()
-	{
-		super();
-	}
-	
-	/**
-	 * Build information about where to produce this component.
-	 */
-	private String buildInfo;
-
 	/**
 	 * Version of the component
 	 */
+	@Column
+	@NotNull(message = "Component version can't be empty.")
 	private String version;
-	
-	/**
-	 * groupId if this is a Jar artifact.
-	 * (Optional)
-	 */
-	private String groupId;
 	
 	/**
 	 * scm url for this version of the component.
 	 */
+	@Column
 	private String scm;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Queries.SEQ_NAME)
+	private Long id;
+	
+	@Column
+	@NotNull(message = "Component Name can't be empty.")
+	private String name;
+	
+	@Column
+	private String description;
+	
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
 	
 	/**
-	 * Which package does this component belongs to.
-	 * The concept 'package' here is the package in dist-git for brew system. 
+	 * @return the id
 	 */
-	private String pkg;
+	public Long getId() {
+		return id;
+	}
 
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
 	
-	public String getScm() {
-		return scm;
-	}
-
-	public void setScm(String scm) {
-		this.scm = scm;
-	}
-
-	public String getBuildInfo() {
-		return buildInfo;
-	}
-
-	public void setBuildInfo(String buildInfo) {
-		this.buildInfo = buildInfo;
-	}
-
+	/**
+	 * @return the version
+	 */
 	public String getVersion() {
 		return version;
 	}
 
+	/**
+	 * @param version the version to set
+	 */
 	public void setVersion(String version) {
 		this.version = version;
 	}
 
-	public String getGroupId() {
-		return groupId;
+	/**
+	 * @return the scm
+	 */
+	public String getScm() {
+		return scm;
 	}
 
-	public void setGroupId(String groupId) {
-		this.groupId = groupId;
+	/**
+	 * @param scm the scm to set
+	 */
+	public void setScm(String scm) {
+		this.scm = scm;
 	}
 
-	public String getPkg() {
-		return pkg;
-	}
-
-	public void setPkg(String pkg) {
-		this.pkg = pkg;
-	}
-
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
-		return "Component [name =" + getName() + ", version=" + version
-				+ ", groupId=" + groupId + ", pkg=" + pkg + "]";
+		return "Component [version=" + version + ", scm=" + scm + "]";
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((scm == null) ? 0 : scm.hashCode());
 		result = prime * result + ((version == null) ? 0 : version.hashCode());
-		result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -118,15 +147,15 @@ public class Component extends NameDescription implements Serializable  {
 		if (getClass() != obj.getClass())
 			return false;
 		Component other = (Component) obj;
-		if (groupId == null) {
-			if (other.groupId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!groupId.equals(other.groupId))
+		} else if (!id.equals(other.id))
 			return false;
-		if (getName() == null) {
-			if (other.getName() != null)
+		if (scm == null) {
+			if (other.scm != null)
 				return false;
-		} else if (!getName().equals(other.getName()))
+		} else if (!scm.equals(other.scm))
 			return false;
 		if (version == null) {
 			if (other.version != null)

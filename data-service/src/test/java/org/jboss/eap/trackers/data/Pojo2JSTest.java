@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.jboss.eap.trackers.data.file;
+package org.jboss.eap.trackers.data;
 
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
@@ -28,9 +28,9 @@ public class Pojo2JSTest {
 		
 		System.out.println(js);
 		
-		String expected = "function Product(){}Product.prototype={fullName:'',versions:'',name:'',description:'',}\n" +
-				"function ProductVersion(){}ProductVersion.prototype={product:'',version:'',note:'',}\n" +
-				"function Component(){}Component.prototype={buildInfo:'',version:'',groupId:'',scm:'',pkg:'',name:'',description:'',}\n";
+		String expected = "function Product(){}Product.prototype={id:'',fullName:'',name:'',description:'',versions:'',}\n" +
+				"function ProductVersion(){}ProductVersion.prototype={product:'',version:'',id:'',note:'',}\n" +
+				"function Component(){}Component.prototype={version:'',scm:'',id:'',name:'',description:'',}\n";
 		
 		Assert.assertEquals(expected, js);
 	}

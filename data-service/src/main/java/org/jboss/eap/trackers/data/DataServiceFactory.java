@@ -3,7 +3,7 @@
  */
 package org.jboss.eap.trackers.data;
 
-import org.jboss.eap.trackers.data.file.FileBasedDataService;
+import org.jboss.eap.trackers.data.db.DBDataService;
 
 /**
  * @author lgao
@@ -16,12 +16,12 @@ public final class DataServiceFactory {
 	private DataServiceFactory() {}
 	
 	/**
-	 * Creates DataService instance.
+	 * Creates Database based DataService instance.
 	 * 
 	 */
-	public static DataService createFileDataService()
+	public static DataService createDBDataService()
 	{
-		return FileBasedDataService.instance();
+		return new DBDataService();
 	}
 
 }

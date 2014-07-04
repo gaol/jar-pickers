@@ -3,12 +3,27 @@
  */
 package org.jboss.eap.trackers.model;
 
+import java.io.Serializable;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
+
 /**
  * @author lgao
  *
  * This represents a product version
  */
-public class ProductVersion extends Noteable {
+@Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "version"})})
+public class ProductVersion implements Serializable {
 
 	/**
 	 * 
@@ -20,6 +35,7 @@ public class ProductVersion extends Noteable {
 		super();
 	}
 	
+	@ManyToOne(fetch = FetchType.EAGER)
 	private Product product;
 	
 	/**
@@ -28,7 +44,40 @@ public class ProductVersion extends Noteable {
 	 * It also contains the milestone string here.
 	 * like: 6.2.1.ER2
 	 */
+	@Column
+	@NotNull(message = "Product version can't be empty.")
 	private String version;
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Queries.SEQ_NAME)
+	private Long id;
+	
+	@Column
+	private String note;
+	
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public Product getProduct() {
 		return product;

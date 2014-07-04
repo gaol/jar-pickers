@@ -3,14 +3,29 @@
  */
 package org.jboss.eap.trackers.model;
 
+import java.io.Serializable;
 import java.util.List;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author lgao
  *
  * This represents a Product.
  */
-public class Product extends NameDescription {
+@Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+public class Product implements Serializable {
 
 	/**
 	 * 
@@ -22,15 +37,54 @@ public class Product extends NameDescription {
 		super();
 	}
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Queries.SEQ_NAME)
+	private Long id;
+	
 	/**
 	 * Full name of the product, like: JBoss Enterprise Application Platform
 	 */
+	@Column
 	private String fullName;
 	
+	@Column
+	@NotNull(message = "Product Name can't be empty.")
+	private String name;
+	
+	@Column
+	private String description;
+	
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
 	/**
-	 * Product Versions of this product.
+	 * @return the id
 	 */
-	private List<ProductVersion> versions;
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 
 	public String getFullName() {
 		return fullName;
@@ -40,10 +94,11 @@ public class Product extends NameDescription {
 		this.fullName = fullName;
 	}
 	
-	public String getShortName()
-	{
-		return super.getName();
-	}
+	/**
+	 * Product Versions of this product.
+	 */
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "product", cascade = {CascadeType.ALL})
+	private List<ProductVersion> versions;
 	
 	public List<ProductVersion> getVersions() {
 		return versions;
@@ -62,8 +117,8 @@ public class Product extends NameDescription {
 
 	@Override
 	public String toString() {
-		return "Product [fullName=" + fullName + ", shortName="
-				+ getShortName() + "]";
+		return "Product [fullName=" + fullName + ", name="
+				+ getName() + "]";
 	}
 
 	@Override
@@ -98,7 +153,5 @@ public class Product extends NameDescription {
 			return false;
 		return true;
 	}
-	
-	
 
 }
