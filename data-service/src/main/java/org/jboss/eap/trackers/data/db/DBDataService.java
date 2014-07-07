@@ -16,7 +16,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.model.Component;
@@ -57,12 +56,9 @@ public class DBDataService implements DataService {
 	@Override
 	public List<Product> removeProduct(String productName)
 			throws DataServiceException {
-		if (productName == null) {
-			throw new IllegalArgumentException("Product Name should be provided."); 
-		}
-		int result = em.createNamedQuery(Queries.DELETE_PROUDCT_BY_NAME).setParameter("name", productName).executeUpdate();
-		if (result != 1) {
-			logger.warn("No proudct be deleted using name: " + productName);
+		Product prod = getProductByName(productName);
+		if (prod != null) {
+			em.remove(prod);
 		}
 		return loadAllProducts();
 	}
@@ -70,21 +66,21 @@ public class DBDataService implements DataService {
 	@Override
 	public void removeProductVersion(String productName, String version)
 			throws DataServiceException {
-		Product prod = getProductByName(productName);
-		if (prod == null) {
-			throw new DataServiceException("Unknown Product name: " + productName);
+		ProductVersion pv = getProductVersion(productName, version);
+		if (pv == null) {
+			throw new DataServiceException("Unkown product version: " + productName + ":" + version);
 		}
-		if (version == null) {
-			throw new IllegalArgumentException("Version can't be empty.");
+		this.em.remove(pv);
+	}
+	
+	public ProductVersion getProductVersion(String productName, String version) throws DataServiceException {
+		if (productName == null || version == null) {
+			throw new IllegalArgumentException("Both productName and version can't be null.");
 		}
-		int result = em.createNamedQuery(Queries.DELETE_PROUDCT_VERSION_BY_NAME_VER)
-				.setParameter("name", productName)
-				.setParameter("version", version)
-				.executeUpdate();
-		if (result != 1) {
-			logger.warn("No proudct version be deleted using name: " + productName + ""
-					+ " and version: " + version);
-		}
+		return em.createNamedQuery(Queries.QUERY_LOAD_PROD_VER_BY_NAME_VER, ProductVersion.class)
+			.setParameter("name", productName)
+			.setParameter("version", version)
+			.getSingleResult();
 	}
 	
 	@Override
@@ -94,6 +90,23 @@ public class DBDataService implements DataService {
 		}
 		return this.em.createNamedQuery(Queries.QUERY_LOAD_PRODUCT_BY_NAME, Product.class).
 				setParameter("name", name).getSingleResult();
+	}
+	
+	@Override
+	public List<String> getVersions(String productName)
+			throws DataServiceException {
+		Product prod = getProductByName(productName);
+		if (prod == null) {
+			throw new DataServiceException("No product found with name: " + productName);
+		}
+		List<ProductVersion> pvs = prod.getVersions();
+		List<String> versions = new ArrayList<String>();
+		if (pvs != null) {
+			for (ProductVersion pv: pvs) {
+				versions.add(pv.getVersion());
+			}
+		}
+		return versions;
 	}
 
 	@Override
@@ -117,6 +130,7 @@ public class DBDataService implements DataService {
 			if (pvs.contains(pv)) {
 				throw new DataServiceException("Version: " + version + " has already in product: " + productName);
 			}
+			this.em.persist(pv);
 			pvs.add(pv);
 		}
 		prod.setVersions(pvs);

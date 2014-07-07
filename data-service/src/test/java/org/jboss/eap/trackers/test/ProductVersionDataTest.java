@@ -1,6 +1,8 @@
 package org.jboss.eap.trackers.test;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.inject.Inject;
@@ -8,6 +10,7 @@ import javax.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.eap.trackers.data.DataService;
+import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.data.db.DBDataService;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -23,8 +26,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+/**
+ * Test on Product and ProductVersion
+ * 
+ * @author lgao
+ *
+ */
 @RunWith(Arquillian.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@FixMethodOrder(MethodSorters.DEFAULT)
 public class ProductVersionDataTest {
 	
    @Deployment
@@ -147,8 +156,14 @@ public class ProductVersionDataTest {
 	   Assert.assertEquals("Test-Full-Name", prodDB.getFullName());
 	   Assert.assertEquals("Desc", prodDB.getDescription());
 	   
+	   // add some versions for FK check
+	   Set<String> verSet = new HashSet<String>();
+	   verSet.add("2.2.0");
+	   verSet.add("2.3.0");
+	   dataService.addProductVersions("New-Prod", verSet);
+	   
 	   // remove the new product
-	   dataService.removeProduct("New-Prod");
+	   dataService.removeProduct("New-Prod"); // this should delete all versions together
 	   prods = dataService.loadAllProducts();
 	   Assert.assertEquals(3, prods.size());
 	   
@@ -162,6 +177,65 @@ public class ProductVersionDataTest {
 	   Product newPrd = dataService.getProductByName(newName);
 	   Assert.assertNotNull(newPrd);
 	   Assert.assertEquals(id, newPrd.getId());
+	   
+	   // change it back
+	   newPrd.setName("EAP");
+	   dataService.saveProduct(newPrd);
+   }
+   
+   @Test
+   public void testUpdateProductVersion() throws Exception {
+	   Product prod = dataService.getProductByName("EWS");
+	   Assert.assertNotNull(prod);
+	   // 2.0.1 and 2.1.0
+	   List<String> ewsVersions = dataService.getVersions("EWS");
+	   Assert.assertNotNull(ewsVersions);
+	   Assert.assertEquals(2, ewsVersions.size());
+	   Assert.assertTrue(ewsVersions.contains("2.0.1"));
+	   Assert.assertTrue(ewsVersions.contains("2.1.0"));
+	   
+	   // add new versions
+	   Set<String> verSet = new HashSet<String>();
+	   verSet.add("2.2.0");
+	   verSet.add("2.3.0");
+	   dataService.addProductVersions("EWS", verSet);
+	   
+	   ewsVersions = dataService.getVersions("EWS");
+	   Assert.assertNotNull(ewsVersions);
+	   Assert.assertEquals(4, ewsVersions.size());
+	   Assert.assertTrue(ewsVersions.contains("2.0.1"));
+	   Assert.assertTrue(ewsVersions.contains("2.1.0"));
+	   Assert.assertTrue(ewsVersions.contains("2.2.0"));
+	   Assert.assertTrue(ewsVersions.contains("2.3.0"));
+	   
+	   // remove 2.2.0
+	   dataService.removeProductVersion("EWS", "2.2.0");
+	   ewsVersions = dataService.getVersions("EWS");
+	   Assert.assertNotNull(ewsVersions);
+	   Assert.assertEquals(3, ewsVersions.size());
+	   Assert.assertTrue(ewsVersions.contains("2.0.1"));
+	   Assert.assertTrue(ewsVersions.contains("2.1.0"));
+	   Assert.assertTrue(ewsVersions.contains("2.3.0"));
+	   
+	   // add already existed versions
+	   verSet = new HashSet<String>();
+	   verSet.add("2.2.0");
+	   verSet.add("2.1.0"); // this one exited already
+	   
+	   try
+	   {
+		   dataService.addProductVersions("EWS", verSet);
+		   Assert.fail("Can't access here.");
+	   } catch (DataServiceException e) {
+		   Assert.assertEquals("Version: 2.1.0 has already in product: EWS", e.getMessage());
+		   ewsVersions = dataService.getVersions("EWS");
+		   Assert.assertNotNull(ewsVersions);
+		   Assert.assertEquals(3, ewsVersions.size());
+		   Assert.assertTrue(ewsVersions.contains("2.0.1"));
+		   Assert.assertTrue(ewsVersions.contains("2.1.0"));
+		   Assert.assertTrue(ewsVersions.contains("2.3.0"));
+	   }
+	   
    }
    
 }

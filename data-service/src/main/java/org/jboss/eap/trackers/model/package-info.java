@@ -5,9 +5,8 @@
 	@NamedQuery(name = Queries.QUERY_LOAD_PRODUCTS_NAME, query = Queries._QUERY_LOAD_PRODUCTS_NAME),
 	@NamedQuery(name = Queries.QUERY_LOAD_PRODUCT_BY_NAME, query = Queries._QUERY_LOAD_PRODUCT_BY_NAME),
 	@NamedQuery(name = Queries.QUERY_LOAD_COMPS_BY_NAME_VER, query = Queries._QUERY_LOAD_COMPS_BY_NAME_VER),
+	@NamedQuery(name = Queries.QUERY_LOAD_PROD_VER_BY_NAME_VER, query = Queries._QUERY_LOAD_PROD_VER_BY_NAME_VER),
 	
-	@NamedQuery(name = Queries.DELETE_PROUDCT_BY_NAME, query = Queries._DELETE_PROUDCT_BY_NAME),
-	@NamedQuery(name = Queries.DELETE_PROUDCT_VERSION_BY_NAME_VER, query = Queries._DELETE_PROUDCT_VERSION_BY_NAME_VER),
 	})
 
 package org.jboss.eap.trackers.model;

@@ -3,11 +3,13 @@
  */
 package org.jboss.eap.trackers.data;
 
+import java.io.Serializable;
+
 /**
  * @author lgao
  *
  */
-public class DataServiceException extends Exception {
+public class DataServiceException extends Exception implements Serializable {
 
 	/**
 	 * 

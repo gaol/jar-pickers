@@ -97,7 +97,7 @@ public class Product implements Serializable {
 	/**
 	 * Product Versions of this product.
 	 */
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "product", cascade = {CascadeType.ALL})
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "product", cascade = {CascadeType.REMOVE})
 	private List<ProductVersion> versions;
 	
 	public List<ProductVersion> getVersions() {

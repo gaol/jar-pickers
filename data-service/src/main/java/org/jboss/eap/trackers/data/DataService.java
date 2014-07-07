@@ -46,6 +46,11 @@ public interface DataService {
 	public Product getProductByName(String name) throws DataServiceException;
 	
 	/**
+	 * Gets versions list by product name
+	 */
+	public List<String> getVersions(String productName) throws DataServiceException;
+	
+	/**
 	 * Removes a ProductVersion out of the Product.
 	 * 
 	 */
