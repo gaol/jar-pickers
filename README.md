@@ -18,3 +18,19 @@ Trackers project aims to track all information of EAP and layered products like:
       * Which jars does a specfic CVE affect
       * In which jar version does this CVE is fixed
 
+Test
+=====
+Run:
+
+>> mvn -Parq-jbossas-managed clean test
+
+>> NOTE: it needs you set up $jbossHome environment, '/softwares/eap6/fortest' is used by default.
+
+Build
+=====
+
+Run:
+
+>> mvn -Dmaven.test.skip=true clean install
+
+
