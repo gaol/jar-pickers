@@ -30,8 +30,27 @@ public interface Queries {
 	String _QUERY_LOAD_COMPS_BY_NAME_VER = "SELECT p FROM Product p WHERE p.name = :name";
 	
 	
-	/////////////////////////////////////////////////
-	/////    Below are Update Queries ///////////////
-	////////////////////////////////////////////////
+	/** load artifacts by groupid, artifactid and version **/
+	String QUERY_LOAD_ARTIFACTS = "artifacts.loadArtifacts";
+	String _QUERY_LOAD_ARTIFACTS = "SELECT a FROM Artifact a"
+			+ " WHERE a.groupId = :groupId"
+			+ " AND a.artifactId = :artifactId"
+			+ " AND a.version = :version";
+	
+	/** load components by name and version **/
+	String QUERY_LOAD_COMP_BY_NAME_AND_VER = "components.loadCompsByNameAndVer";
+	String _QUERY_LOAD_COMP_BY_NAME_AND_VER = "SELECT c FROM Component c WHERE c.name = :name AND c.version = :version";
+	
+	/** load components by artifacts information **/
+	String QUERY_LOAD_COMP_BY_ARTIFACT = "components.loadCompsByArtifactInfo";
+	String _QUERY_LOAD_COMP_BY_ARTIFACT = "SELECT c FROM Component c WHERE c.name = :name AND c.version = :version";
+	
+	/** load artifacts by product name and version **/
+	String QUERY_LOAD_ARTIFACTS_BY_PV = "artifacts.loadArtifactsByPV";
+	String _QUERY_LOAD_ARTIFACTS_BY_PV = "SELECT a FROM Artifact a"
+			+ " INNER JOIN a.pvs pv"
+			+ " INNER JOIN pv.product p"
+			+ " WHERE p.name = :name"
+			+ " AND pv.version = :version";
 	
 }

@@ -3,6 +3,7 @@
  */
 package org.jboss.eap.trackers.data;
 
+import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -23,14 +24,14 @@ public class Pojo2JSTest {
 		pojo2js.addClass(Product.class);
 		pojo2js.addClass(ProductVersion.class);
 		pojo2js.addClass(Component.class);
+		pojo2js.addClass(Artifact.class);
 		
 		String js = pojo2js.toJS();
 		
-		System.out.println(js);
-		
 		String expected = "function Product(){}Product.prototype={id:'',fullName:'',name:'',description:'',versions:'',}\n" +
-				"function ProductVersion(){}ProductVersion.prototype={product:'',version:'',id:'',note:'',}\n" +
-				"function Component(){}Component.prototype={version:'',scm:'',id:'',name:'',description:'',}\n";
+				"function ProductVersion(){}ProductVersion.prototype={product:'',version:'',id:'',note:'',artifacts:'',}\n" +
+				"function Component(){}Component.prototype={version:'',scm:'',id:'',name:'',description:'',}\n" +
+				"function Artifact(){}Artifact.prototype={buildInfo:'',version:'',groupId:'',artifactId:'',type:'',component:'',id:'',note:'',pvs:'',}\n";
 		
 		Assert.assertEquals(expected, js);
 	}

@@ -4,13 +4,16 @@
 package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -55,6 +58,22 @@ public class ProductVersion implements Serializable {
 	@Column
 	private String note;
 	
+	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	private List<Artifact> artifacts;
+
+	/**
+	 * @return the artifacts
+	 */
+	public List<Artifact> getArtifacts() {
+		return artifacts;
+	}
+
+	/**
+	 * @param artifacts the artifacts to set
+	 */
+	public void setArtifacts(List<Artifact> artifacts) {
+		this.artifacts = artifacts;
+	}
 
 	public String getNote() {
 		return note;

@@ -121,17 +121,20 @@ public class Product implements Serializable {
 				+ getName() + "]";
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((fullName == null) ? 0 : fullName.hashCode());
-		result = prime * result
-				+ ((getName() == null) ? 0 : getName().hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -141,15 +144,10 @@ public class Product implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Product other = (Product) obj;
-		if (fullName == null) {
-			if (other.fullName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!fullName.equals(other.fullName))
-			return false;
-		if (getName() == null) {
-			if (other.getName() != null)
-				return false;
-		} else if (!getName().equals(other.getName()))
+		} else if (!name.equals(other.name))
 			return false;
 		return true;
 	}

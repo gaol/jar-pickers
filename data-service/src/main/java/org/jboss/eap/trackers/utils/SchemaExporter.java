@@ -25,6 +25,7 @@ public class SchemaExporter {
         cfg.addAnnotatedClass(ProductVersion.class);
         cfg.addAnnotatedClass(Component.class);
         cfg.addAnnotatedClass(Artifact.class);
+        cfg.addURL(Artifact.class.getClassLoader().getResource("META-INF/orm.xml"));
         
         SchemaExport exporter = new SchemaExport(cfg);
         exporter.setFormat(true);

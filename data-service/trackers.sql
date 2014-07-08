@@ -1,9 +1,15 @@
 
     alter table Artifact 
-        drop constraint FKBA9C69F29BC9089D;
+        drop constraint FK_f6mejfa67masq4an2vaffx8fm;
 
     alter table ProductVersion 
-        drop constraint FKD1421909276FD01D;
+        drop constraint FK_hrp5ti9rpa4n243w1yw9ycuxm;
+
+    alter table ProductVersion_Artifact 
+        drop constraint FK_p5k511n6hj1uwqjqhkoh1x2jp;
+
+    alter table ProductVersion_Artifact 
+        drop constraint FK_k8w3ldfo4ryxde05s0q5uw7ah;
 
     drop table if exists Artifact cascade;
 
@@ -13,6 +19,8 @@
 
     drop table if exists ProductVersion cascade;
 
+    drop table if exists ProductVersion_Artifact cascade;
+
     drop sequence hibernate_sequence;
 
     create table Artifact (
@@ -21,6 +29,7 @@
         buildInfo varchar(255),
         groupId varchar(255),
         note varchar(255),
+        type  varchar DEFAULT jar,
         version varchar(255),
         component_id int8,
         primary key (id)
@@ -51,14 +60,41 @@
         primary key (id)
     );
 
+    create table ProductVersion_Artifact (
+        pvs_id int8 not null,
+        artifacts_id int8 not null
+    );
+
     alter table Artifact 
-        add constraint FKBA9C69F29BC9089D 
+        add constraint UK_gysit1otv61ud70f81oqw1obf unique (groupId, artifactId, version);
+
+    alter table Component 
+        add constraint UK_ke0n78ll6pncf9xtqw2bt2i0t unique (name, version);
+
+    alter table Product 
+        add constraint UK_gxubutkbk5o2a6aakbe7q9kww unique (name);
+
+    alter table ProductVersion 
+        add constraint UK_k4scqst1t4ju2fxah7f3h6y40 unique (product_id, version);
+
+    alter table Artifact 
+        add constraint FK_f6mejfa67masq4an2vaffx8fm 
         foreign key (component_id) 
         references Component;
 
     alter table ProductVersion 
-        add constraint FKD1421909276FD01D 
+        add constraint FK_hrp5ti9rpa4n243w1yw9ycuxm 
         foreign key (product_id) 
         references Product;
+
+    alter table ProductVersion_Artifact 
+        add constraint FK_p5k511n6hj1uwqjqhkoh1x2jp 
+        foreign key (artifacts_id) 
+        references Artifact;
+
+    alter table ProductVersion_Artifact 
+        add constraint FK_k8w3ldfo4ryxde05s0q5uw7ah 
+        foreign key (pvs_id) 
+        references ProductVersion;
 
     create sequence hibernate_sequence;

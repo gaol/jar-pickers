@@ -3,14 +3,15 @@
  */
 package org.jboss.eap.trackers.data;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
 import javax.ejb.Remote;
 
+import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
-import org.jboss.eap.trackers.model.ProductVersion;
 
 /**
  * @author lgao
@@ -19,6 +20,10 @@ import org.jboss.eap.trackers.model.ProductVersion;
  */
 @Remote
 public interface DataService {
+	
+	String ARTI_STR_REGEX = "^[^\n|^:]+:[^\n|^:]+:[^\n|^:]+[^\n]*";
+	
+	String DEFAULT_ARTIFACT_TYPE = "jar";
 
 	/**
 	 * Loads all Product information including all ProductVersion information.
@@ -29,13 +34,17 @@ public interface DataService {
 	/**
 	 * Create or Update a Product and associated the ProductVersion List.
 	 * 
-	 * Client code must provide full information of the product, including all product version list,
-	 * otherwise, the data will be lost.
+	 * Client code must provide full information of the product.
+	 * 
+	 * Versions list won't be affected during create/update.
+	 * 
 	 */
 	List<Product> saveProduct(Product product) throws DataServiceException;
 	
 	/**
 	 * Removes the product from the data store.
+	 * 
+	 * All versions will be deleted also.
 	 * 
 	 */
 	List<Product> removeProduct(String productName) throws DataServiceException;
@@ -63,22 +72,83 @@ public interface DataService {
 	void addProductVersions(String productName, Set<String> versions) throws DataServiceException;
 	
 	/**
-	 * Loads all components information of the ProductVersion object.
+	 * Loads all artifacts from a product version
 	 */
-	List<Component> loadComponents(ProductVersion pv) throws DataServiceException;
+	List<Artifact> loadArtifacts(String productName, String version) throws DataServiceException;
 	
 	/**
-	 * Loads all components information of the ProductVersion object.
+	 * Adds an Artifact to a product version
 	 */
-	List<Component> loadComponents(String productName, String version) throws DataServiceException;
+	void addArtifact(String productName, String version, String groupId, String artifactId, String artiVersion) throws DataServiceException;
 	
 	/**
-	 * Create or Update Components and associated it to the ProductVersion.
+	 * Updates build information to the artifact.
+	 * 
+	 * @param groupId can't be null
+	 * @param artifactId if it is null, then update all artifacts of under groupId. 
+	 * @param artiVersion can't be null. a build information can only apply for one version
+	 * @param buildInfo which build produces this artifact.
+	 * @throws DataServiceException
 	 */
-	List<Component> saveComponents(ProductVersion pv, List<Component> components) throws DataServiceException;
+	void updateArtifactBuildInfo(String groupId, String artifactId, String artiVersion, String buildInfo) throws DataServiceException;
 	
 	/**
-	 * Create or Update a single Component and associated it to the ProductVersion.
+	 * Updates component information of an Artifact
+	 * 
+	 * @param groupId can't be null
+	 * @param artifactId if null, all artifacts in that groupId:version will relate to the proposed Component
+	 * @param artiVersion can't be null
+	 * @param compName can't be null
+	 * @param compVer can't be null
+	 * @throws DataServiceException
 	 */
-	List<Component> saveComponent(ProductVersion pv, Component component) throws DataServiceException;
+	void updateArtifactComponent(String groupId, String artifactId, String artiVersion, String compName, String compVer) throws DataServiceException;
+	
+	/**
+	 * Removes Artifacts from product version.
+	 * 
+	 * @param productName the product name
+	 * @param version which version the product is
+	 * @param groupId the groupId of the artifact to be deleted. Not-Null
+	 * @param artifactId the artifactId of the artifact to be deleted, if null, all artifacts in groupId will be deleted.
+	 * @param artiVersion the version of the artifacts, Not-null
+	 * @throws DataServiceException
+	 */
+	void removeArtifacts(String productName, String version, String groupId, String artifactId, String artiVersion) throws DataServiceException;
+	
+	/**
+	 * Imports artifacts list from a stream to a product version 
+	 */
+	void importArtifacts(String productName, String version, URL artifactListURL) throws DataServiceException;
+	
+	/**
+	 * Gets the Artifact by groupId, artifactId and version.
+	 */
+	Artifact getArtifact(String groupId, String artifactId, String version) throws DataServiceException;
+	
+	/**
+	 * Gets Component by name and version
+	 */
+	Component getComponent(String name, String version) throws DataServiceException;
+	
+	/**
+	 * Guess the Component of the Artifact.
+	 */
+	Component guessComponent(String groupId, String artifactId,
+			String artiVersion) throws DataServiceException;
+	
+	/**
+	 * Create/Update Component
+	 */
+	void saveComponent(Component comp) throws DataServiceException;
+	
+	/**
+	 * Updates note field if any.
+	 * 
+	 * @param id the identifier
+	 * @param type can be: <b>ProductVersion</b> | <b>Artifact</b>
+	 * @param note the note information to be updated
+	 * @throws DataServiceException if type is not ProductVersion | Artifact
+	 */
+	void updateNote(Long id, String type, String note) throws DataServiceException;
 }

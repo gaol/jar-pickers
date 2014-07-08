@@ -4,6 +4,7 @@
 package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -58,10 +60,13 @@ public class Artifact implements Serializable {
 	@NotNull(message = "ArtifactId can't be empty.")
 	private String artifactId;
 	
+	@Column(columnDefinition = " varchar(10) DEFAULT 'jar'")
+	private String type;
+	
 	/**
 	 * An Artifact belongs to a Component
 	 */
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.EAGER, optional = true)
 	private Component component;
 
 	@Id
@@ -70,6 +75,37 @@ public class Artifact implements Serializable {
 	
 	@Column
 	private String note;
+	
+	@ManyToMany(mappedBy = "artifacts", fetch = FetchType.LAZY)
+	private List<ProductVersion> pvs;
+	
+	/**
+	 * @return the pvs
+	 */
+	public List<ProductVersion> getPvs() {
+		return pvs;
+	}
+
+	/**
+	 * @param pvs the pvs to set
+	 */
+	public void setPvs(List<ProductVersion> pvs) {
+		this.pvs = pvs;
+	}
+
+	/**
+	 * @return the type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
+	}
 
 	public String getNote() {
 		return note;
@@ -165,20 +201,24 @@ public class Artifact implements Serializable {
 	}
 
 	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Artifact [version=" + version + ", groupId=" + groupId
+				+ ", artifactId=" + artifactId + "]";
+	}
+
+	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
+		int result = 1;
 		result = prime * result
 				+ ((artifactId == null) ? 0 : artifactId.hashCode());
-		result = prime * result
-				+ ((buildInfo == null) ? 0 : buildInfo.hashCode());
-		result = prime * result
-				+ ((component == null) ? 0 : component.hashCode());
 		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((version == null) ? 0 : version.hashCode());
 		return result;
 	}
@@ -190,7 +230,7 @@ public class Artifact implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -200,25 +240,10 @@ public class Artifact implements Serializable {
 				return false;
 		} else if (!artifactId.equals(other.artifactId))
 			return false;
-		if (buildInfo == null) {
-			if (other.buildInfo != null)
-				return false;
-		} else if (!buildInfo.equals(other.buildInfo))
-			return false;
-		if (component == null) {
-			if (other.component != null)
-				return false;
-		} else if (!component.equals(other.component))
-			return false;
 		if (groupId == null) {
 			if (other.groupId != null)
 				return false;
 		} else if (!groupId.equals(other.groupId))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (version == null) {
 			if (other.version != null)
@@ -227,5 +252,5 @@ public class Artifact implements Serializable {
 			return false;
 		return true;
 	}
-	
+
 }
