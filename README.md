@@ -22,15 +22,15 @@ Test
 =====
 Run:
 
->> mvn -Parq-jbossas-managed clean test
+> mvn -Parq-jbossas-managed clean test
 
->> NOTE: it needs you set up $jbossHome environment, '/softwares/eap6/fortest' is used by default.
+> NOTE: it needs you set up $jbossHome environment, `/softwares/eap6/fortest` is used by default.
 
 Build
 =====
 
 Run:
 
->> mvn -Dmaven.test.skip=true clean install
+> mvn clean install
 
 
