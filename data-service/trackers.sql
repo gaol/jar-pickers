@@ -1,3 +1,4 @@
+-- DDL for Postgresql server
 
     alter table Artifact 
         drop constraint FK_f6mejfa67masq4an2vaffx8fm;
@@ -29,7 +30,7 @@
         buildInfo varchar(255),
         groupId varchar(255),
         note varchar(255),
-        type  varchar DEFAULT jar,
+        type  varchar(10) DEFAULT 'jar',
         version varchar(255),
         component_id int8,
         primary key (id)
@@ -97,4 +98,5 @@
         foreign key (pvs_id) 
         references ProductVersion;
 
-    create sequence hibernate_sequence;
+    create sequence hibernate_sequence minvalue 100;
+    create sequence trackerseq minvalue 100;
