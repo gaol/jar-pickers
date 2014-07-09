@@ -20,6 +20,9 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * @author lgao
@@ -86,7 +89,8 @@ public class Artifact implements Serializable {
 	/**
 	 * @return the pvs
 	 */
-	@XmlElementRef
+	@XmlTransient
+	@JsonIgnore
 	public List<ProductVersion> getPvs() {
 		return pvs;
 	}

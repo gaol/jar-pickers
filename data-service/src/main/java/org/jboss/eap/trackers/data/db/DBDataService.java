@@ -26,7 +26,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.hibernate.Session;
 import org.jboss.eap.trackers.data.DataService;
@@ -85,15 +84,9 @@ public class DBDataService implements DataService {
 	}
 
 	@Override
-	public void removeProductVersion(@PathParam("productName") String productName, 
-			@PathParam("version") String version)
-			throws DataServiceException {
-		removeProductVersionRest(productName, version);
-	}
-	
 	@DELETE
 	@Path("/pv/{productName}:{version}")
-	private Response removeProductVersionRest(@PathParam("productName") String productName, 
+	public void removeProductVersion(@PathParam("productName") String productName, 
 			@PathParam("version") String version)
 			throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
@@ -101,7 +94,6 @@ public class DBDataService implements DataService {
 			throw new DataServiceException("Unkown product version: " + productName + ":" + version);
 		}
 		this.em.remove(pv);
-		return Response.ok().build();
 	}
 	
 	@GET
@@ -214,8 +206,6 @@ public class DBDataService implements DataService {
 		addArtifact(productName, version, groupId, artifactId, artiVersion, DEFAULT_ARTIFACT_TYPE);
 	}
 	
-	@PUT
-	@Path("/a/{productName}:{version}/{groupId}:{artifactId}:{artiVersion}:{type}")
 	private void addArtifact(@PathParam("productName") String productName, @PathParam("version") String version,
 			@PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, 
 			@PathParam("artiVersion") String artiVersion, @PathParam("type") String type) throws DataServiceException {

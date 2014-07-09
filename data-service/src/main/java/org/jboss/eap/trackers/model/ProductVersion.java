@@ -19,9 +19,10 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * @author lgao
@@ -69,7 +70,8 @@ public class ProductVersion implements Serializable {
 	/**
 	 * @return the artifacts
 	 */
-	@XmlElementRef
+	@XmlTransient
+	@JsonIgnore
 	public List<Artifact> getArtifacts() {
 		return artifacts;
 	}
@@ -106,7 +108,7 @@ public class ProductVersion implements Serializable {
 	}
 
 	@XmlTransient
-//	@jsonig
+	@JsonIgnore
 	public Product getProduct() {
 		return product;
 	}
