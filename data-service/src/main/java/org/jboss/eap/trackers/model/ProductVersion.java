@@ -18,6 +18,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * @author lgao
@@ -26,6 +30,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "version"})})
+@XmlRootElement
 public class ProductVersion implements Serializable {
 
 	/**
@@ -64,6 +69,7 @@ public class ProductVersion implements Serializable {
 	/**
 	 * @return the artifacts
 	 */
+	@XmlElementRef
 	public List<Artifact> getArtifacts() {
 		return artifacts;
 	}
@@ -87,6 +93,7 @@ public class ProductVersion implements Serializable {
 	/**
 	 * @return the id
 	 */
+	@XmlAttribute
 	public Long getId() {
 		return id;
 	}
@@ -98,6 +105,8 @@ public class ProductVersion implements Serializable {
 		this.id = id;
 	}
 
+	@XmlTransient
+//	@jsonig
 	public Product getProduct() {
 		return product;
 	}

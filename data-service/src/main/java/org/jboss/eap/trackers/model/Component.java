@@ -13,6 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * @author lgao
@@ -24,6 +26,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "version"})})
+@XmlRootElement
 public class Component implements Serializable  {
 
 	/**
@@ -75,6 +78,7 @@ public class Component implements Serializable  {
 	/**
 	 * @return the id
 	 */
+	@XmlAttribute
 	public Long getId() {
 		return id;
 	}

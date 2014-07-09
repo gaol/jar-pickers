@@ -17,10 +17,16 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.hibernate.Session;
 import org.jboss.eap.trackers.data.DataService;
@@ -37,7 +43,7 @@ import org.jboss.logging.Logger;
  *
  */
 @Stateless
-@Path("/data/")
+@Path("/")
 public class DBDataService implements DataService {
 
 	@Inject
@@ -53,6 +59,10 @@ public class DBDataService implements DataService {
 		return em.createNamedQuery(Queries.QUERY_LOAD_PRODUCTS_NAME, Product.class).getResultList();
 	}
 
+	@POST
+	@Path("/p")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Override
 	public List<Product> saveProduct(Product product)
 			throws DataServiceException {
@@ -61,8 +71,11 @@ public class DBDataService implements DataService {
 		return loadAllProducts();
 	}
 
+	@DELETE
+	@Path("/p/{productName}")
+	@Produces(MediaType.APPLICATION_JSON)
 	@Override
-	public List<Product> removeProduct(String productName)
+	public List<Product> removeProduct(@PathParam("productName") String productName)
 			throws DataServiceException {
 		Product prod = getProductByName(productName);
 		if (prod != null) {
@@ -72,28 +85,46 @@ public class DBDataService implements DataService {
 	}
 
 	@Override
-	public void removeProductVersion(String productName, String version)
+	public void removeProductVersion(@PathParam("productName") String productName, 
+			@PathParam("version") String version)
+			throws DataServiceException {
+		removeProductVersionRest(productName, version);
+	}
+	
+	@DELETE
+	@Path("/pv/{productName}:{version}")
+	private Response removeProductVersionRest(@PathParam("productName") String productName, 
+			@PathParam("version") String version)
 			throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
 		if (pv == null) {
 			throw new DataServiceException("Unkown product version: " + productName + ":" + version);
 		}
 		this.em.remove(pv);
+		return Response.ok().build();
 	}
 	
-	public ProductVersion getProductVersion(String productName, String version) throws DataServiceException {
+	@GET
+	@Path("/pv/{productName}:{version}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public ProductVersion getProductVersion(@PathParam("productName") String productName, 
+			@PathParam("version") String version) throws DataServiceException {
 		if (productName == null || version == null) {
 			throw new IllegalArgumentException("Both productName and version can't be null.");
 		}
-		List<ProductVersion> pvs = em.createNamedQuery(Queries.QUERY_LOAD_PROD_VER_BY_NAME_VER, ProductVersion.class)
+		List<ProductVersion> pvs = em.createNamedQuery(Queries.QUERY_LOAD_PROD_VER_BY_NAME_VER, 
+				ProductVersion.class)
 				.setParameter("name", productName)
 				.setParameter("version", version)
 				.getResultList();
 		return pvs.size() > 0 ? pvs.get(0) : null;
 	}
 	
+	@GET
+	@Path("/p/{productName}")
+	@Produces(MediaType.APPLICATION_JSON)
 	@Override
-	public Product getProductByName(String name) throws DataServiceException {
+	public Product getProductByName(@PathParam("productName") String name) throws DataServiceException {
 		if (name == null) {
 			throw new IllegalArgumentException("Product Name should be provided.");
 		}
@@ -103,8 +134,11 @@ public class DBDataService implements DataService {
 		return prodList.size() > 0 ? prodList.get(0) : null;
 	}
 	
+	@GET
+	@Path("/p/vers/{productName}")
+	@Produces(MediaType.APPLICATION_JSON)
 	@Override
-	public List<String> getVersions(String productName)
+	public List<String> getVersions(@PathParam("productName") String productName)
 			throws DataServiceException {
 		Product prod = getProductByName(productName);
 		if (prod == null) {
@@ -120,9 +154,11 @@ public class DBDataService implements DataService {
 		return versions;
 	}
 
+	@PUT
+	@Path("/pv/{productName}/{versions}")
 	@Override
-	public void addProductVersions(String productName,
-			Set<String> versions) throws DataServiceException {
+	public void addProductVersions(@PathParam("productName") String productName,
+			@PathParam("version") Set<String> versions) throws DataServiceException {
 		Product prod = getProductByName(productName);
 		if (prod == null) {
 			throw new DataServiceException("Unknown Product name: " + productName);
@@ -152,7 +188,10 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#loadArtifacts(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public List<Artifact> loadArtifacts(String productName, String version)
+	@GET
+	@Path("/a/{productName}:{version}")
+	public List<Artifact> loadArtifacts(@PathParam("productName") String productName, 
+			@PathParam("version") String version)
 			throws DataServiceException {
 		if (productName == null || version == null) {
 			throw new IllegalArgumentException("Both productName and version can't be null.");
@@ -167,13 +206,19 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#addArtifact(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void addArtifact(String productName, String version, String groupId,
-			String artifactId, String artiVersion) throws DataServiceException {
+	@PUT
+	@Path("/a/{productName}:{version}/{groupId}:{artifactId}:{artiVersion}")
+	public void addArtifact(@PathParam("productName") String productName, @PathParam("version") String version,
+			@PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String artiVersion) throws DataServiceException {
 		addArtifact(productName, version, groupId, artifactId, artiVersion, DEFAULT_ARTIFACT_TYPE);
 	}
 	
-	private void addArtifact(String productName, String version, String groupId,
-			String artifactId, String artiVersion, String type) throws DataServiceException {
+	@PUT
+	@Path("/a/{productName}:{version}/{groupId}:{artifactId}:{artiVersion}:{type}")
+	private void addArtifact(@PathParam("productName") String productName, @PathParam("version") String version,
+			@PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String artiVersion, @PathParam("type") String type) throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
 		if (pv == null) {
 			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
@@ -221,8 +266,11 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#getArtifact(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Artifact getArtifact(String groupId, String artifactId,
-			String version) throws DataServiceException {
+	@GET
+	@Path("/a/{groupId}:{artifactId}:{artiVersion}")
+	public Artifact getArtifact(@PathParam("groupId") String groupId, 
+			@PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String version) throws DataServiceException {
 		if (groupId == null || artifactId == null || version == null ) {
 			throw new IllegalArgumentException("groupId, artifactId and version can't be null.");
 		}
@@ -237,9 +285,12 @@ public class DBDataService implements DataService {
 	/* (non-Javadoc)
 	 * @see org.jboss.eap.trackers.data.DataService#guessComponent(java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@GET
+	@Path("/c/{groupId}:{artifactId}:{artiVersion}")
 	@Override
-	public Component guessComponent(String groupId, String artifactId,
-			String artiVersion) throws DataServiceException {
+	public Component guessComponent(@PathParam("groupId") String groupId, 
+			@PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String artiVersion) throws DataServiceException {
 		if (groupId == null || artiVersion == null) {
 			throw new IllegalArgumentException("groupId and version of the Artifact can't be null.");
 		}
@@ -264,8 +315,11 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#updateArtifactBuildInfo(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void updateArtifactBuildInfo(String groupId, String artifactId,
-			String artiVersion, String buildInfo) throws DataServiceException {
+	@POST
+	@Path("/ab/{groupId}:{artifactId}:{artiVersion}/{buildInfo}")
+	public void updateArtifactBuildInfo(@PathParam("groupId") String groupId, 
+			@PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String artiVersion, @PathParam("buildInfo") String buildInfo) throws DataServiceException {
 		if (groupId == null || artiVersion == null) {
 			throw new IllegalArgumentException("groupId and version of the Artifact can't be null.");
 		}
@@ -288,8 +342,12 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#updateArtifactComponent(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void updateArtifactComponent(String groupId, String artifactId,
-			String artiVersion, String compName, String compVer)
+	@POST
+	@Path("/ac/{groupId}:{artifactId}:{artiVersion}/{compName}:{compVer}")
+	public void updateArtifactComponent(@PathParam("groupId") String groupId, 
+			@PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String artiVersion, @PathParam("compName") String compName, 
+			@PathParam("compVer") String compVer)
 			throws DataServiceException {
 		Component comp = getComponent(compName, compVer);
 		if (comp == null) {
@@ -315,9 +373,12 @@ public class DBDataService implements DataService {
 	/* (non-Javadoc)
 	 * @see org.jboss.eap.trackers.data.DataService#removeArtifacts(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@DELETE
+	@Path("/a/{productName}:{version}/{groupId}:{artifactId}:{artiVersion}")
 	@Override
-	public void removeArtifacts(String productName, String version,
-			String groupId, String artifactId, String artiVersion)
+	public void removeArtifacts(@PathParam("productName") String productName, @PathParam("version") String version,
+			@PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String artiVersion)
 			throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
 		if (pv == null) {
@@ -363,8 +424,10 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#importArtifacts(java.lang.String, java.lang.String, java.net.URL)
 	 */
 	@Override
-	public void importArtifacts(String productName, String version,
-			URL artifactListURL) throws DataServiceException {
+	@PUT
+	@Path("/ai/{productName}:{version}/{url}")
+	public void importArtifacts(@PathParam("productName") String productName, @PathParam("version") String version,
+			@PathParam("url") URL artifactListURL) throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
 		if (pv == null) {
 			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
@@ -425,7 +488,10 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#getComponent(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Component getComponent(String name, String version)
+	@GET
+	@Path("/c/{name}:{version}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Component getComponent(@PathParam("name") String name, @PathParam("version") String version)
 			throws DataServiceException {
 		if (name == null || version == null) {
 			throw new IllegalArgumentException("Both name and version can't be null.");
@@ -441,6 +507,10 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#saveComponent(org.jboss.eap.trackers.model.Component)
 	 */
 	@Override
+	@PUT
+	@Path("/c")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
 	public void saveComponent(Component comp) throws DataServiceException {
 		Session session = (Session)em.getDelegate();
 		session.saveOrUpdate(comp);
@@ -450,7 +520,9 @@ public class DBDataService implements DataService {
 	 * @see org.jboss.eap.trackers.data.DataService#updateNote(java.io.Serializable, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void updateNote(Long id, String type, String note)
+	@POST
+	@Path("/n/{type}-{id}/{note}")
+	public void updateNote(@PathParam("id") Long id, @PathParam("type") String type, @PathParam("note") String note)
 			throws DataServiceException {
 		if (id == null || type == null || note == null) {
 			throw new IllegalArgumentException("id, type and note can't be null");

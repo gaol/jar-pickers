@@ -17,6 +17,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * @author lgao
@@ -26,6 +29,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"groupId", "artifactId", "version"})})
+@XmlRootElement
 public class Artifact implements Serializable {
 
 	/**
@@ -82,6 +86,7 @@ public class Artifact implements Serializable {
 	/**
 	 * @return the pvs
 	 */
+	@XmlElementRef
 	public List<ProductVersion> getPvs() {
 		return pvs;
 	}
@@ -119,6 +124,7 @@ public class Artifact implements Serializable {
 	/**
 	 * @return the id
 	 */
+	@XmlAttribute
 	public Long getId() {
 		return id;
 	}
@@ -189,6 +195,7 @@ public class Artifact implements Serializable {
 	/**
 	 * @return the component
 	 */
+	@XmlElementRef
 	public Component getComponent() {
 		return component;
 	}

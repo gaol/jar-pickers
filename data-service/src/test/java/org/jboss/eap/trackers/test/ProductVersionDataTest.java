@@ -17,7 +17,6 @@ import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
-import org.jboss.eap.trackers.service.ProductsTracker;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -49,7 +48,6 @@ public class ProductVersionDataTest {
             .addPackage(DataService.class.getPackage())
             .addPackage(DBDataService.class.getPackage())
             .addPackage(Product.class.getPackage())
-            .addPackage(ProductsTracker.class.getPackage())
             .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
    }
 

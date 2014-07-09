@@ -17,6 +17,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * @author lgao
@@ -25,6 +28,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
+@XmlRootElement
 public class Product implements Serializable {
 
 	/**
@@ -74,6 +78,7 @@ public class Product implements Serializable {
 	/**
 	 * @return the id
 	 */
+	@XmlAttribute
 	public Long getId() {
 		return id;
 	}
@@ -100,6 +105,7 @@ public class Product implements Serializable {
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "product", cascade = {CascadeType.REMOVE})
 	private List<ProductVersion> versions;
 	
+	@XmlElementRef
 	public List<ProductVersion> getVersions() {
 		return versions;
 	}
