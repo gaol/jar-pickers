@@ -5,7 +5,7 @@
    <groupId>org.jboss.eap.trackers</groupId>
    <artifactId>trackers-web</artifactId>
    <version>1.0.0-SNAPSHOT</version>
-   <packaging>jar</packaging>
+   <packaging>war</packaging>
 
    <name>Web application of Trackers</name>
    <description>Web application which is used to show trackers information</description>
@@ -17,15 +17,17 @@
     <relativePath>../</relativePath>
   </parent>
 
-  <dependencies>
+  <!--dependencies>
     <dependency>
       <groupId>org.jboss.eap.trackers</groupId>
       <artifactId>data-service</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.picketbox</groupId>
       <artifactId>picketbox</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -55,31 +57,23 @@
         <scope>provided</scope>
     </dependency>
 
-       <!-- Import the transaction spec API, we use provided scope because we aren't using any direct
-                    reference to the spec API in our client code -->
       <dependency>
          <groupId>org.jboss.spec.javax.transaction</groupId>
          <artifactId>jboss-transaction-api_1.1_spec</artifactId>
          <optional>true</optional>
       </dependency>
 
-  </dependencies>
+  </dependencies-->
 
   <build>
     <finalName>${project.artifactId}</finalName>
-    <plugins>
+    <!--plugins>
 	<plugin>
 	  <groupId>org.apache.maven.plugins</groupId>
 	  <artifactId>maven-war-plugin</artifactId>
 	  <version>2.4</version>
-          <configuration>
-            <ejbVersion>3.1</ejbVersion>
-            <packagingExcludes>
-              WEB-INF/lib/jboss-*.jar,
-            </packagingExcludes>
-          </configuration>
     	</plugin>
-    </plugins>
+    </plugins-->
     
   </build>
 </project>
