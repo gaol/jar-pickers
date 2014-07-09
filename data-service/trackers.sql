@@ -24,6 +24,8 @@
 
     drop sequence hibernate_sequence;
 
+    drop sequence trackerseq;
+
     create table Artifact (
         id int8 not null,
         artifactId varchar(255),
