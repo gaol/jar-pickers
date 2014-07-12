@@ -151,4 +151,9 @@ public interface DataService {
 	 * @throws DataServiceException if type is not ProductVersion | Artifact
 	 */
 	void updateNote(Long id, String type, String note) throws DataServiceException;
+	
+	/**
+	 * Used to validate client has roles to do some update operations
+	 */
+	void authenticate() throws SecurityException;
 }

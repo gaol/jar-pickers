@@ -12,11 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.transaction.UserTransaction;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -43,6 +47,7 @@ import org.jboss.logging.Logger;
  */
 @Stateless
 @Path("/")
+@PermitAll
 public class DBDataService implements DataService {
 
 	@Inject
@@ -50,6 +55,9 @@ public class DBDataService implements DataService {
 	
 	@Inject
 	private EntityManager em;
+	
+	@Resource
+	private UserTransaction trans;
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -62,6 +70,7 @@ public class DBDataService implements DataService {
 	@Path("/p")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@RolesAllowed("tracker")
 	@Override
 	public List<Product> saveProduct(Product product)
 			throws DataServiceException {
@@ -73,6 +82,7 @@ public class DBDataService implements DataService {
 	@DELETE
 	@Path("/p/{productName}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("tracker")
 	@Override
 	public List<Product> removeProduct(@PathParam("productName") String productName)
 			throws DataServiceException {
@@ -86,6 +96,7 @@ public class DBDataService implements DataService {
 	@Override
 	@DELETE
 	@Path("/pv/{productName}:{version}")
+	@RolesAllowed("tracker")
 	public void removeProductVersion(@PathParam("productName") String productName, 
 			@PathParam("version") String version)
 			throws DataServiceException {
@@ -148,9 +159,10 @@ public class DBDataService implements DataService {
 
 	@PUT
 	@Path("/pv/{productName}/{versions}")
+	@RolesAllowed("tracker")
 	@Override
 	public void addProductVersions(@PathParam("productName") String productName,
-			@PathParam("version") Set<String> versions) throws DataServiceException {
+			@PathParam("versions") Set<String> versions) throws DataServiceException {
 		Product prod = getProductByName(productName);
 		if (prod == null) {
 			throw new DataServiceException("Unknown Product name: " + productName);
@@ -200,6 +212,7 @@ public class DBDataService implements DataService {
 	@Override
 	@PUT
 	@Path("/a/{productName}:{version}/{groupId}:{artifactId}:{artiVersion}")
+	@RolesAllowed("tracker")
 	public void addArtifact(@PathParam("productName") String productName, @PathParam("version") String version,
 			@PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, 
 			@PathParam("artiVersion") String artiVersion) throws DataServiceException {
@@ -307,6 +320,7 @@ public class DBDataService implements DataService {
 	@Override
 	@POST
 	@Path("/ab/{groupId}:{artifactId}:{artiVersion}/{buildInfo}")
+	@RolesAllowed("tracker")
 	public void updateArtifactBuildInfo(@PathParam("groupId") String groupId, 
 			@PathParam("artifactId") String artifactId, 
 			@PathParam("artiVersion") String artiVersion, @PathParam("buildInfo") String buildInfo) throws DataServiceException {
@@ -334,6 +348,7 @@ public class DBDataService implements DataService {
 	@Override
 	@POST
 	@Path("/ac/{groupId}:{artifactId}:{artiVersion}/{compName}:{compVer}")
+	@RolesAllowed("tracker")
 	public void updateArtifactComponent(@PathParam("groupId") String groupId, 
 			@PathParam("artifactId") String artifactId, 
 			@PathParam("artiVersion") String artiVersion, @PathParam("compName") String compName, 
@@ -366,6 +381,7 @@ public class DBDataService implements DataService {
 	@DELETE
 	@Path("/a/{productName}:{version}/{groupId}:{artifactId}:{artiVersion}")
 	@Override
+	@RolesAllowed("tracker")
 	public void removeArtifacts(@PathParam("productName") String productName, @PathParam("version") String version,
 			@PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, 
 			@PathParam("artiVersion") String artiVersion)
@@ -416,6 +432,7 @@ public class DBDataService implements DataService {
 	@Override
 	@PUT
 	@Path("/ai/{productName}:{version}/{url}")
+	@RolesAllowed("tracker")
 	public void importArtifacts(@PathParam("productName") String productName, @PathParam("version") String version,
 			@PathParam("url") URL artifactListURL) throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
@@ -501,6 +518,7 @@ public class DBDataService implements DataService {
 	@Path("/c")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@RolesAllowed("tracker")
 	public void saveComponent(Component comp) throws DataServiceException {
 		Session session = (Session)em.getDelegate();
 		session.saveOrUpdate(comp);
@@ -512,6 +530,7 @@ public class DBDataService implements DataService {
 	@Override
 	@POST
 	@Path("/n/{type}-{id}/{note}")
+	@RolesAllowed("tracker")
 	public void updateNote(@PathParam("id") Long id, @PathParam("type") String type, @PathParam("note") String note)
 			throws DataServiceException {
 		if (id == null || type == null || note == null) {
@@ -525,6 +544,12 @@ public class DBDataService implements DataService {
 		if (result != 1) {
 			throw new DataServiceException("Error to update note of " + type + ":" + id);
 		}
+	}
+	
+	@Override
+	@RolesAllowed("tracker")
+	public void authenticate() throws SecurityException {
+		logger.info("Welcome to Trackers, Now you have the 'tracker' role.");
 	}
 
 }

@@ -26,22 +26,27 @@ import org.junit.runner.RunWith;
 public abstract class AbstractTrackersTest {
 
 	@Deployment
-	   public static Archive<?> createTestArchive() {
-	      return ShrinkWrap.create(JavaArchive.class, "test.jar")
-	            .addAsResource("META-INF/test-persistence.xml", "META-INF/persistence.xml")
-	            .addAsResource("META-INF/orm.xml", "META-INF/orm.xml")
-	            .addAsResource("artis.txt", "artis.txt")
-	            .addAsResource("import.sql", "import.sql")
-	            .addPackage(DataService.class.getPackage())
-	            .addPackage(DBDataService.class.getPackage())
-	            .addPackage(Product.class.getPackage())
-	            .addPackage(AbstractTrackersTest.class.getPackage())
-	            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-	   }
+	public static Archive<?> createTestArchive() {
+		return ShrinkWrap
+				.create(JavaArchive.class, "test.jar")
+				.addAsResource("META-INF/test-persistence.xml",
+						"META-INF/persistence.xml")
+				.addAsResource("META-INF/orm.xml", "META-INF/orm.xml")
+				.addAsResource("artis.txt", "artis.txt")
+				.addAsResource("import.sql", "import.sql")
+				.addPackage(DataService.class.getPackage())
+				.addPackage(DBDataService.class.getPackage())
+				.addPackage(Product.class.getPackage())
+				.addPackage(AbstractTrackersTest.class.getPackage())
+				.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+	}
 
-	   @EJB
-	   DataService dataService;
+	@EJB
+	DataService dataService;
+	
+	@EJB(name = "TrackerBean")
+	TrackerBean tracker;
 
-	   @Inject
-	   Logger log;
+	@Inject
+	Logger log;
 }
