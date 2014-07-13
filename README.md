@@ -52,10 +52,10 @@ Deploy
       * Set up database (currently support `Postgresql`)
          * Install database, and then create a user(like: `tracker`) which owns a database(like: `tracker`).
          * Login the created database, then import the DDL: `\i /sources/trackers/data-service/trackers.sql`
-      * Set up postgresql jdbc drvier and datasource
-         * Follow link: `https://community.jboss.org/wiki/JBossAS7-DatasourceConfigurationForPostgresql` to set up postgresql jdbc driver and datasource in your jboss application server
       * Add users which have `tracker` role via command: `<JBOSS-HOME>bin/adduser.sh`
-     
+      * Set up postgresql jdbc drvier and datasource
+
+> You can read documents in [Wiki](https://github.com/gaol/trackers/wiki) to know how to set up the environment step by step.
 
   After all above is done, you are ready to deploy the `trackers.war`, just throw it into the `<JBOSS-HOME>/standalone/deployments/` will be fine.
 
