@@ -15,10 +15,9 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
  * </p>
  */
 @ApplicationPath("/api")
-public class JaxRsActivator extends Application {
-   /* class body intentionally left blank */
-	
-	public JaxRsActivator() {
+public class TrackerRestApplication extends Application {
+
+	public TrackerRestApplication() {
 		super();
 		ResteasyProviderFactory.getInstance().addStringConverter(SetStringConvert.class);
 	}

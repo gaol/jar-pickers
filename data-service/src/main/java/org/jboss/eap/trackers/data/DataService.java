@@ -12,6 +12,7 @@ import javax.ejb.Remote;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
+import org.jboss.eap.trackers.model.ProductVersion;
 
 /**
  * @author lgao
@@ -58,6 +59,11 @@ public interface DataService {
 	 * Gets versions list by product name
 	 */
 	public List<String> getVersions(String productName) throws DataServiceException;
+	
+	/**
+	 * Gets ProductVersion by product name and version
+	 */
+	public ProductVersion getProductVersion(String productName, String version) throws DataServiceException;
 	
 	/**
 	 * Removes a ProductVersion out of the Product.
@@ -121,6 +127,12 @@ public interface DataService {
 	 */
 	void importArtifacts(String productName, String version, URL artifactListURL) throws DataServiceException;
 	
+	
+	/**
+	 * Imports artifacts list from a composed string list to a product version 
+	 */
+	void importArtifacts(String productName, String version, List<String> artis) throws DataServiceException;
+	
 	/**
 	 * Gets the Artifact by groupId, artifactId and version.
 	 */
@@ -151,9 +163,4 @@ public interface DataService {
 	 * @throws DataServiceException if type is not ProductVersion | Artifact
 	 */
 	void updateNote(Long id, String type, String note) throws DataServiceException;
-	
-	/**
-	 * Used to validate client has roles to do some update operations
-	 */
-	void authenticate() throws SecurityException;
 }

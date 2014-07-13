@@ -21,9 +21,7 @@
 
   <modules>
     <module>data-service</module>
-    <module>trackers-web</module>
     <module>client</module>
-    <module>dist</module>
   </modules>
 
  <!-- Dependencies version and common configurations -->

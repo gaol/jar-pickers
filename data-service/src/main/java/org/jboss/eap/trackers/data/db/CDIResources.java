@@ -19,7 +19,7 @@ import org.jboss.logging.Logger;
  * private EntityManager em;
  * </pre>
  */
-public class Resources {
+public class CDIResources {
 
 	@Produces
 	@PersistenceContext
