@@ -1,5 +1,8 @@
 package org.jboss.eap.trackers.test;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
@@ -17,6 +20,7 @@ import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.jboss.resteasy.util.Base64;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -218,7 +222,7 @@ public class RESTAPITest {
 		// update artifact build info
 		ctxPath = "http://localhost:8080/test/api/ab/org.jboss.ironjacamar:ironjacamar-core:1.1.3.Final";
 		request = getClientRequest(ctxPath);
-		request.body(MediaType.APPLICATION_FORM_URLENCODED_TYPE, "buildInfo=this is the build info");
+		request.formParameter("buildInfo", "this is the build info");
 		resp = request.post();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		arti = dataService.getArtifact("org.jboss.ironjacamar",
@@ -226,9 +230,9 @@ public class RESTAPITest {
 		Assert.assertEquals("this is the build info", arti.getBuildInfo());
 		
 		// update artifacts build info without specifying the artifactId
-		ctxPath = "http://localhost:8080/test/api/ab/org.jboss.ironjacamar::1.1.3.Final";
+		ctxPath = "http://localhost:8080/test/api/ab/org.jboss.ironjacamar:1.1.3.Final";
 		request = getClientRequest(ctxPath);
-		request.body(MediaType.APPLICATION_FORM_URLENCODED_TYPE, "buildInfo=this is the build info 2");
+		request.formParameter("buildInfo", "this is the build info 2");
 		resp = request.post();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		arti = dataService.getArtifact("org.jboss.ironjacamar",
@@ -250,7 +254,7 @@ public class RESTAPITest {
 		// update note of Artifact
 		ctxPath = "http://localhost:8080/test/api/n/Artifact-" + arti.getId();
 		request = getClientRequest(ctxPath);
-		request.body(MediaType.APPLICATION_FORM_URLENCODED_TYPE, "note=My Note");
+		request.formParameter("note", "My Note");
 		resp = request.post();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		arti = dataService.getArtifact("org.jboss.ironjacamar",
@@ -275,6 +279,46 @@ public class RESTAPITest {
 		List<Artifact> eap624Artis = dataService.loadArtifacts("EAP", "6.2.4");
 		Assert.assertNotNull(eap624Artis);
 		Assert.assertEquals(355, eap624Artis.size());
+		
+		// import artifacts by uploading file
+		ctxPath = "http://localhost:8080/test/api/aiu/EAP:6.2.3";
+		request = getClientRequest(ctxPath);
+		MultipartFormDataOutput out = new MultipartFormDataOutput();
+		File artisFile = fileFromClassLoaderResource("artis.txt", getClass().getClassLoader());
+		out.addFormData("file", artisFile, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+		request.body(MediaType.MULTIPART_FORM_DATA_TYPE, out);
+		
+		resp = request.put();
+		Assert.assertEquals(Status.OK, resp.getResponseStatus());
+		List<Artifact> eap623Artis = dataService.loadArtifacts("EAP", "6.2.3");
+		Assert.assertNotNull(eap623Artis);
+		Assert.assertEquals(355, eap623Artis.size());
+		
+	}
+	
+	private File fileFromClassLoaderResource(String resource, ClassLoader loader) throws Exception {
+		InputStream input = loader.getResourceAsStream(resource);
+		if (input == null) {
+			return null;
+		}
+		File tmpFile = File.createTempFile("arq-test", "trackers");
+		tmpFile.deleteOnExit();
+		FileOutputStream out = null;
+		try
+		{
+			out = new FileOutputStream(tmpFile);
+			byte[] buffer = new byte[4096];
+			int length = 0;
+			while ((length = input.read(buffer)) != -1) {
+				out.write(buffer, 0, length);
+			}
+		}
+		finally {
+			input.close();
+			out.close();
+		}
+		
+		return tmpFile;
 	}
 
 	private ClientRequest getClientRequest(String url) {

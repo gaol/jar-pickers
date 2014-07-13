@@ -158,12 +158,20 @@ public class RestService {
 	
 	@POST
 	@Path("/ab/{groupId}:{artifactId}:{artiVersion}")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@RolesAllowed("tracker")
 	public Response updateArtifactBuildInfo(@PathParam("groupId") String groupId, 
 			@PathParam("artifactId") String artifactId, 
 			@PathParam("artiVersion") String artiVersion, @FormParam("buildInfo") String buildInfo) throws DataServiceException {
 		dataService.updateArtifactBuildInfo(groupId, artifactId, artiVersion, buildInfo);
+		return Response.ok().build();
+	}
+	
+	@POST
+	@Path("/ab/{groupId}:{artiVersion}")
+	@RolesAllowed("tracker")
+	public Response updateArtifactBuildInfo2(@PathParam("groupId") String groupId, 
+			@PathParam("artiVersion") String artiVersion, @FormParam("buildInfo") String buildInfo) throws DataServiceException {
+		dataService.updateArtifactBuildInfo(groupId, null, artiVersion, buildInfo);
 		return Response.ok().build();
 	}
 	
@@ -246,9 +254,9 @@ public class RestService {
 	
 	@POST
 	@Path("/n/{type}-{id}")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@RolesAllowed("tracker")
-	public Response updateNote(@PathParam("id") Long id, @PathParam("type") String type, @FormParam("note") String note)
+	public Response updateNote(@PathParam("id") Long id, @PathParam("type") String type, 
+			@FormParam("note") String note)
 			throws DataServiceException {
 		dataService.updateNote(id, type, note);
 		return Response.ok().build();
