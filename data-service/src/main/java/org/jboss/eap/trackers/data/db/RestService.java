@@ -112,9 +112,10 @@ public class RestService {
 	@Path("/pv/{productName}/{versions}")
 	@RolesAllowed("tracker")
 	public Response addProductVersions(@PathParam("productName") String productName,
-			@PathParam("versions") Set<String> versions) throws DataServiceException {
-		System.err.println("versions are: " + versions.size());
-		dataService.addProductVersions(productName, versions);
+			@PathParam("versions") SetString versions) throws DataServiceException {
+		Set<String> verSet = versions.asSet();
+		System.err.println("versions size: " + verSet.size());
+		dataService.addProductVersions(productName, verSet);
 		return Response.ok().build();
 	}
 	

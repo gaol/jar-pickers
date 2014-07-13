@@ -1,7 +1,6 @@
 package org.jboss.eap.trackers.test;
 
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -187,10 +186,9 @@ public class RESTAPITest {
 		resp = request.put();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		vers = dataService.getVersions("EWP");
-		// Assert.assertEquals(2, vers.size());
-		// Assert.assertTrue(vers.contains("5.2.0"));
-		// Assert.assertTrue(vers.contains("5.2.1")); FIXME convert is not
-		// injected
+		 Assert.assertEquals(2, vers.size());
+		 Assert.assertTrue(vers.contains("5.2.0"));
+		 Assert.assertTrue(vers.contains("5.2.1")); 
 
 		// add artifacts
 		ctxPath = "http://localhost:8080/test/api/a/EAP:6.2.4/org.jboss.ironjacamar:ironjacamar-core:1.1.3.Final";
