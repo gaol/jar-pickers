@@ -216,13 +216,24 @@ public class RESTAPITest {
 		Assert.assertNotNull(comp);
 
 		// update artifact build info
-		ctxPath = "http://localhost:8080/test/api/ab/org.jboss.ironjacamar:ironjacamar-core:1.1.3.Final/this is the build info";
+		ctxPath = "http://localhost:8080/test/api/ab/org.jboss.ironjacamar:ironjacamar-core:1.1.3.Final";
 		request = getClientRequest(ctxPath);
+		request.body(MediaType.APPLICATION_FORM_URLENCODED_TYPE, "buildInfo=this is the build info");
 		resp = request.post();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		arti = dataService.getArtifact("org.jboss.ironjacamar",
 				"ironjacamar-core", "1.1.3.Final");
 		Assert.assertEquals("this is the build info", arti.getBuildInfo());
+		
+		// update artifacts build info without specifying the artifactId
+		ctxPath = "http://localhost:8080/test/api/ab/org.jboss.ironjacamar::1.1.3.Final";
+		request = getClientRequest(ctxPath);
+		request.body(MediaType.APPLICATION_FORM_URLENCODED_TYPE, "buildInfo=this is the build info 2");
+		resp = request.post();
+		Assert.assertEquals(Status.OK, resp.getResponseStatus());
+		arti = dataService.getArtifact("org.jboss.ironjacamar",
+				"ironjacamar-core", "1.1.3.Final");
+		Assert.assertEquals("this is the build info 2", arti.getBuildInfo());
 
 		// update artifact component
 		ctxPath = "http://localhost:8080/test/api/ac/org.jboss.ironjacamar:ironjacamar-core:1.1.3.Final/comp-name:1.1.1";
@@ -237,9 +248,9 @@ public class RESTAPITest {
 		Assert.assertEquals("1.1.1", upComp.getVersion());
 
 		// update note of Artifact
-		ctxPath = "http://localhost:8080/test/api/n/Artifact-" + arti.getId()
-				+ "/My Note";
+		ctxPath = "http://localhost:8080/test/api/n/Artifact-" + arti.getId();
 		request = getClientRequest(ctxPath);
+		request.body(MediaType.APPLICATION_FORM_URLENCODED_TYPE, "note=My Note");
 		resp = request.post();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		arti = dataService.getArtifact("org.jboss.ironjacamar",

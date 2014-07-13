@@ -17,6 +17,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Encoded;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -114,7 +115,6 @@ public class RestService {
 	public Response addProductVersions(@PathParam("productName") String productName,
 			@PathParam("versions") SetString versions) throws DataServiceException {
 		Set<String> verSet = versions.asSet();
-		System.err.println("versions size: " + verSet.size());
 		dataService.addProductVersions(productName, verSet);
 		return Response.ok().build();
 	}
@@ -157,11 +157,12 @@ public class RestService {
 	}
 	
 	@POST
-	@Path("/ab/{groupId}:{artifactId}:{artiVersion}/{buildInfo}")
+	@Path("/ab/{groupId}:{artifactId}:{artiVersion}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@RolesAllowed("tracker")
 	public Response updateArtifactBuildInfo(@PathParam("groupId") String groupId, 
 			@PathParam("artifactId") String artifactId, 
-			@PathParam("artiVersion") String artiVersion, @PathParam("buildInfo") String buildInfo) throws DataServiceException {
+			@PathParam("artiVersion") String artiVersion, @FormParam("buildInfo") String buildInfo) throws DataServiceException {
 		dataService.updateArtifactBuildInfo(groupId, artifactId, artiVersion, buildInfo);
 		return Response.ok().build();
 	}
@@ -244,9 +245,10 @@ public class RestService {
 	}
 	
 	@POST
-	@Path("/n/{type}-{id}/{note}")
+	@Path("/n/{type}-{id}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@RolesAllowed("tracker")
-	public Response updateNote(@PathParam("id") Long id, @PathParam("type") String type, @PathParam("note") String note)
+	public Response updateNote(@PathParam("id") Long id, @PathParam("type") String type, @FormParam("note") String note)
 			throws DataServiceException {
 		dataService.updateNote(id, type, note);
 		return Response.ok().build();
