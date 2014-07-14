@@ -4,17 +4,13 @@ import sys
 import os
 import os.path
 
-#import urlgrabber
-
-import urllib
+import urlgrabber
 import optparse
 import zipfile
 import re
 import shutil
 import ConfigParser
 import json
-
-from main import DEFAULT
 
 VERSION_RE = re.compile(r'\-\d')
 DEBUG = False
@@ -32,6 +28,17 @@ def info(message):
   print message
 #end of info
 
+class DEFAULT():
+  """
+  Default configurations
+  """
+  DOWNLOAD_TMP_DIR = "%s/tmp" % os.getcwd()
+  DATA_DIR = "%s/data/products" % os.getcwd()
+  GROUPID_FILE = "%s/groupids.ini" % DATA_DIR
+  DEBUG = False
+  
+#end of class DEFAULT
+
 def downloadZip(url, output):
   """
   Downloads zip file from specified zip url
@@ -41,8 +48,7 @@ def downloadZip(url, output):
     return
   try:
     info('Downloading from %s to file: %s' % (url, output))
-    #urlgrabber.urlgrab(url, filename=output, progress_obj=urlgrabber.progress.TextMeter())
-    urllib.urlretrieve(url, output)
+    urlgrabber.urlgrab(url, filename=output, progress_obj=urlgrabber.progress.TextMeter())
     info('Download completed.' )
   except:
     info("Exception on dowloading the zip file: %s" % url)
@@ -122,28 +128,6 @@ def getArtifactInfo(jar):
   return groupId, artifactId, version
 #end of getArtifactInfo
 
-
-def getProducts():
-  config = ConfigParser.ConfigParser()
-  config.read(DEFAULT.PRODUCTS_FILE)
-  return config.items("products")
-#end of getProducts
-
-def getProductNames():
-  products = getProducts()
-  names = []
-  for key,value in products:
-    names.append(key.upper())
-  return names
-#end of getProductNames
-
-
-def getProductFullName(name):
-  products = getProducts()
-  for key, value in products:
-    if key.upper() == name: return value
-#end of getProductFullName
-
 class Picker():
   """
   Picker class is used to picks jar information.
@@ -188,17 +172,6 @@ class Picker():
   #end of getGroupId
 
 
-  def isNameExist(self, name):
-    """
-    Check whether the name will be supported for the collection.
-    The name will be capitalized.
-    """
-    if not os.path.exists(self.dataDir):
-      info("Data directory does not exist, create it.")
-      os.makedirs(self.dataDir)
-    return name in getProductNames()
-  # end of isNameExist
-
   def picks(self, request):
     """
     Starts to pick jars information up.
@@ -219,7 +192,6 @@ class Picker():
       raise Exception("Invalid request. name,version,urls must be provided")
     
     name = name.upper()
-    if not self.isNameExist(name) is True: raise Exception("%s is not supported yet, contact administrator to add it please." % name)
 
     if not os.path.exists(self.tmpDir):
       info("Download temporary directory does not exist, create it.")
@@ -228,10 +200,24 @@ class Picker():
     result = {SUSPECT_JARS : []}
     artifacts = []
     for url in urls:
+      isLocalFile = False
+      isLocalDir = False
       fileName = "%s/%s" % (self.tmpDir, os.path.basename(url))
-      downloadZip(url, fileName)
       dirName = "%s/tmp-%s" % (self.tmpDir, os.path.basename(url))
-      unzipFile(fileName, dirName)
+      if os.path.isfile(url):
+        info("%s is a local zip file" % url)
+        isLocalFile = True
+        fileName = url
+      if os.path.isdir(url):
+        info("%s is a local directory" % url)
+        isLocalDir = True
+        dirName = url
+      if isLocalFile or isLocalDir:
+        info("Skip Downloading")
+      else:
+        downloadZip(url, fileName)
+      if isLocalDir is False:
+        unzipFile(fileName, dirName)
       for jar in getJarList(dirName):
         groupId, artifactId, artiVersion = getArtifactInfo(jar)
         if artifactId is None or artiVersion is None:
@@ -246,8 +232,11 @@ class Picker():
         artifactstr = "jar:%s:%s:%s" % (groupId, artifactId, artiVersion)
         if not artifactstr in artifacts:
           artifacts.append(artifactstr)
-      info("Remove the template directory: %s" % dirName)
-      shutil.rmtree(dirName)
+      if isLocalFile or isLocalDir:
+        info("Skip Removing")
+      else:
+        info("Remove the template directory: %s" % dirName)
+        shutil.rmtree(dirName)
 
     if not os.path.exists(self.dataDir):
       info("Data directory does not exist, create it.")
