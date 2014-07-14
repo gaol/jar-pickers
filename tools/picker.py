@@ -5,6 +5,7 @@ import os
 import os.path
 
 import urlgrabber
+import urlgrabber.progress
 import optparse
 import zipfile
 import re
