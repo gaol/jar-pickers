@@ -198,7 +198,7 @@ class Picker():
       info("Download temporary directory does not exist, create it.")
       os.makedirs(self.tmpDir)
 
-    result = {SUSPECT_JARS : []}
+    errors = []
     artifacts = []
     for url in urls:
       isLocalFile = False
@@ -223,17 +223,17 @@ class Picker():
         groupId, artifactId, artiVersion = getArtifactInfo(jar)
         if artifactId is None or artiVersion is None:
           info("WARNING: Can't parse jar: %s" % jar)
-          result[SUSPECT_JARS].append("Error: %s" % os.path.basename(jar))
+          errors.append("Error: %s" % os.path.basename(jar))
           continue
         if groupId is None:
           groupId = self.getGroupId(artifactId, artiVersion)
         if groupId is None:
           info("No groupId found in jar file: %s" % os.path.basename(jar))
-          result[SUSPECT_JARS].append("No GroupId: %s" % os.path.basename(jar))
-        artifactstr = "jar:%s:%s:%s" % (groupId, artifactId, artiVersion)
+          errors.append("Warning: No GroupId: %s" % os.path.basename(jar))
+        artifactstr = "%s:%s:%s:jar" % (groupId, artifactId, artiVersion)
         if not artifactstr in artifacts:
           artifacts.append(artifactstr)
-      if isLocalFile or isLocalDir:
+      if isLocalDir:
         info("Skip Removing")
       else:
         info("Remove the template directory: %s" % dirName)
@@ -242,17 +242,16 @@ class Picker():
     if not os.path.exists(self.dataDir):
       info("Data directory does not exist, create it.")
       os.makedirs(self.dataDir)
-    outputFile = "%s/%s-%s-%s.json" % (self.dataDir, name, version, milestone)
+    outputFile = "%s/%s-%s-%s.list" % (self.dataDir, name, version, milestone)
     if milestone is None:
-      outputFile = "%s/%s-%s.json" % (self.dataDir, name, version)
+      outputFile = "%s/%s-%s.list" % (self.dataDir, name, version)
     output = file(outputFile, 'w')
-    jsonData = {"name" : name, "version" : version, "milestone" : milestone, "urls" : urls, "artifacts" : artifacts}
-    result[JSON_DATA] = jsonData
-    json.dump(jsonData, output, indent = 2)
+    for artiLine in artifacts:
+      output.write(artiLine + "\n")
     output.flush()
     output.close()
     info("Checking jars completed. ")
-    return result
+    return errors
 
   #end of picks
 
