@@ -353,7 +353,7 @@ class Picker(object):
       if isLocalFile or isLocalDir:
         log.info("Skip Downloading")
       else:
-        downloadZip(url, fileName)
+        downloadFile(url, fileName)
       if isLocalDir is False:
         unzipFile(fileName, dirName)
       log.info("Starts parsing jar information at directory: '%s'" % dirName)
