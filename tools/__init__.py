@@ -70,6 +70,14 @@ class Config():
   def __init__(self):
     self.baseDir = Config.BASE_DIR
     self.groupIdFile = "%s/data/products/groupids.ini" % self.baseDir
+    if not os.path.exists(self.groupIdFile):
+      log.warn("group id file does not exist.")
+      self.groupItems = []
+    else:
+      configParser = ConfigParser.ConfigParser()
+      configParser.read(self.groupIdFile)
+      self.groupItems = configParser.items("groupids")
+
 
   def setBaseDir(self, baseDir):
     self.baseDir = baseDir
@@ -80,8 +88,6 @@ class Config():
   def getDataDir(self):
     return "%s/data/products" % self.baseDir
 
-  def setGroupIdFile(self, groupIdFile):
-    self.groupIdFile = groupIdFile
 #end of class Config
 
 # instance of Config
@@ -160,19 +166,14 @@ def getGroupId(artifactId, version):
   """
   Gets groupId according to the artifactId, it is used when the groupId can't be found during the zip parse.
   """
-  configParser = ConfigParser.ConfigParser()
-  if not os.path.exists(config.groupIdFile):
-    log.warn("group id file does not exist.")
-    return None
-  configParser.read(config.groupIdFile)
-  try:
-    return configParser.get('groupids', "%s_%s" % (artifactId, version[:1]))
-  except ConfigParser.NoOptionError:
-    try:
-      return configParser.get('groupids', artifactId)
-    except ConfigParser.NoOptionError:
-      return None
-#end of getGroupId
+  for key, value in config.groupItems:
+    compK = "%s_%s" % (artifactId, version)
+    if compK == key:
+      return value
+    elif artifactId == key:
+      return value
+  return None
+ #end of getGroupId
 
 def parseFromPom(zf, pomFile):
   groupId = None
