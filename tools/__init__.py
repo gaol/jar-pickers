@@ -114,7 +114,6 @@ def downloadFile(url, output):
     return output
   except:
     log.error("Exception on dowloading the zip file from: '%s', Please check whether the url is valid." % url)
-    log.debug(sys.exc_log.info()[0])
     return None
 # end of downloadFile
 
@@ -136,7 +135,6 @@ def unzipFile(zipFile, dir):
     return dir
   except:
     log.error("Exception on extracting the zip file: %s" % zipFile)
-    log.debug(sys.exc_log.info()[0])
     return None
 # end of unzipFile
 
@@ -254,7 +252,6 @@ def getArtifactInforFromMetaInf(jar):
     zf.close()
   except:
     log.error("Error when reading pom.properties from jar: %s " % jar)
-    log.debug(sys.exc_log.info()[0])
   return groupId, artifactId, version
 #end of getArtifactInforFromMetaInf
 
@@ -292,14 +289,12 @@ class Picker(object):
       zf.close()
     except:
       log.error("Error when reading pom.properties from jar: %s " % jar)
-      log.debug(sys.exc_log.info()[0])
 
     try:
       if groupId is None or artifactId is None or version is None:
         groupId, artifactId, version = getArtifactInforFromMetaInf(jar)
     except:
       log.error("Error when reading META-INF/MANIFEST from jar: %s " % jar)
-      log.debug(sys.exc_log.info()[0])
   
     if groupId is None or artifactId is None or version is None:
       # try to parse the jar information from file name
