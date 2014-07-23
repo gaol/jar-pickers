@@ -18,7 +18,7 @@ cat << EOF
 
   Or you you can specify the maven repository URL by '-u URL'
 
-  The output file will be called: 'groupids_collected.ini' in current directory
+  The output file will be called: 'groupids_collected.ini' in current directory by default
 
 EOF
 }
@@ -34,6 +34,7 @@ url="http://repository.jboss.org/nexus/content/groups/public/org/jboss/"
 
 output="$cwd/groupids_collected.ini"
 filter=""
+
 
 while getopts ":u:f:o:" o; do
     case "${o}" in
@@ -53,6 +54,9 @@ while getopts ":u:f:o:" o; do
 done
 shift $((OPTIND-1))
 
+echo -e "Base URL is:$url"
+echo -e "Output file is:$output"
+echo -e "Filter is:$filter"
 
 # write '[groupids]' to output file firsth
 echo -e "[groupids]" > $output
@@ -68,14 +72,24 @@ getGroupIds() {
       return
     fi
   fi
-  hrefs=$(curl -s "${u}"|grep "<a href=\"" |grep "${u}" | cut -d "\"" -f 2)
+  hrefs=$(curl -s "${u}" |grep "<a href="|sed "s/<a/\n<a/g"|grep -E "<a href=" | cut -d "\"" -f2|grep -E "\/$|maven-metadata.xml$" | grep -v "^\/" | grep -v "\.\.")
+  hrefMs=()
+  for href in ${hrefs[@]}; do
+    if [ "$(echo -e $href | grep -v -E '^http' | grep -E '^[^\/]')" != "" ]; then
+      hrefM="${u}${href}"
+      hrefMs+=("${hrefM}")
+    elif [ "$(echo -e $href|grep ${u})" != "" ]; then
+      hrefM="$href"
+      hrefMs+=("${hrefM}")
+    fi
+  done
 
-  mvn_meta_xml=$(echo -e "${hrefs}" | grep -E "maven-metadata.xml$")
+  mvn_meta_xml=$(echo -e "${hrefMs[@]}" | sed "s/ /\n/g" | grep -E "maven-metadata.xml$")
   echo -e "mvn meta xml is: $mvn_meta_xml"
 
   groupId=""
   artifactId=""
-  if [ $mvn_meta_xml ];
+  if [ "$mvn_meta_xml" != "" ];
   then
     # has mvn_meta_xml
     groupId=$(curl -s "${mvn_meta_xml}"|grep "<groupId>" | cut -d ">" -f 2| cut -d "<" -f1)
@@ -90,7 +104,7 @@ getGroupIds() {
   if [ "${groupId}" == "" ] || [ "${artifactId}" == "" ]; then
     # needs to check sub directories
     echo -e "start to check sub directories"
-    for href in $hrefs; do
+    for href in ${hrefMs[@]}; do
       if [ $(echo -e "$href" | grep -E "\/$") ]; then
         getGroupIds $href
       fi
