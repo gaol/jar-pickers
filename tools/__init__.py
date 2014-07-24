@@ -165,7 +165,7 @@ def getGroupId(artifactId, version):
   Gets groupId according to the artifactId, it is used when the groupId can't be found during the zip parse.
   """
   for key, value in config.groupItems:
-    compK = "%s_%s" % (artifactId, version)
+    compK = "%s:%s" % (artifactId, version)
     if compK == key:
       return value
     elif artifactId == key:
