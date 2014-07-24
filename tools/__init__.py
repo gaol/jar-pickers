@@ -14,7 +14,6 @@ import optparse
 import zipfile
 import re
 import shutil
-import ConfigParser
 
 VERSION_RE = re.compile(r'\-\d')
 
@@ -72,12 +71,6 @@ class Config():
     self.groupIdFile = "%s/data/products/groupids.ini" % self.baseDir
     if not os.path.exists(self.groupIdFile):
       log.warn("group id file does not exist.")
-      self.groupItems = []
-    else:
-      configParser = ConfigParser.ConfigParser()
-      configParser.read(self.groupIdFile)
-      self.groupItems = configParser.items("groupids")
-
 
   def setBaseDir(self, baseDir):
     self.baseDir = baseDir
@@ -164,12 +157,17 @@ def getGroupId(artifactId, version):
   """
   Gets groupId according to the artifactId, it is used when the groupId can't be found during the zip parse.
   """
-  for key, value in config.groupItems:
-    compK = "%s:%s" % (artifactId, version)
-    if compK == key:
-      return value
-    elif artifactId == key:
-      return value
+  if not os.path.exists(config.groupIdFile):
+    log.debug("GroupIDFile does not exit")
+    return None
+  f = file(config.groupIdFile, 'r')
+  for line in f:
+    compK = "%s:%s=" % (artifactId, version[:1])
+    if line.startswith(compK):
+      return "".join(line[len(compK):].split("\n"))
+    if line.startswith("%s=" % artifactId):
+      return "".join(line[len(artifactId) + 1:].split("\n"))
+  f.close()
   return None
  #end of getGroupId
 
