@@ -29,7 +29,11 @@ public class CommmonUtilsTest {
 		line = "antlr:antdlr:2.7.7.redhat-4:";
 		Assert.assertTrue(line.matches(DataService.ARTI_STR_REGEX));
 		
+		
 		// False matches:
+		
+		line = "antrl:antrl-version";
+		Assert.assertFalse(line.matches(DataService.ARTI_STR_REGEX));
 		
 		line = "::::";
 		Assert.assertFalse(line.matches(DataService.ARTI_STR_REGEX));
@@ -42,6 +46,28 @@ public class CommmonUtilsTest {
 		
 		line = "antlr:antd::";
 		Assert.assertFalse(line.matches(DataService.ARTI_STR_REGEX));
+		
+	}
+	
+	
+	@Test
+	public void testComponentStringRegex() throws Exception{
+		String line = "antlr:2.7.7.redhat-4";
+		Assert.assertTrue(line.matches(DataService.COMP_STR_REGEX));
+		
+		line = "antlr:2.7.7.redhat-4:mygroupId";
+		Assert.assertTrue(line.matches(DataService.COMP_STR_REGEX));
+		
+		// False matches:
+		
+		line = "::::";
+		Assert.assertFalse(line.matches(DataService.COMP_STR_REGEX));
+		
+		line = ":antlr::antd::";
+		Assert.assertFalse(line.matches(DataService.COMP_STR_REGEX));
+		
+		line = "antlr::antd::";
+		Assert.assertFalse(line.matches(DataService.COMP_STR_REGEX));
 		
 	}
 }

@@ -24,6 +24,8 @@ public interface DataService {
 	
 	String ARTI_STR_REGEX = "^[^\n|^:]+:[^\n|^:]+:[^\n|^:]+[^\n]*";
 	
+	String COMP_STR_REGEX = "^[^\n|^:]+:[^\n|^:]+[^\n]*";
+	
 	String DEFAULT_ARTIFACT_TYPE = "jar";
 
 	/**
@@ -33,7 +35,7 @@ public interface DataService {
 	List<Product> loadAllProducts() throws DataServiceException;
 	
 	/**
-	 * Create or Update a Product and associated the ProductVersion List.
+	 * Create or Update a Product.
 	 * 
 	 * Client code must provide full information of the product.
 	 * 
@@ -76,6 +78,11 @@ public interface DataService {
 	 * 
 	 */
 	void addProductVersions(String productName, Set<String> versions) throws DataServiceException;
+	
+	/**
+	 * Updates parent information to a specific product version.
+	 */
+	void updateProductVersionParent(String productName, String version, String parentProductName, String parentPrdVersion) throws DataServiceException;
 	
 	/**
 	 * Loads all artifacts from a product version
@@ -137,6 +144,51 @@ public interface DataService {
 	 * Gets the Artifact by groupId, artifactId and version.
 	 */
 	Artifact getArtifact(String groupId, String artifactId, String version) throws DataServiceException;
+	
+	/**
+	 * Loads native components of a specific product version
+	 * 
+	 */
+	List<Component> loadNativeComponents(String productName, String version) throws DataServiceException;
+	
+	/**
+	 * Add a native component to a specific product version
+	 * 
+	 */
+	void addNativeComponent(String productName, String version, String compName, String compVer) throws DataServiceException;
+	
+	/**
+	 * Removes a native component from a specific product version
+	 */
+	void removeNativeComponent(String productName, String version, String compName, String compVer) throws DataServiceException;
+	
+	/**
+	 * Imports native components to a specific product version from an URL
+	 */
+	void importNativeComponents(String productName, String version, URL compListURL) throws DataServiceException;
+	
+	/**
+	 * Imports native components to a specific product version by specifying the component list
+	 * 
+	 * Format of the component list:
+	 *  1). Each component matches in each line
+	 *  2). For each line: ComponentName:ComponentVersion
+	 */
+	void importNativeComponents(String productName, String version, List<String> componentList) throws DataServiceException;
+	
+	/**
+	 * Imports components by an URL
+	 */
+	void importComponents(URL compListURL) throws DataServiceException;
+	
+	/**
+	 * Imports components by a components list
+	 * 
+	 * Format of the component list:
+	 *  1). Each component matches in each line
+	 *  2). For each line: ComponentName:ComponentVersion
+	 */
+	void importComponents(List<String> componentList) throws DataServiceException;
 	
 	/**
 	 * Gets Component by name and version

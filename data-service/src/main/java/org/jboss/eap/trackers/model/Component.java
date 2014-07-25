@@ -4,17 +4,23 @@
 package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * @author lgao
@@ -58,6 +64,43 @@ public class Component implements Serializable  {
 	@Column
 	private String description;
 	
+	@Column
+	private String groupId;
+	
+	/** In case it is a native components, it might belong to some PVs **/
+	@ManyToMany(mappedBy = "nativeComps", fetch = FetchType.LAZY)
+	private List<ProductVersion> pvs;
+	
+
+	/**
+	 * @return the pvs
+	 */
+	@XmlTransient
+	@JsonIgnore
+	public List<ProductVersion> getPvs() {
+		return pvs;
+	}
+
+	/**
+	 * @param pvs the pvs to set
+	 */
+	public void setPvs(List<ProductVersion> pvs) {
+		this.pvs = pvs;
+	}
+
+	/**
+	 * @return the groupId
+	 */
+	public String getGroupId() {
+		return groupId;
+	}
+
+	/**
+	 * @param groupId the groupId to set
+	 */
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
 
 	public String getName() {
 		return name;

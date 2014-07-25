@@ -53,4 +53,17 @@ public interface Queries {
 			+ " WHERE p.name = :name"
 			+ " AND pv.version = :version";
 	
+	/** load native components by product name and version **/
+	String QUERY_LOAD_COMPS_BY_PV = "components.loadComponentsByPV";
+	String _QUERY_LOAD_COMPS_BY_PV = "SELECT c FROM Component c"
+			+ " INNER JOIN c.pvs pv"
+			+ " INNER JOIN pv.product p"
+			+ " WHERE p.name = :name"
+			+ " AND pv.version = :version";
+	
+	/** load components by groupId if any **/
+	String QUERY_LOAD_COMPS_BY_GROUPID = "components.loadComponentsByGroupId";
+	String _QUERY_LOAD_COMPS_BY_GROUPID = "SELECT c FROM Component c"
+			+ " WHERE c.groupId = :groupId";
+	
 }

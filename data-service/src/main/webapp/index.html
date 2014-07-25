@@ -1,7 +1,101 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-  <meta http-equiv="refresh" content="0;URL=/html/jars.html"/>
-</head>
+<!DOCTYPE html>
+<html lang="en" ng-app="trackerApp">
+   <head> 
+     <title>Trackers Project · Tracking all JBoss Middleware products information</title>
+
+      <link href="css/bootstrap.min.css" media="screen" rel="stylesheet" /> 
+      <link rel="stylesheet" type="text/css" href="css/style.css" />
+     
+      <script src="js/jquery.min.js"></script>
+      <script src="js/angular.min.js"></script>
+      <script src="js/trackers.js"></script>
+
+  </head>
+<body>
+
+<h2 class="left20">Artifacts Information for JBoss Middleware Products</h2>
+<div class="line"></div>
+
+<div class="container floatLeft"> 
+ <div class="spaceline"></div>
+  <div>
+    <ul class="nav nav-pills"> 
+      <li class="active"><a href="#">EAP</a></li> 
+      <li class=""><a href="#">EWS</a></li> 
+      <li class=""><a href="#">EWP</a></li>
+      <li class=""><a href="#">Search</a></li>
+    </ul> 
+  </div>
+</div>
+
+ <div style="clear:both;width:90%;height:15px;">&nbsp;</div>
+
+<div style="border-bottom:1px solid #ebebeb;height:3px;"></div>
+<div style="width:90%;padding-left:20px;text-align:left;" ng-controller="dateController as date">
+  Copyright &copy; {{date.year}} Red Hat
+</div>
+
+<script>
+
+  function fillJars(name, version, milestone){
+     $.getJSON("/api/product.do?name=" + name + "&version=" + version + "&milestone=" + milestone, function(data){
+       $("#jars").empty().append("&nbsp;");
+       var prdNameVersion = name + "-" + version;
+       if(milestone != '' && milestone != null && milestone != 'undefined') { prdNameVersion = prdNameVersion + "-" + milestone; }
+       $("#currentProduct").empty().append(prdNameVersion);
+       for (var i in data){
+         var dis = data[i].name + "-" + data[i].version;
+         if (data[i].type == 'jar') {
+            dis = dis + ".jar";
+         }
+         var verEle = $('<div>').attr("version", version).attr("prodName",name).attr("milestone",milestone).attr("artiName", data[i].name).attr("type", data[i].type).attr("artiVersion", data[i].version).append("<strong><a href=\"#\">" + dis + "</a></strong>&nbsp;&nbsp;").click(function(){});
+         $("#jars").append(verEle);
+       }
+     });
+  }
+
+  function fillMilestones(name, version){
+     $.getJSON("/api/milestones.do?name=" + name + "&version=" + version, function(data){
+       $("#milestones").empty().append("&nbsp;");
+       for (var i in data){
+         var verEle = $('<span>').attr("version", version).attr("prodName",name).attr("milestone",data[i].milestone).append("<strong><a href=\"#\">" + data[i].milestone + "</a></strong>&nbsp;&nbsp;").click(function(){fillJars($(this).attr("prodName"), $(this).attr("version"), $(this).attr("milestone"));});
+         $("#milestones").append(verEle);
+       }
+       if(data.length == 0){
+         fillJars(name,version,'');
+       }
+       if(data.length > 0){
+         fillJars(name,version,data[0].milestone);
+       }
+     });
+  }
+
+  function fillVersions(name){
+     $.getJSON("/api/versions.do?name=" + name, function(data){
+       $("#versions").empty().append("&nbsp;");
+       $("#milestones").empty().append("&nbsp;");
+       for (var i in data){
+         var verEle = $('<span>').attr("prodName",name).attr("version",data[i].version).append("<strong><a href=\"#\">" + data[i].version+ "</a></strong>&nbsp;&nbsp;").click(function(){fillMilestones($(this).attr("prodName"), $(this).attr("version"));});
+         $("#versions").append(verEle);
+       }
+     });
+  }
+
+  function fillProducts() {
+     $.getJSON("/api/products.do", function(data){
+       for (var i in data){
+         var prdEle = $('<span>').attr("prodName",data[i].name).append("<strong><a href=\"#\">" + data[i].fullname + "</a></strong>&nbsp;&nbsp;").click(function(){fillVersions($(this).attr("prodName"));});
+         $("#products").append(prdEle);
+       }
+     });
+  }
+
+  $(document).ready(function(){
+     fillProducts();
+  });
+
+</script>
+
+</body>
 </html>
+

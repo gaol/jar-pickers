@@ -32,7 +32,7 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
    public void testLoadProducts() throws Exception {
 	   List<Product> allProds = dataService.loadAllProducts();
 	   Assert.assertNotNull(allProds);
-	   Assert.assertEquals(3, allProds.size());
+	   Assert.assertEquals(4, allProds.size());
 	   
 	   // EAP
 	   Product prd = allProds.get(0);
@@ -106,6 +106,24 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 	   ProductVersion pv = pvs.get(0);
 	   Assert.assertNotNull(pv);
 	   Assert.assertEquals("5.2.0", pv.getVersion());
+	   
+	   // BRMS
+	   prd = allProds.get(3);
+	   Assert.assertNotNull(prd);
+	   Assert.assertEquals("BRMS", prd.getName());
+	   Assert.assertEquals("JBoss BRMS", prd.getFullName());
+	   Assert.assertEquals("Business Rule Management System", prd.getDescription());
+	   pvs = prd.getVersions();
+	   Assert.assertNotNull(pvs);
+	   Assert.assertEquals(1, pvs.size());
+	   pv = pvs.get(0);
+	   Assert.assertNotNull(pv);
+	   Assert.assertEquals("6.2.0", pv.getVersion());
+	   
+	   ProductVersion parentPV = pv.getParent();
+	   Assert.assertNotNull(parentPV);
+	   Assert.assertEquals("6.2.4", parentPV.getVersion());
+	   
     }
    
    @Test
@@ -114,7 +132,7 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 		   @Override
 		public Void call() throws Exception {
 			   List<Product> prods = dataService.loadAllProducts();
-			   Assert.assertEquals(3, prods.size()); 
+			   Assert.assertEquals(4, prods.size()); 
 			   
 			   // save a new product
 			   Product prod = new Product();
@@ -124,8 +142,8 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   
 			   dataService.saveProduct(prod);
 			   prods = dataService.loadAllProducts();
-			   Assert.assertEquals(4, prods.size());
-			   Product prodDB = prods.get(3);
+			   Assert.assertEquals(5, prods.size());
+			   Product prodDB = prods.get(4);
 			   Assert.assertNotNull(prodDB);
 			   Assert.assertEquals(prod, prodDB);
 			   Assert.assertEquals("New-Prod", prodDB.getName());
@@ -138,10 +156,20 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   verSet.add("2.3.0");
 			   dataService.addProductVersions("New-Prod", verSet);
 			   
+			   // update parent for a product version
+			   ProductVersion pvTest = dataService.getProductVersion("New-Prod", "2.3.0");
+			   Assert.assertNotNull(pvTest);
+			   Assert.assertNull(pvTest.getParent());
+			   dataService.updateProductVersionParent("New-Prod", "2.3.0", "New-Prod", "2.2.0");
+			   pvTest = dataService.getProductVersion("New-Prod", "2.3.0");
+			   Assert.assertNotNull(pvTest);
+			   Assert.assertNotNull(pvTest.getParent());
+			   Assert.assertEquals("2.2.0", pvTest.getParent().getVersion());
+			   
 			   // remove the new product
 			   dataService.removeProduct("New-Prod"); // this should delete all versions together
 			   prods = dataService.loadAllProducts();
-			   Assert.assertEquals(3, prods.size());
+			   Assert.assertEquals(4, prods.size());
 			   
 			   // update a product
 			   Product firstProd = prods.get(0);
@@ -264,6 +292,7 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   Component newComp = new Component();
 			   newComp.setName("tomcat6");
 			   newComp.setVersion("6.0.37");
+			   newComp.setGroupId("org.apache.tomcat");
 			   dataService.saveComponent(newComp);
 			   
 			   // update artifact component to all artifacts in groupId
@@ -273,6 +302,7 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   Assert.assertNotNull(artiComp);
 			   Assert.assertEquals("tomcat6", artiComp.getName());
 			   Assert.assertEquals("6.0.37", artiComp.getVersion());
+			   Assert.assertEquals("org.apache.tomcat", artiComp.getGroupId());
 			   arti = dataService.getArtifact("org.apache.tomcat", "catalina", "6.0.37");
 			   artiComp = arti.getComponent();
 			   Assert.assertNotNull(artiComp);
@@ -310,6 +340,20 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   Assert.assertNotNull(eap624Artis);
 			   Assert.assertEquals(355, eap624Artis.size());
 			   
+			   // import native components to EAP 6.2.4
+			   URL compsURL = getClass().getClassLoader().getResource("comps.txt");
+			   Assert.assertNotNull(compsURL);
+			   dataService.importNativeComponents("EAP", "6.2.4", compsURL);
+			   
+			   List<Component> eap624NativeComps = dataService.loadNativeComponents("EAP", "6.2.4");
+			   Assert.assertNotNull(eap624NativeComps);
+			   Assert.assertEquals(17, eap624NativeComps.size());
+			   
+			   // check one of the native component
+			   Component checkComp = dataService.getComponent("guava", "13.0.1-redhat-1");
+			   Assert.assertNotNull(checkComp);
+			   Assert.assertTrue(eap624NativeComps.contains(checkComp));
+			   
 			   // EWP delete
 			   List<Artifact> artis = dataService.loadArtifacts("EWP", "5.2.0");
 			   Assert.assertNotNull(artis);
@@ -320,7 +364,7 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   artis = dataService.loadArtifacts("EWP", "5.2.0");
 			   Assert.assertNotNull(artis);
 			   Assert.assertEquals(0, artis.size());
-				return null;
+			   return null;
 			}
 	   });
    }

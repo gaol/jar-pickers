@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
@@ -116,6 +117,17 @@ public class RestService {
 			@PathParam("versions") SetString versions) throws DataServiceException {
 		Set<String> verSet = versions.asSet();
 		dataService.addProductVersions(productName, verSet);
+		return Response.ok().build();
+	}
+	
+	@POST
+	@Path("/pvp/{productName}:{version}/{parentProductName}:{parentVersion}")
+	@RolesAllowed("tracker")
+	public Response updatePVParent(@PathParam("productName") String productName, 
+			@PathParam("version") String version, @PathParam("parentProductName") String parentProductName, 
+			@PathParam("parentVersion") String parentVersion)
+			throws DataServiceException {
+		dataService.updateProductVersionParent(productName, version, parentProductName, parentVersion);
 		return Response.ok().build();
 	}
 	
@@ -215,21 +227,17 @@ public class RestService {
 	@RolesAllowed("tracker")
 	public Response importArtifactsWithUploadFile(@PathParam("productName") String productName, @PathParam("version") String version,
 			MultipartFormDataInput multipPartInput) throws DataServiceException {
-		Map<String, List<InputPart>> formParts = multipPartInput.getFormDataMap();
-		List<InputPart> filePart = formParts.get("file");
-		InputPart firstFilePart = null;
-		if (filePart != null && filePart.size() > 0) {
-			// select the first one
-			firstFilePart = filePart.get(0);
-		}
-		if (firstFilePart != null) {
-			try {
-				InputStream input = firstFilePart.getBody(InputStream.class,null);
-				List<String> artiStrs = DBDataService.getArtiStrings(input);
-				dataService.importArtifacts(productName, version, artiStrs);
-			} catch (IOException e) {
-				throw new DataServiceException("Can't read uploaded file.", e);
+		
+		try {
+			InputStream input = getFileInputFromMultipartFormDataInput(multipPartInput);
+			if (input == null) {
+				return Response.status(Status.BAD_REQUEST).entity("No File upload").build();
 			}
+			// the getMatchRegexLines will close the InputStream at last
+			List<String> artiStrs = DBDataService.getMatchRegexLines(input, DataService.ARTI_STR_REGEX);
+			dataService.importArtifacts(productName, version, artiStrs);
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read the uploaded file.", e);
 		}
 		return Response.ok().build();
 	}
@@ -252,6 +260,91 @@ public class RestService {
 		return Response.ok().build();
 	}
 	
+	@PUT
+	@Path("/ci/{productName}:{version}")
+	@RolesAllowed("tracker")
+	public Response importNativeComponents(@PathParam("productName") String productName, @PathParam("version") String version,
+			@QueryParam("url") URL composURL) throws DataServiceException {
+		dataService.importNativeComponents(productName, version, composURL);
+		return Response.ok().build();
+	}
+	
+	@PUT
+	@Path("/ci")
+	@RolesAllowed("tracker")
+	public Response importComponents(@QueryParam("url") URL composURL) throws DataServiceException {
+		dataService.importComponents(composURL);
+		return Response.ok().build();
+	}
+	
+	@PUT
+	@Path("/ciu")
+	@RolesAllowed("tracker")
+	public Response importComponentsWithUploadFile(MultipartFormDataInput multipPartInput) throws DataServiceException {
+		try {
+			InputStream input = getFileInputFromMultipartFormDataInput(multipPartInput);
+			if (input == null) {
+				return Response.status(Status.BAD_REQUEST).entity("No File upload").build();
+			}
+			// the getMatchRegexLines will close the InputStream at last
+			List<String> composStrs = DBDataService.getMatchRegexLines(input, DataService.COMP_STR_REGEX);
+			dataService.importComponents(composStrs);
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read the uploaded file.", e);
+		}
+		return Response.ok().build();
+	}
+	
+	@PUT
+	@Path("/ciu/{productName}:{version}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@RolesAllowed("tracker")
+	public Response importNativeComponentsWithUploadFile(@PathParam("productName") String productName, @PathParam("version") String version,
+			MultipartFormDataInput multipPartInput) throws DataServiceException {
+		try {
+			InputStream input = getFileInputFromMultipartFormDataInput(multipPartInput);
+			if (input == null) {
+				return Response.status(Status.BAD_REQUEST).entity("No File upload").build();
+			}
+			// the getMatchRegexLines will close the InputStream at last
+			List<String> composStrs = DBDataService.getMatchRegexLines(input, DataService.COMP_STR_REGEX);
+			dataService.importNativeComponents(productName, version, composStrs);
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read the uploaded file.", e);
+		}
+		return Response.ok().build();
+	}
+	
+	private InputStream getFileInputFromMultipartFormDataInput(MultipartFormDataInput multipPartInput) throws IOException {
+		Map<String, List<InputPart>> formParts = multipPartInput.getFormDataMap();
+		List<InputPart> filePart = formParts.get("file");
+		InputPart firstFilePart = null;
+		if (filePart != null && filePart.size() > 0) {
+			// select the first one
+			firstFilePart = filePart.get(0);
+		}
+		if (firstFilePart != null) {
+			return firstFilePart.getBody(InputStream.class,null);
+		}
+		return null;
+	}
+	
+	@POST
+	@Path("/cg/{compName}:{compVer}/{groupId}")
+	@RolesAllowed("tracker")
+	public Response updateComponentGroupId(@PathParam("compName") String compName, 
+			@PathParam("compVer") String compVer, @PathParam("groupId") String groupId)
+			throws DataServiceException {
+		Component comp = dataService.getComponent(compName, compVer);
+		if (comp == null) {
+			return Response.status(Status.NOT_FOUND).
+					entity("No component: " + comp.toString() + " was found.").build();
+		}
+		comp.setGroupId(groupId); 
+		dataService.saveComponent(comp);
+		return Response.ok().build();
+	}
+	
 	@POST
 	@Path("/n/{type}-{id}")
 	@RolesAllowed("tracker")
@@ -261,4 +354,5 @@ public class RestService {
 		dataService.updateNote(id, type, note);
 		return Response.ok().build();
 	}
+	
 }

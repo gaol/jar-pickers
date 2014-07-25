@@ -58,10 +58,16 @@ public final class POJO2JS {
 		String jsFuncName = getjsFuncName(cls);
 		sb.append("function " + jsFuncName + "(){}");
 		sb.append(jsFuncName + ".prototype={");
+		boolean isFirst = true;
 		for (Field pojoField: getPojoFields(cls))
 		{
+			if(isFirst) {
+				isFirst = false;
+			}
+			else {
+				sb.append(",");
+			}
 			sb.append(jsFieldInit(pojoField));
-			sb.append(",");
 		}
 		sb.append("}");
 		sb.append("\n");
@@ -77,8 +83,8 @@ public final class POJO2JS {
 	}
 
 	private String getDefaultValueString(Field pojoField) {
-		Class<?> cls = pojoField.getClass();
-		if (cls.isArray())
+		Class<?> cls = pojoField.getType();
+		if (cls.isArray() || Iterable.class.isAssignableFrom(cls))
 		{
 			return "[]";
 		}

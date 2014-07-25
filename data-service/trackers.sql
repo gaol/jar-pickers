@@ -1,7 +1,9 @@
--- DDL for Postgresql server
 
     alter table Artifact 
         drop constraint FK_f6mejfa67masq4an2vaffx8fm;
+
+    alter table ProductVersion 
+        drop constraint FK_d03isp2sgwg3ql7gc3ngo9um3;
 
     alter table ProductVersion 
         drop constraint FK_hrp5ti9rpa4n243w1yw9ycuxm;
@@ -11,6 +13,12 @@
 
     alter table ProductVersion_Artifact 
         drop constraint FK_k8w3ldfo4ryxde05s0q5uw7ah;
+
+    alter table ProductVersion_Component 
+        drop constraint FK_ngwyto8hcvcq9uua2xn96rhr6;
+
+    alter table ProductVersion_Component 
+        drop constraint FK_lbqgdp2tcmlaxclcysmoxg6dg;
 
     drop table if exists Artifact cascade;
 
@@ -22,9 +30,9 @@
 
     drop table if exists ProductVersion_Artifact cascade;
 
-    drop sequence hibernate_sequence;
+    drop table if exists ProductVersion_Component cascade;
 
-    drop sequence trackerseq;
+    drop sequence hibernate_sequence;
 
     create table Artifact (
         id int8 not null,
@@ -41,6 +49,7 @@
     create table Component (
         id int8 not null,
         description varchar(255),
+        groupId varchar(255),
         name varchar(255),
         scm varchar(255),
         version varchar(255),
@@ -59,6 +68,7 @@
         id int8 not null,
         note varchar(255),
         version varchar(255),
+        parent_id int8,
         product_id int8,
         primary key (id)
     );
@@ -66,6 +76,11 @@
     create table ProductVersion_Artifact (
         pvs_id int8 not null,
         artifacts_id int8 not null
+    );
+
+    create table ProductVersion_Component (
+        pvs_id int8 not null,
+        nativeComps_id int8 not null
     );
 
     alter table Artifact 
@@ -86,6 +101,11 @@
         references Component;
 
     alter table ProductVersion 
+        add constraint FK_d03isp2sgwg3ql7gc3ngo9um3 
+        foreign key (parent_id) 
+        references ProductVersion;
+
+    alter table ProductVersion 
         add constraint FK_hrp5ti9rpa4n243w1yw9ycuxm 
         foreign key (product_id) 
         references Product;
@@ -97,6 +117,16 @@
 
     alter table ProductVersion_Artifact 
         add constraint FK_k8w3ldfo4ryxde05s0q5uw7ah 
+        foreign key (pvs_id) 
+        references ProductVersion;
+
+    alter table ProductVersion_Component 
+        add constraint FK_ngwyto8hcvcq9uua2xn96rhr6 
+        foreign key (nativeComps_id) 
+        references Component;
+
+    alter table ProductVersion_Component 
+        add constraint FK_lbqgdp2tcmlaxclcysmoxg6dg 
         foreign key (pvs_id) 
         references ProductVersion;
 

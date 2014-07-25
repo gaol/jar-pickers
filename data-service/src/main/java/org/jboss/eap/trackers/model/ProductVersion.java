@@ -47,6 +47,14 @@ public class ProductVersion implements Serializable {
 	@ManyToOne(fetch = FetchType.EAGER)
 	private Product product;
 	
+	/** This is the based product version, for example, the layered products based on EAP **/
+	@ManyToOne(fetch = FetchType.EAGER)
+	private ProductVersion parent;
+	
+	/** Each PV contains normal artifacts and some native components **/
+	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	private List<Component> nativeComps;
+	
 	/**
 	 * Version can be arbitrary string.
 	 * 
@@ -66,6 +74,38 @@ public class ProductVersion implements Serializable {
 	
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	private List<Artifact> artifacts;
+
+	/**
+	 * @return the parent
+	 */
+	@XmlTransient
+	@JsonIgnore
+	public ProductVersion getParent() {
+		return parent;
+	}
+
+	/**
+	 * @param parent the parent to set
+	 */
+	public void setParent(ProductVersion parent) {
+		this.parent = parent;
+	}
+
+	/**
+	 * @return the nativeComps
+	 */
+	@XmlTransient
+	@JsonIgnore
+	public List<Component> getNativeComps() {
+		return nativeComps;
+	}
+
+	/**
+	 * @param nativeComps the nativeComps to set
+	 */
+	public void setNativeComps(List<Component> nativeComps) {
+		this.nativeComps = nativeComps;
+	}
 
 	/**
 	 * @return the artifacts

@@ -33,6 +33,7 @@ public abstract class AbstractTrackersTest {
 						"META-INF/persistence.xml")
 				.addAsResource("META-INF/orm.xml", "META-INF/orm.xml")
 				.addAsResource("artis.txt", "artis.txt")
+				.addAsResource("comps.txt", "comps.txt")
 				.addAsResource("import.sql", "import.sql")
 				.addPackage(DataService.class.getPackage())
 				.addPackage(DBDataService.class.getPackage())

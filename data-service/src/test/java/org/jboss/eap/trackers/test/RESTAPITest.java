@@ -58,6 +58,7 @@ public class RESTAPITest {
 				.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 		return ShrinkWrap.create(WebArchive.class, "test.war")
 				.addAsResource("artis.txt", "artis.txt")
+				.addAsResource("comps.txt", "comps.txt")
 				.addAsWebInfResource("WEB-INF/web.xml", "web.xml")
 				.addAsLibraries(ejb);
 	}
@@ -75,7 +76,7 @@ public class RESTAPITest {
 		ClientResponse<List> prodsResp = request.get(List.class, List.class);
 		List<Product> prods = prodsResp.getEntity();
 		Assert.assertNotNull(prods);
-		Assert.assertEquals(3, prods.size());
+		Assert.assertEquals(4, prods.size());
 
 		// get product
 		ctxPath = "http://localhost:8080/test/api/p/EAP";
@@ -167,14 +168,14 @@ public class RESTAPITest {
 		List<Product> prds = (List<Product>) request.post(List.class)
 				.getEntity();
 		Assert.assertNotNull(prds);
-		Assert.assertEquals(4, prds.size());
+		Assert.assertEquals(5, prds.size());
 
 		// remove a product
 		ctxPath = "http://localhost:8080/test/api/p/Prod-Name";
 		request = getClientRequest(ctxPath);
 		prds = (List<Product>) request.delete(List.class).getEntity();
 		Assert.assertNotNull(prds);
-		Assert.assertEquals(3, prds.size());
+		Assert.assertEquals(4, prds.size());
 
 		// remove product version
 		ctxPath = "http://localhost:8080/test/api/pv/EWP:5.2.0";
@@ -211,6 +212,7 @@ public class RESTAPITest {
 		Component comp = new Component();
 		comp.setName("comp-name");
 		comp.setVersion("1.1.1");
+		comp.setGroupId("org.mygroupId");
 		ctxPath = "http://localhost:8080/test/api/c";
 		request = getClientRequest(ctxPath);
 		request.body(MediaType.APPLICATION_JSON_TYPE, comp);
@@ -218,6 +220,21 @@ public class RESTAPITest {
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		comp = dataService.getComponent("comp-name", "1.1.1");
 		Assert.assertNotNull(comp);
+		Assert.assertEquals("comp-name", comp.getName());
+		Assert.assertEquals("1.1.1", comp.getVersion());
+		Assert.assertEquals("org.mygroupId", comp.getGroupId());
+		
+		// update component groupId
+		ctxPath = "http://localhost:8080/test/api/cg/comp-name:1.1.1/New-Group_ID";
+		request = getClientRequest(ctxPath);
+		request.formParameter("buildInfo", "this is the build info");
+		resp = request.post();
+		Assert.assertEquals(Status.OK, resp.getResponseStatus());
+		comp = dataService.getComponent("comp-name", "1.1.1");
+		Assert.assertNotNull(comp);
+		Assert.assertEquals("comp-name", comp.getName());
+		Assert.assertEquals("1.1.1", comp.getVersion());
+		Assert.assertEquals("New-Group_ID", comp.getGroupId());
 
 		// update artifact build info
 		ctxPath = "http://localhost:8080/test/api/ab/org.jboss.ironjacamar:ironjacamar-core:1.1.3.Final";
@@ -294,6 +311,43 @@ public class RESTAPITest {
 		Assert.assertNotNull(eap623Artis);
 		Assert.assertEquals(355, eap623Artis.size());
 		
+		// update product version parent, just for test: EAP-6.2.4 based on EAP-6.2.3
+		ctxPath = "http://localhost:8080/test/api/pvp/EAP:6.2.4/EAP:6.2.3";
+		request = getClientRequest(ctxPath);
+		resp = request.post();
+		Assert.assertEquals(Status.OK, resp.getResponseStatus());
+		ProductVersion eap624 = dataService.getProductVersion("EAP", "6.2.4");
+		Assert.assertNotNull(eap624);
+		ProductVersion eap623 = eap624.getParent();
+		Assert.assertNotNull(eap623);
+		Assert.assertEquals("6.2.3", eap623.getVersion());
+		
+		// import native components to a PV: EAP-6.2.4
+		URL compsURL = getClass().getClassLoader().getResource("comps.txt");
+		Assert.assertNotNull(compsURL);
+		ctxPath = "http://localhost:8080/test/api/ci/EAP:6.2.4?url=" + compsURL.toString();
+		request = getClientRequest(ctxPath);
+		resp = request.put();
+		Assert.assertEquals(Status.OK, resp.getResponseStatus());
+		List<Component> eap624Comps = dataService.loadNativeComponents("EAP", "6.2.4");
+		Assert.assertNotNull(eap624Comps);
+		// eap624 has one predefined in import.sql
+		Assert.assertEquals(17, eap624Comps.size());
+		
+		// import native components by uploading file to PV: EAP-6.2.3
+		ctxPath = "http://localhost:8080/test/api/ciu/EAP:6.2.3";
+		request = getClientRequest(ctxPath);
+		out = new MultipartFormDataOutput();
+		File compsFile = fileFromClassLoaderResource("comps.txt", getClass().getClassLoader());
+		out.addFormData("file", compsFile, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+		request.body(MediaType.MULTIPART_FORM_DATA_TYPE, out);
+		
+		resp = request.put();
+		Assert.assertEquals(Status.OK, resp.getResponseStatus());
+		List<Component> eap623Comps = dataService.loadNativeComponents("EAP", "6.2.3");
+		Assert.assertNotNull(eap623Comps);
+		Assert.assertEquals(16, eap623Comps.size());
+		
 	}
 	
 	private File fileFromClassLoaderResource(String resource, ClassLoader loader) throws Exception {
@@ -329,7 +383,9 @@ public class RESTAPITest {
 	}
 
 	private Object getTrackerLogin() {
-		String userPwd = "test:test1#pwd";
+		String testUserName = System.getProperty("junit.test.username", "test");
+		String testPassword = System.getProperty("junit.test.password", "test1#pwd");
+		String userPwd = testUserName + ":" + testPassword;
 		return "Basic " + new String(Base64.encodeBytes(userPwd.getBytes()));
 	}
 

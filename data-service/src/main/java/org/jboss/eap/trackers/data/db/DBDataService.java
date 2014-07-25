@@ -94,6 +94,21 @@ public class DBDataService implements DataService {
 	}
 	
 	@Override
+	@RolesAllowed("tracker")
+	public void updateProductVersionParent(String productName, String version,
+			String parentProductName, String parentPrdVersion)
+			throws DataServiceException {
+		ProductVersion pv = getProductVersion(productName, version);
+		if (pv == null)
+			throw new DataServiceException("There is no ProductVersion with productName: " + productName + ", Version: " + version);
+		ProductVersion parentPV = getProductVersion(parentProductName, parentPrdVersion);
+		if (parentPV == null)
+			throw new DataServiceException("There is no ProductVersion with productName: " + parentProductName + ", Version: " + parentPrdVersion);
+		pv.setParent(parentPV);
+		this.em.merge(pv);
+	}
+	
+	@Override
 	public Product getProductByName(String name) throws DataServiceException {
 		if (name == null) {
 			throw new IllegalArgumentException("Product Name should be provided.");
@@ -187,7 +202,7 @@ public class DBDataService implements DataService {
 		}
 		Artifact arti = getArtifact(groupId, artifactId, artiVersion);
 		if (arti != null) {
-			logger.info("Artifact: " + arti.toString() + " has been added already. Add it to " + 
+			logger.info("Artifact: " + arti.toString() + " has been added already. Associate it to " + 
 					productName + ":" + version); 
 		}
 		else {
@@ -203,7 +218,7 @@ public class DBDataService implements DataService {
 			this.em.persist(arti);
 		}
 		if (artifacts.contains(arti)) {
-			throw new DataServiceException("Artifact: " + arti.toString() + " has been added to the Product Version: " + pv.toString());
+			throw new DataServiceException("Artifact: " + arti.toString() + " has been associated with the Product Version: " + pv.toString());
 		}
 		artifacts.add(arti);
 		this.em.merge(pv);
@@ -216,7 +231,7 @@ public class DBDataService implements DataService {
 			throw new DataServiceException("Wrong state");
 		}
 		artiVers.add(pv);
-		this.em.persist(arti);
+		this.em.merge(arti);
 	}
 	
 	/* (non-Javadoc)
@@ -257,7 +272,11 @@ public class DBDataService implements DataService {
 		if (comp != null) {
 			return comp;
 		}
-		return null;
+		// guess from all components
+		comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
+				.setParameter("groupId", groupId)
+				.getResultList();
+		return comps.size() > 0 ? comps.get(0) : null;
 	}
 
 	/* (non-Javadoc)
@@ -348,7 +367,7 @@ public class DBDataService implements DataService {
 			return;
 		}
 		artis.removeAll(artisToDelete);
-		this.em.merge(pv); // is it OK ?
+		this.em.merge(pv);
 		
 		// remove pv from all the artifacts from links in memory
 		for (Artifact arti: artisToDelete) {
@@ -366,19 +385,15 @@ public class DBDataService implements DataService {
 	@Override
 	@RolesAllowed("tracker")
 	public void importArtifacts(String productName, String version, URL artifactListURL) throws DataServiceException {
-		ProductVersion pv = getProductVersion(productName, version);
-		if (pv == null) {
-			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
-		}
 		if (artifactListURL == null) {
 			throw new IllegalArgumentException("URL of the artifact lists can't be null.");
 		}
 		try {
-			List<String> artiStrs = getArtiStrings(artifactListURL.openStream());
+			List<String> artiStrs = getMatchRegexLines(artifactListURL.openStream(), ARTI_STR_REGEX);
 			if (artiStrs == null || artiStrs.size() == 0) {
 				logger.warn("No Artifacts will be imported, because there are no artifacts in url: " + artifactListURL);
 			}
-			saveArtifactsToProductVersion(pv, artiStrs);
+			importArtifacts(productName, version, artiStrs);
 		} catch (IOException e) {
 			throw new DataServiceException("Can't read artifacts information from URL: " + artifactListURL, e);
 		}
@@ -388,14 +403,6 @@ public class DBDataService implements DataService {
 	@RolesAllowed("tracker")
 	public void importArtifacts(String productName, String version,
 			List<String> artiStrs) throws DataServiceException {
-		ProductVersion pv = getProductVersion(productName, version);
-		if (pv == null) {
-			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
-		}
-		saveArtifactsToProductVersion(pv, artiStrs);
-	}
-	
-	private void saveArtifactsToProductVersion(ProductVersion pv, List<String> artiStrs) throws DataServiceException {
 		if (artiStrs != null && artiStrs.size() > 0) {
 			for (String artiStr: artiStrs) {
 				// Format: groupId:artifactId:version:type
@@ -403,47 +410,18 @@ public class DBDataService implements DataService {
 				if (artiArray.length < 3) {
 					throw new DataServiceException("Wrong Format of Artifact String: " + artiStr);
 				}
-				String groupId = artiArray[0];
-				String artifactId = artiArray[1];
-				String artiVersion = artiArray[2];
+				String groupId = artiArray[0].trim();
+				String artifactId = artiArray[1].trim();
+				String artiVersion = artiArray[2].trim();
 				String type = DEFAULT_ARTIFACT_TYPE;
 				if (artiArray.length >= 4 && artiArray[3] != null && artiArray[3].length() > 0) {
-					type = artiArray[3];
+					type = artiArray[3].trim();
 				}
-				addArtifact(pv.getProduct().getName(), pv.getVersion(), groupId, artifactId, artiVersion, type);
+				addArtifact(productName, version, groupId, artifactId, artiVersion, type);
 			}
 		}
 	}
-
-	/**
-	 * This will close the input stream at last.
-	 */
-	static List<String> getArtiStrings(InputStream input) throws IOException{
-		List<String> artis = new ArrayList<String>();
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				if (line.startsWith("#")) {
-					continue;
-				}
-				line = line.replace("::", "");
-				if (line.matches(ARTI_STR_REGEX)) {
-					artis.add(line);
-				}
-			}
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-				}
-			}
-		}
-		return artis;
-	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.jboss.eap.trackers.data.DataService#getComponent(java.lang.String, java.lang.String)
 	 */
@@ -458,6 +436,225 @@ public class DBDataService implements DataService {
 				.setParameter("version", version)
 				.getResultList();
 		return comps.size() > 0 ? comps.get(0) : null;
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see org.jboss.eap.trackers.data.DataService#loadNativeComponents(java.lang.String, java.lang.String)
+	 */
+	@Override
+	public List<Component> loadNativeComponents(String productName,
+			String version) throws DataServiceException {
+		if (productName == null || version == null) {
+			throw new IllegalArgumentException("Both productName and version can't be null.");
+		}
+		return this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_PV, Component.class)
+				.setParameter("name", productName)
+				.setParameter("version", version)
+				.getResultList();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jboss.eap.trackers.data.DataService#addNativeComponent(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void addNativeComponent(String productName, String version, String compName, String compVer)
+			throws DataServiceException {
+		ProductVersion pv = getProductVersion(productName, version);
+		if (pv == null) {
+			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
+		}
+		List<Component> nativeComps = pv.getNativeComps();
+		if (nativeComps == null) {
+			nativeComps = new ArrayList<Component>();
+			pv.setNativeComps(nativeComps);
+		}
+		Component comp = getComponent(compName, compVer);
+		if (comp != null) {
+			logger.info("Component: " + comp.toString() + " has been added already. Associate it to " + 
+					productName + ":" + version); 
+		} else {
+			comp = new Component();
+			comp.setName(compName);
+			comp.setVersion(compVer);
+			this.em.persist(comp);
+		}
+		if (nativeComps.contains(comp)) {
+			throw new DataServiceException("Component: " + comp.toString() + " has been associated with the Product Version: " + pv.toString());
+		}
+		nativeComps.add(comp);
+		this.em.merge(pv);
+		List<ProductVersion> compPVs = comp.getPvs();
+		if (compPVs == null) {
+			compPVs = new ArrayList<ProductVersion>();
+			comp.setPvs(compPVs);
+		}
+		if (compPVs.contains(pv)) {
+			throw new DataServiceException("Wrong state");
+		}
+		compPVs.add(pv);
+		this.em.merge(comp);
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jboss.eap.trackers.data.DataService#removeNativeComponent(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void removeNativeComponent(String productName, String version,
+			String compName, String compVer) throws DataServiceException {
+		ProductVersion pv = getProductVersion(productName, version);
+		if (pv == null) {
+			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
+		}
+		Component comp = getComponent(compName, compVer);
+		if (comp == null) {
+			throw new DataServiceException("No Component found: " + compName + ":" + compVer);
+		}
+		
+		List<Component> comps = pv.getNativeComps();
+		if (comps == null) {
+			logger.warn("No native components found in Product version: " + pv.toString());
+			return;
+		}
+		if (comps.remove(comp)) {
+			this.em.merge(pv);
+			// remove pv from all the components from links in memory
+			List<ProductVersion> pvs = comp.getPvs();
+			if (pvs != null && pvs.contains(pv)) {
+				pvs.remove(pv);
+				this.em.merge(comp);
+			}
+		} else {
+			logger.warn("No Components are removed from product version: " + pv.toString());
+		}
+	}
+
+	
+	/* (non-Javadoc)
+	 * @see org.jboss.eap.trackers.data.DataService#importComponents(java.net.URL)
+	 */
+	@Override
+	public void importComponents(URL compListURL) throws DataServiceException {
+		if (compListURL == null) {
+			throw new IllegalArgumentException("URL of the Component lists can't be null.");
+		}
+		try {
+			List<String> compList = getMatchRegexLines(compListURL.openStream(), COMP_STR_REGEX);
+			if (compList == null || compList.size() == 0) {
+				logger.warn("No Components will be imported, because there are no components in url: " + compListURL);
+			}
+			importComponents(compList);
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read components information from URL: " + compListURL, e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jboss.eap.trackers.data.DataService#importComponents(java.util.List)
+	 */
+	@Override
+	public void importComponents(List<String> componentList)
+			throws DataServiceException {
+		if (componentList == null || componentList.size() == 0) {
+			logger.warn("No components are provided.");
+		}
+		for (String compStr: componentList) {
+			String[] artiArray = compStr.split(":");
+			if (artiArray.length < 2) {
+				throw new DataServiceException("Wrong Format of Component String: " + compStr);
+			}
+			String compName = artiArray[0].trim();
+			String compVer = artiArray[1].trim();
+			String groupId = null;
+			if (artiArray.length >= 3 && artiArray[2] != null) {
+				groupId = artiArray[2].trim();
+			}
+			Component comp = getComponent(compName, compVer);
+			if (comp != null){
+				logger.info("Component: " + comp.toString() + " has been added already!");
+			} else {
+				comp = new Component();
+				comp.setName(compName);
+				comp.setVersion(compVer);
+				if (groupId != null) {
+					comp.setGroupId(groupId);
+				}
+				this.em.persist(comp);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jboss.eap.trackers.data.DataService#importNativeComponents(java.lang.String, java.lang.String, java.net.URL)
+	 */
+	@Override
+	@RolesAllowed("tracker")
+	public void importNativeComponents(String productName, String version,
+			URL compListURL) throws DataServiceException {
+		if (compListURL == null) {
+			throw new IllegalArgumentException("URL of the Component lists can't be null.");
+		}
+		try {
+			List<String> compList = getMatchRegexLines(compListURL.openStream(), COMP_STR_REGEX);
+			if (compList == null || compList.size() == 0) {
+				logger.warn("No Components will be imported, because there are no components in url: " + compListURL);
+			}
+			importNativeComponents(productName, version, compList);
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read components information from URL: " + compListURL, e);
+		}
+	}
+	
+	/**
+	 * This will close the input stream at last.
+	 */
+	static List<String> getMatchRegexLines(InputStream input, String regex) throws IOException{
+		List<String> result = new ArrayList<String>();
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				line = line.trim();
+				if (line.startsWith("#")) {
+					continue;
+				}
+				line = line.replace("::", "");
+				if (line.matches(regex)) {
+					result.add(line);
+				}
+			}
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		return result;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jboss.eap.trackers.data.DataService#importNativeComponents(java.lang.String, java.lang.String, java.util.List)
+	 */
+	@Override
+	@RolesAllowed("tracker")
+	public void importNativeComponents(String productName, String version,
+			List<String> compList) throws DataServiceException {
+		if (compList != null && compList.size() > 0) {
+			for (String compStr: compList) {
+				// Format: name:version
+				String[] artiArray = compStr.split(":");
+				if (artiArray.length < 2) {
+					throw new DataServiceException("Wrong Format of Component String: " + compStr);
+				}
+				String compName = artiArray[0].trim();
+				String compVer = artiArray[1].trim();
+				addNativeComponent(productName, version, compName, compVer);
+			}
+		}
 	}
 
 	/* (non-Javadoc)

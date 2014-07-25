@@ -3,6 +3,7 @@
 insert into Product (id, name, description, fullName) values (0, 'EAP', 'EAP product seria', 'JBoss Enterprise Application Platform')
 insert into Product (id, name, description, fullName) values (1, 'EWS', 'EWS product seria', 'JBoss Enterprise Web Server')
 insert into Product (id, name, description, fullName) values (2, 'EWP', 'EWP product seria', 'JBoss Enterprise Web Platform')
+insert into Product (id, name, description, fullName) values (3, 'BRMS', 'Business Rule Management System', 'JBoss BRMS')
  
 
 -- EAP 4 | 5 | 6
@@ -22,8 +23,14 @@ insert into ProductVersion (id, product_id, version, note) values (9, 1, '2.1.0'
 -- EWP 5
 insert into ProductVersion (id, product_id, version, note) values (10, 2, '5.2.0', '')
 
+-- BRMS 6
+insert into ProductVersion (id, product_id, parent_id, version, note) values (11, 3, 7, '6.2.0', '')
+
 -- sample components
-insert into Component (id, name, version, description, scm) values (0, 'picketlink', '7.2.0.Final', '', 'https://github.com/jbossas/picketlink')
+insert into Component (id, name, version, groupid, description, scm) values (0, 'picketlink', '7.2.0.Final', 'org.picketlink', '', 'https://github.com/jbossas/picketlink')
+
+-- sample native components
+insert into Component (id, name, version, description, scm) values (1, 'mod_cluster', '1.2.9.Final-redhat-1', '', 'https://github.com/modcluster/mod_cluster') 
 
 -- sample artifacts in EWP 5.2.0
 insert into Artifact (id, component_id, groupid, artifactid, version, buildinfo, type, note) values (0, 0,'org.jboss.as','jboss-as-picketlink','7.2.0.Final-redhat-3','','jar','')
@@ -33,7 +40,8 @@ insert into Artifact (id, groupid, artifactid, version, buildinfo, type, note) v
 insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (10, 0)
 insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (10, 1)
 
-
+insert into ProductVersion_Component (pvs_id, nativeComps_id) values (7, 1)
+insert into ProductVersion_Component (pvs_id, nativeComps_id) values (11, 1)
 
 
 

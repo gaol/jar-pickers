@@ -28,10 +28,10 @@ public class Pojo2JSTest {
 		
 		String js = pojo2js.toJS();
 		
-		String expected = "function Product(){}Product.prototype={id:'',fullName:'',name:'',description:'',versions:'',}\n" +
-				"function ProductVersion(){}ProductVersion.prototype={product:'',version:'',id:'',note:'',artifacts:'',}\n" +
-				"function Component(){}Component.prototype={version:'',scm:'',id:'',name:'',description:'',}\n" +
-				"function Artifact(){}Artifact.prototype={buildInfo:'',version:'',groupId:'',artifactId:'',type:'',component:'',id:'',note:'',pvs:'',}\n";
+		String expected = "function Product(){}Product.prototype={id:'',fullName:'',name:'',description:'',versions:[]}\n" +
+				"function ProductVersion(){}ProductVersion.prototype={product:'',parent:'',nativeComps:[],version:'',id:'',note:'',artifacts:[]}\n" +
+				"function Component(){}Component.prototype={version:'',scm:'',id:'',name:'',description:'',groupId:'',pvs:[]}\n" +
+				"function Artifact(){}Artifact.prototype={buildInfo:'',version:'',groupId:'',artifactId:'',type:'',component:'',id:'',note:'',pvs:[]}\n";
 		
 		Assert.assertEquals(expected, js);
 	}
