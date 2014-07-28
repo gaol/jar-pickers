@@ -28,6 +28,7 @@ import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
 import org.jboss.eap.trackers.model.Queries;
+import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.logging.Logger;
 
 /**
@@ -36,6 +37,7 @@ import org.jboss.logging.Logger;
  */
 @Stateless
 @PermitAll
+@SecurityDomain("other")
 public class DBDataService implements DataService {
 
 	@Inject
