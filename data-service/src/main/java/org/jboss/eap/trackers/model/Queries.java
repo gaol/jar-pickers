@@ -64,6 +64,7 @@ public interface Queries {
 	/** load components by groupId if any **/
 	String QUERY_LOAD_COMPS_BY_GROUPID = "components.loadComponentsByGroupId";
 	String _QUERY_LOAD_COMPS_BY_GROUPID = "SELECT c FROM Component c"
-			+ " WHERE c.groupId = :groupId";
+			+ " WHERE c.groupId = :groupId"
+			+ " AND c.version like :version";
 	
 }

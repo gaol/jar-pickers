@@ -26,6 +26,8 @@ public interface DataService {
 	
 	String COMP_STR_REGEX = "^[^\n|^:]+:[^\n|^:]+[^\n]*";
 	
+	String RED_HAT_SUFFIX = "-redhat-[^\n].*$";
+	
 	String DEFAULT_ARTIFACT_TYPE = "jar";
 
 	/**

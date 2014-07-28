@@ -70,4 +70,15 @@ public class CommmonUtilsTest {
 		Assert.assertFalse(line.matches(DataService.COMP_STR_REGEX));
 		
 	}
+	
+	@Test
+	public void testRemoveRedhatSuffix() throws Exception {
+		String line = "test-redhat-1";
+		Assert.assertEquals("test", line.replaceAll(DataService.RED_HAT_SUFFIX, ""));
+		
+		line = "2.3.21.Final-redhat-4";
+		Assert.assertEquals("2.3.21.Final", line.replaceAll(DataService.RED_HAT_SUFFIX, ""));
+		
+	}
+	
 }

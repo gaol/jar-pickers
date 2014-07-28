@@ -213,7 +213,7 @@ public class DBDataService implements DataService {
 			arti.setGroupId(groupId);
 			arti.setVersion(artiVersion);
 			arti.setType(type == null ? DEFAULT_ARTIFACT_TYPE : type);
-			Component component = guessComponent(groupId, artifactId, artiVersion);
+			Component component = guessComponent(groupId, null, artiVersion);
 			if (component != null) {
 				arti.setComponent(component);
 			}
@@ -274,10 +274,37 @@ public class DBDataService implements DataService {
 		if (comp != null) {
 			return comp;
 		}
-		// guess from all components
+		// guess by groupId and version
 		comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
 				.setParameter("groupId", groupId)
+				.setParameter("version", artiVersion)
 				.getResultList();
+		comp = comps.size() > 0 ? comps.get(0) : null;
+		if (comp != null) {
+			return comp;
+		}
+		// remove -redhat-X suffix
+		String version = artiVersion.replaceAll(RED_HAT_SUFFIX, "");
+		comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
+				.setParameter("groupId", groupId)
+				.setParameter("version", version + "%")
+				.getResultList();
+		comp = comps.size() > 0 ? comps.get(0) : null;
+		if (comp != null) {
+			return comp;
+		}
+		int idx = version.indexOf(".");
+		if (idx > 0) {
+			version = version.substring(0, version.indexOf("."));
+			comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
+					.setParameter("groupId", groupId)
+					.setParameter("version", version + "%")
+					.getResultList();
+			comp = comps.size() > 0 ? comps.get(0) : null;
+			if (comp != null) {
+				return comp;
+			}
+		}
 		return comps.size() > 0 ? comps.get(0) : null;
 	}
 

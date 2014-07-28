@@ -338,7 +338,7 @@ public class RestService {
 		Component comp = dataService.getComponent(compName, compVer);
 		if (comp == null) {
 			return Response.status(Status.NOT_FOUND).
-					entity("No component: " + comp.toString() + " was found.").build();
+					entity("No component: " + compName + ":" + compVer + " was found.").build();
 		}
 		comp.setGroupId(groupId); 
 		dataService.saveComponent(comp);
