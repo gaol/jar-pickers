@@ -61,6 +61,10 @@
          <scope>provided</scope>
       </dependency>
       <dependency>
+         <groupId>org.jdom</groupId>
+         <artifactId>jdom</artifactId>
+      </dependency>
+      <dependency>
          <groupId>org.hibernate</groupId>
          <artifactId>hibernate-core</artifactId>
          <scope>provided</scope>
@@ -128,6 +132,12 @@
             <artifactId>maven-war-plugin</artifactId>
             <configuration>
                <archiveClasses>true</archiveClasses>
+               <archive>
+                 <manifestEntries>
+                   <Dependencies>org.jdom,org.codehaus.jackson.jackson-mapper-asl</Dependencies>
+                 </manifestEntries>
+                   
+               </archive>
                <webResources>
                  <resource>
                    <directory>src/main/resources/WEB-INF</directory>
