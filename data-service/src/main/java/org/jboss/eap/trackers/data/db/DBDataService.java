@@ -204,7 +204,7 @@ public class DBDataService implements DataService {
 		}
 		Artifact arti = getArtifact(groupId, artifactId, artiVersion);
 		if (arti != null) {
-			logger.info("Artifact: " + arti.toString() + " has been added already. Associate it to " + 
+			logger.debug("Artifact: " + arti.toString() + " has been added already. Associate it to " + 
 					productName + ":" + version); 
 		}
 		else {
@@ -501,7 +501,7 @@ public class DBDataService implements DataService {
 		}
 		Component comp = getComponent(compName, compVer);
 		if (comp != null) {
-			logger.info("Component: " + comp.toString() + " has been added already. Associate it to " + 
+			logger.debug("Component: " + comp.toString() + " has been added already. Associate it to " + 
 					productName + ":" + version); 
 		} else {
 			comp = new Component();
@@ -602,7 +602,7 @@ public class DBDataService implements DataService {
 			}
 			Component comp = getComponent(compName, compVer);
 			if (comp != null){
-				logger.info("Component: " + comp.toString() + " has been added already!");
+				logger.debug("Component: " + comp.toString() + " has been added already!");
 			} else {
 				comp = new Component();
 				comp.setName(compName);

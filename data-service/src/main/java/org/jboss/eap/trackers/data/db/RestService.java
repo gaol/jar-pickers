@@ -6,6 +6,7 @@ package org.jboss.eap.trackers.data.db;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -134,10 +135,40 @@ public class RestService {
 	@GET
 	@Path("/a/{productName}:{version}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Artifact> loadArtifacts(@PathParam("productName") String productName, 
-			@PathParam("version") String version)
+	public Response loadArtifacts(@PathParam("productName") String productName, 
+			@PathParam("version") String version, @QueryParam("filter") String filter)
 			throws DataServiceException {
-		return dataService.loadArtifacts(productName, version);
+		List<Artifact> artis = dataService.loadArtifacts(productName, version);
+		List<Artifact> result = artis;
+		if (filter != null && filter.length() > 0) {
+			filter = filter.toLowerCase().trim();
+			List<Artifact> filtered = new ArrayList<Artifact>();
+			for (Artifact arti: artis) {
+				String artiId = arti.getArtifactId();
+				if (artiId.toLowerCase().contains(filter)) {
+					filtered.add(arti);
+					continue;
+				}
+				Component comp = arti.getComponent();
+				if (comp != null) {
+					String compName = comp.getName();
+					if (compName.toLowerCase().contains(filter)) {
+						filtered.add(arti);
+						continue;
+					}
+				}
+			}
+			result = filtered;
+		}
+		if (result.isEmpty()) {
+			String msg = "No Artifacts found in product: " + productName + ":" + version;
+			if (filter != null && filter.length() > 0) {
+				msg = msg + " under filter: " + filter;
+			}
+			return Response.status(Status.NOT_FOUND).entity(msg).build();
+		} else {
+			return Response.ok(result).build();
+		}
 	}
 	
 	@PUT
