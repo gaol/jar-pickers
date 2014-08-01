@@ -38,7 +38,7 @@ public abstract class AbstractAnswer implements AnswerMe {
 	 * @return the restAPIBase
 	 */
 	public String getRestAPIBase() {
-		return restAPIBase == null ? null : (restAPIBase.endsWith("/") ? restAPIBase.substring(0, restAPIBase.length() - 2) : restAPIBase);
+		return restAPIBase == null ? null : (restAPIBase.endsWith("/") ? restAPIBase.substring(0, restAPIBase.length() - 1) : restAPIBase);
 	}
 	
 }

@@ -116,7 +116,10 @@ public class MainApp {
     	
     	Integer ircPort = mainApp.ircPort;
     	if (ircPort == null) {
-    		ircPort = Integer.valueOf(config.getProperty(CONFIG_HOST_PORT));
+    		String portStr = config.getProperty(CONFIG_HOST_PORT);
+    		if (portStr != null) {
+    			ircPort = Integer.valueOf(portStr);
+    		}
     	}
     	
     	String ircNickName = mainApp.ircNickName;
@@ -163,8 +166,13 @@ public class MainApp {
     	}
     	
     	if (channels == null || channels.isEmpty()) {
-    		LOG.info("IRC channels are NOT specified, will use default channels: " + DEFAULT_IRC_CHANNELS.toArray().toString());
+    		LOG.info("IRC channels are NOT specified, will use default channels: " + DEFAULT_IRC_CHANNELS.toString());
     		channels = DEFAULT_IRC_CHANNELS;
+    	}
+    	
+    	if (api == null) {
+    		LOG.info("Tracker REST API is NOT specified, will use default API: " + DEFAULT_REST_API);
+    		api = DEFAULT_REST_API;
     	}
     	
     	IrcConfiguration ircConfig = new IrcConfiguration();
