@@ -190,7 +190,7 @@ public class MainApp {
         main.enableHangupSupport();
         main.addRouteBuilder(routeBuilder);
         try {
-			main.run(args);
+			main.run();
 		} catch (Exception e) {
 			throw new RuntimeException("Error when start the Camel route.", e);
 		}
