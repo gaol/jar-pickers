@@ -293,19 +293,21 @@ public class DBDataService implements DataService {
 		if (comp != null) {
 			return comp;
 		}
-		int idx = version.indexOf(".");
-		if (idx > 0) {
-			version = version.substring(0, version.indexOf("."));
-			comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
-					.setParameter("groupId", groupId)
-					.setParameter("version", version + "%")
-					.getResultList();
-			comp = comps.size() > 0 ? comps.get(0) : null;
-			if (comp != null) {
-				return comp;
-			}
-		}
-		return comps.size() > 0 ? comps.get(0) : null;
+		
+//		int idx = version.indexOf(".");
+//		if (idx > 0) {
+//			version = version.substring(0, version.indexOf("."));
+//			comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
+//					.setParameter("groupId", groupId)
+//					.setParameter("version", version + "%")
+//					.getResultList();
+//			comp = comps.size() > 0 ? comps.get(0) : null;
+//			if (comp != null) {
+//				return comp;
+//			}
+//		}
+//		return comps.size() > 0 ? comps.get(0) : null;
+		return null;
 	}
 
 	/* (non-Javadoc)
