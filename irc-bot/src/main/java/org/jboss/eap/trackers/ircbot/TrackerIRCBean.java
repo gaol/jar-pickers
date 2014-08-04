@@ -3,7 +3,10 @@
  */
 package org.jboss.eap.trackers.ircbot;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import org.apache.camel.Exchange;
@@ -27,7 +30,10 @@ public class TrackerIRCBean {
 	
 	public static final String METHOD_NAME = "chatIRC";
 	private static final String MAX_ANSWER_LEN_KEY = "irc.answer.max.length";
+	private static final String MAX_ANSWER_PRIVATE_KEY = "irc.answer.private.length";
 	private static final String PRIVATE_ANSWER = "privately";
+	
+	private static final String PASTEBIN_URI = "http://pastebin.test.redhat.com/pastebin.php";
 
 	private static final Logger logger = LoggerFactory.getLogger(TrackerIRCBean.class);
 	
@@ -69,7 +75,8 @@ public class TrackerIRCBean {
 				answerMe.setRestAPIBase(api);
 				Answer answer = answerMe.answer();
 				if (answer != null && answer.isAnswered()) {
-					String target = getTarget(ircMsgIn, answer.getAnswer());
+					maybePostToPastebin(answer);
+					String target = getTarget(ircMsgIn, answer);
 					if (logger.isDebugEnabled()) {
 						logger.debug("Will answer the question to: " + target);
 					}
@@ -97,6 +104,18 @@ public class TrackerIRCBean {
 		}
 	}
 
+	// if the answer is too long than 400 letters, post it to pastebin.test.redhat.com for 1 day
+	private void maybePostToPastebin(Answer answer) throws IOException, URISyntaxException {
+		String msg = answer.getAnswer();
+		if (msg.length() > Integer.getInteger(MAX_ANSWER_LEN_KEY, 400)) {
+			DefaultPastebin pastebin = new DefaultPastebin();
+			pastebin.setUserName(getTrackerBotNickName());
+			pastebin.setPastebinURI(new URI(PASTEBIN_URI));
+			String link = pastebin.pastebin(msg);
+			answer.setPastebinLink(link);
+		}
+	}
+
 	/**
 	 * If the answer is too long, it maybe posted to paste bin and return the link.
 	 */
@@ -109,7 +128,7 @@ public class TrackerIRCBean {
 	/**
 	 * Gets the target, maybe the channel name, or the user nick name for private talk.
 	 */
-	private String getTarget(IrcMessage ircMsgIn, String answer) {
+	private String getTarget(IrcMessage ircMsgIn, Answer answer) {
 		String target = ircMsgIn.getTarget();
 		if (target.equals(getTrackerBotNickName())) { // in case of private message
 			return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
@@ -117,8 +136,10 @@ public class TrackerIRCBean {
 		if (wantsoToTalkPrivately(ircMsgIn.getMessage())) {
 			return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
 		}
-		if (answer.length() > Integer.getInteger(MAX_ANSWER_LEN_KEY, 150)) {
-			return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
+		if (answer.getPastebinLink() == null) {
+			if (answer.getAnswer().length() > Integer.getInteger(MAX_ANSWER_PRIVATE_KEY, 150)) {
+				return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
+			}
 		}
 		if (QuestionType.HELP.equals(getQuestionType(ircMsgIn))) {
 			return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class); 
