@@ -346,6 +346,33 @@ public class RestService {
 		return Response.ok().build();
 	}
 	
+	@PUT
+	@Path("/ai")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@RolesAllowed("tracker")
+	public Response importArtifacts(@QueryParam("url") URL artifactListURL) throws DataServiceException {
+		dataService.importArtifacts(artifactListURL);
+		return Response.ok().build();
+	}
+	
+	@PUT
+	@Path("/aiu")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@RolesAllowed("tracker")
+	public Response importArtifactsWithUploadFile(MultipartFormDataInput multipPartInput) throws DataServiceException {
+		try {
+			InputStream input = getFileInputFromMultipartFormDataInput(multipPartInput);
+			if (input == null) {
+				return Response.status(Status.BAD_REQUEST).entity("No File upload").build();
+			}
+			// the getMatchRegexLines will close the InputStream at last
+			dataService.importArtifactsFromInput(input);
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read the uploaded file.", e);
+		}
+		return Response.ok().build();
+	}
+	
 	private InputStream getFileInputFromMultipartFormDataInput(MultipartFormDataInput multipPartInput) throws IOException {
 		Map<String, List<InputPart>> formParts = multipPartInput.getFormDataMap();
 		List<InputPart> filePart = formParts.get("file");

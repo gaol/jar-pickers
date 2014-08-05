@@ -3,6 +3,7 @@
  */
 package org.jboss.eap.trackers.data;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
@@ -141,6 +142,16 @@ public interface DataService {
 	 * Imports artifacts list from a composed string list to a product version 
 	 */
 	void importArtifacts(String productName, String version, List<String> artis) throws DataServiceException;
+	
+	/**
+	 * Imports artifacts from a URL
+	 */
+	void importArtifacts(URL artifactListURL) throws DataServiceException;
+	
+	/**
+	 * Imports artifacts from an Inputstream
+	 */
+	void importArtifactsFromInput(InputStream input) throws DataServiceException;
 	
 	/**
 	 * Gets the Artifact by groupId, artifactId and version.

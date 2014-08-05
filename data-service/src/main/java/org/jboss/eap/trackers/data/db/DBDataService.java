@@ -453,6 +453,73 @@ public class DBDataService implements DataService {
 		}
 	}
 	
+	@Override
+	@RolesAllowed("tracker")
+	public void importArtifacts(URL artifactListURL) throws DataServiceException {
+		if (artifactListURL == null) {
+			throw new IllegalArgumentException("URL of the artifact lists can't be null.");
+		}
+		try {
+			importArtifactsFromInput(artifactListURL.openStream());
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read artifacts information from URL: " + artifactListURL, e);
+		}
+	}
+	
+	@Override
+	@RolesAllowed("tracker")
+	public void importArtifactsFromInput(InputStream input) throws DataServiceException {
+		if (input == null) {
+			throw new NullPointerException("InputStream is null");
+		}
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				line = line.trim();
+				if (line.startsWith("#")) {
+					continue;
+				}
+				line = line.replace("::", "");
+				if (line.matches(ARTI_STR_REGEX)) {
+					String[] artiArray = line.split(":");
+					String groupId = artiArray[0].trim();
+					String artifactId = artiArray[1].trim();
+					String artiVersion = artiArray[2].trim();
+					String type = DEFAULT_ARTIFACT_TYPE;
+					if (artiArray.length >= 4 && artiArray[3] != null && artiArray[3].length() > 0) {
+						type = artiArray[3].trim();
+					}
+					Artifact arti = getArtifact(groupId, artifactId, artiVersion);
+					if (arti != null) {
+						logger.debug("Artifact: " + arti.toString() + " has been added already."); 
+					}
+					else {
+						arti = new Artifact();
+						arti.setArtifactId(artifactId);
+						arti.setGroupId(groupId);
+						arti.setVersion(artiVersion);
+						arti.setType(type == null ? DEFAULT_ARTIFACT_TYPE : type);
+						Component component = guessComponent(groupId, null, artiVersion);
+						if (component != null) {
+							arti.setComponent(component);
+						}
+						this.em.persist(arti);
+					}
+				}
+			}
+		} catch (IOException e) {
+			throw new DataServiceException("Can't read artifacts information.", e);
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jboss.eap.trackers.data.DataService#getComponent(java.lang.String, java.lang.String)
 	 */
