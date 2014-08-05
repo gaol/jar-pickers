@@ -20,18 +20,12 @@
   <dependencies>
     <dependency>
       <groupId>org.jboss.eap.trackers</groupId>
-      <artifactId>data-service</artifactId>
+      <artifactId>data-service-client</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.picketbox</groupId>
       <artifactId>picketbox</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.eap.trackers</groupId>
-      <artifactId>trackers-web</artifactId>
-      <type>war</type>
     </dependency>
 
       <dependency>

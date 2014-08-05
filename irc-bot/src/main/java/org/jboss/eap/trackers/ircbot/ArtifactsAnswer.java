@@ -3,18 +3,18 @@
  */
 package org.jboss.eap.trackers.ircbot;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
+import org.jboss.eap.trackers.model.Artifact;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -25,20 +25,23 @@ public class ArtifactsAnswer extends AbstractAnswer  {
 
 	private static final String API_PATH = "/groupids/artifacts/";
 	
+	private static final Logger logger = LoggerFactory.getLogger(ArtifactsAnswer.class);
+	
 	@Override
 	public QuestionType getQuestionType() {
 		return QuestionType.ARTIFACTS_OF;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Answer answer() throws Exception {
 		Matcher matcher = PATTERN_ARTIS_OF.matcher(getQuestion());
 		if (matcher.matches()) {
 			String groupIdToQuery = matcher.group(1);
-			ClientBuilder builder = ClientBuilder.newBuilder();
-			Client client = builder.build();
-			WebTarget target = client.target(getRestAPIBase() + API_PATH + groupIdToQuery);
-			Response resp = target.request().buildGet().invoke();
+			String ctxPath = getRestAPIBase() + API_PATH + groupIdToQuery;
+			ResteasyClient client = new ResteasyClientBuilder().build();
+            ResteasyWebTarget target = client.target(ctxPath);
+            Response resp = target.request().accept(MediaType.APPLICATION_JSON_TYPE).get();
 			Answer answer = new Answer();
 			answer.setAnswered(true);
 			int status = resp.getStatus();
@@ -46,28 +49,28 @@ public class ArtifactsAnswer extends AbstractAnswer  {
 				// Good
 				MediaType mediaType = resp.getMediaType();
 				if (mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
-					ObjectMapper om = new ObjectMapper();
-					String jsonTree = resp.readEntity(String.class);
-					ArrayNode rootNode = (ArrayNode)om.readTree(jsonTree);
-					if (rootNode.size() > 0) {
-						Iterator<JsonNode> nodes = rootNode.iterator();
-						StringBuilder sb = new StringBuilder();
-						sb.append("[");
-						boolean first = true;
-						while (nodes.hasNext()) {
-							if (first) {
-								first = false;
-							} else {
-								sb.append(", ");
+					Object entity = resp.getEntity();
+					if (entity != null && entity instanceof List) {
+						List<Artifact> artis = (List<Artifact>)entity;
+						if (artis != null && artis.size() > 0) {
+							StringBuilder sb = new StringBuilder();
+							sb.append("[");
+							boolean first = true;
+							for (Artifact arti: artis) {
+								if (first) {
+									first = false;
+								} else {
+									sb.append(", ");
+								}
+								sb.append(arti.getArtifactId());
 							}
-							JsonNode node = nodes.next();
-							String artiId = node.get("artifactId").getTextValue();
-							sb.append(artiId);
+							sb.append("]");
+							answer.setAnswer("Artifacts under: \"" + groupIdToQuery + "\" are: " + sb.toString());
+							return answer;
 						}
-						sb.append("]");
-						answer.setAnswer("Artifacts under: \"" + groupIdToQuery + "\" are: " + sb.toString());
-						return answer;
 					}
+				} else {
+					logger.error("Unkown content type: " + mediaType.getType());
 				}
 			} else if (status == 404) {
 				// not found

@@ -131,13 +131,9 @@
          <plugin>
             <artifactId>maven-war-plugin</artifactId>
             <configuration>
-               <archiveClasses>true</archiveClasses>
-               <archive>
-                 <manifestEntries>
-                   <Dependencies>org.jdom,org.codehaus.jackson.jackson-mapper-asl</Dependencies>
-                 </manifestEntries>
-                   
-               </archive>
+               <!--archiveClasses>true</archiveClasses-->
+               <attachClasses>true</attachClasses>
+               <classesClassifier>classes</classesClassifier>
                <webResources>
                  <resource>
                    <directory>src/main/resources/WEB-INF</directory>
