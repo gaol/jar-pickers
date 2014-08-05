@@ -15,6 +15,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.db.CDIResources;
 import org.jboss.eap.trackers.data.db.DBDataService;
+import org.jboss.eap.trackers.data.db.GroupIdRestService;
 import org.jboss.eap.trackers.data.db.RestService;
 import org.jboss.eap.trackers.data.db.SetString;
 import org.jboss.eap.trackers.data.db.TrackerRestApplication;
@@ -59,6 +60,7 @@ public class RESTAPITest {
 				.addClass(CDIResources.class)
 				.addClass(RestService.class)
 				.addClass(SetString.class)
+				.addClass(GroupIdRestService.class)
 				.addClass(TrackerRestApplication.class)
 				.addClass(DBDataService.class)
 				.addPackage(Product.class.getPackage())
@@ -162,6 +164,27 @@ public class RESTAPITest {
 		Assert.assertEquals("7.2.0.Final", artiComp.getVersion());
 		Assert.assertEquals("https://github.com/jbossas/picketlink",
 				artiComp.getScm());
+		
+
+		// get artifacts list by groupId
+		ctxPath = "http://localhost:8080/test/api/groupids/artifacts/org.jboss.as";
+		request = new ClientRequest(ctxPath);
+		request.accept(MediaType.APPLICATION_JSON_TYPE);
+		artisResp = request.get(List.class);
+		Assert.assertEquals(200, artisResp.getStatus());
+		artis = (List<Artifact>) artisResp.getEntity();
+		Assert.assertNotNull(artis);
+		Assert.assertEquals(2, artis.size());
+		
+		// get groupId by artifactId
+		ctxPath = "http://localhost:8080/test/api/groupids/jboss-as-picketlink";
+		request = new ClientRequest(ctxPath);
+		request.accept(MediaType.APPLICATION_JSON_TYPE);
+		artisResp = request.get(List.class);
+		Assert.assertEquals(200, artisResp.getStatus());
+		artis = (List<Artifact>) artisResp.getEntity();
+		Assert.assertNotNull(artis);
+		Assert.assertEquals(1, artis.size());
 	}
 
 	@SuppressWarnings({ "unchecked" })
