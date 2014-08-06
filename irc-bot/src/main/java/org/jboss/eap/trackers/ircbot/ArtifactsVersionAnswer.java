@@ -39,7 +39,7 @@ public class ArtifactsVersionAnswer extends AbstractAnswer {
 			
 			ClientBuilder builder = ClientBuilder.newBuilder();
 			Client client = builder.build();
-			WebTarget target = client.target(getRestAPIBase() + API_PATH + prdName + ":" + prdVersion + "?filter=" + filter);
+			WebTarget target = client.target(getRestAPIBase() + API_PATH + prdName.toUpperCase() + ":" + prdVersion + "?filter=" + filter);
 			Response resp = target.request().buildGet().invoke();
 			Answer answer = new Answer();
 			answer.setAnswered(true);
