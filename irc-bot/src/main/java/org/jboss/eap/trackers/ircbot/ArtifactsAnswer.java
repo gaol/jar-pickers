@@ -6,6 +6,7 @@ package org.jboss.eap.trackers.ircbot;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -32,7 +33,6 @@ public class ArtifactsAnswer extends AbstractAnswer  {
 		return QuestionType.ARTIFACTS_OF;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Answer answer() throws Exception {
 		Matcher matcher = PATTERN_ARTIS_OF.matcher(getQuestion());
@@ -49,25 +49,23 @@ public class ArtifactsAnswer extends AbstractAnswer  {
 				// Good
 				MediaType mediaType = resp.getMediaType();
 				if (mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
-					Object entity = resp.getEntity();
-					if (entity != null && entity instanceof List) {
-						List<Artifact> artis = (List<Artifact>)entity;
-						if (artis != null && artis.size() > 0) {
-							StringBuilder sb = new StringBuilder();
-							sb.append("[");
-							boolean first = true;
-							for (Artifact arti: artis) {
-								if (first) {
-									first = false;
-								} else {
-									sb.append(", ");
-								}
-								sb.append(arti.getArtifactId());
+					GenericType<List<Artifact>> artisType = new GenericType<List<Artifact>>(){};
+					List<Artifact> artis = resp.readEntity(artisType);
+					if (artis != null && artis.size() > 0) {
+						StringBuilder sb = new StringBuilder();
+						sb.append("[");
+						boolean first = true;
+						for (Artifact arti: artis) {
+							if (first) {
+								first = false;
+							} else {
+								sb.append(", ");
 							}
-							sb.append("]");
-							answer.setAnswer("Artifacts under: \"" + groupIdToQuery + "\" are: " + sb.toString());
-							return answer;
+							sb.append(arti.getArtifactId());
 						}
+						sb.append("]");
+						answer.setAnswer("Artifacts of: \"" + groupIdToQuery + "\": " + sb.toString());
+						return answer;
 					}
 				} else {
 					logger.error("Unkown content type: " + mediaType.getType());
@@ -82,5 +80,4 @@ public class ArtifactsAnswer extends AbstractAnswer  {
 		return null;
 	}
 	
-
 }

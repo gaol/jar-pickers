@@ -15,6 +15,7 @@ import org.jboss.eap.trackers.data.db.RestService;
 import org.jboss.eap.trackers.data.db.SetString;
 import org.jboss.eap.trackers.data.db.TrackerRestApplication;
 import org.jboss.eap.trackers.model.Product;
+import org.jboss.eap.trackers.utils.ArtifactsUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -43,6 +44,7 @@ public abstract class AbstractTrackersTest {
 				.addClass(CDIResources.class)
 				.addClass(RestService.class)
 				.addClass(SetString.class)
+				.addClass(ArtifactsUtil.class)
 				.addClass(TrackerRestApplication.class)
 				.addClass(DBDataService.class)
 				.addPackage(Product.class.getPackage())

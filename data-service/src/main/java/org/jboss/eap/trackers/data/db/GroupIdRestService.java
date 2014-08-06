@@ -3,6 +3,7 @@
  */
 package org.jboss.eap.trackers.data.db;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.security.PermitAll;
@@ -19,6 +20,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.model.Artifact;
+import org.jboss.eap.trackers.utils.ArtifactsUtil;
 
 /**
  * 
@@ -47,6 +49,7 @@ public class GroupIdRestService {
 		if (artis.isEmpty()) {
 			return Response.status(Status.NOT_FOUND).entity("GroupId: " + groupId + " is not found").build();
 		}
+		artis = ArtifactsUtil.distinctArtifactIdArtis(artis);
 		return Response.ok().entity(artis).build();
 	}
 
@@ -61,6 +64,7 @@ public class GroupIdRestService {
 		if (artis.isEmpty()) {
 			return Response.status(Status.NOT_FOUND).entity("ArtifactId: " + artifactId + " is not found").build();
 		}
+		artis = ArtifactsUtil.distinctGroupIdArtis(artis);
 		return Response.ok().entity(artis).build();
 	}
 	

@@ -38,6 +38,7 @@
           <include>org/jboss/eap/trackers/model/Component.class</include>
           <include>org/jboss/eap/trackers/model/Product.class</include>
           <include>org/jboss/eap/trackers/model/ProductVersion.class</include>
+          <include>org/jboss/eap/trackers/utils/ArtifactsUtil.class</include>
         </includes>
       </unpackOptions>
     </dependencySet>

@@ -12,6 +12,23 @@ public abstract class AbstractAnswer implements AnswerMe {
 	private String question;
 	
 	private String restAPIBase;
+	
+	private boolean fullAnswer;
+	
+
+	/**
+	 * @return the fullAnswer
+	 */
+	public boolean isFullAnswer() {
+		return fullAnswer;
+	}
+
+	/**
+	 * @param fullAnswer the fullAnswer to set
+	 */
+	public void setFullAnswer(boolean fullAnswer) {
+		this.fullAnswer = fullAnswer;
+	}
 
 	/**
 	 * @return the question

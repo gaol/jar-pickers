@@ -3,18 +3,18 @@
  */
 package org.jboss.eap.trackers.ircbot;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
+import org.jboss.eap.trackers.model.Artifact;
+import org.jboss.eap.trackers.utils.ArtifactsUtil;
 
 /**
  * @author lgao
@@ -48,39 +48,40 @@ public class ArtifactsVersionAnswer extends AbstractAnswer {
 				// Good
 				MediaType mediaType = resp.getMediaType();
 				if (mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
-					ObjectMapper om = new ObjectMapper();
-					String jsonTree = resp.readEntity(String.class);
-					ArrayNode rootNode = (ArrayNode)om.readTree(jsonTree);
-					if (rootNode.size() > 0) {
-						Iterator<JsonNode> nodes = rootNode.iterator();
-						StringBuilder sb = new StringBuilder();
-						sb.append("[");
-						boolean first = true;
-						while (nodes.hasNext()) {
-							if (first) {
-								first = false;
-							} else {
-								sb.append(", ");
+					GenericType<List<Artifact>> artisType = new GenericType<List<Artifact>>(){};
+					List<Artifact> artis = resp.readEntity(artisType);
+					if (!isFullAnswer()) {
+						artis = ArtifactsUtil.distinctGroupIdArtis(artis);
+					}
+					if (artis != null && artis.size() > 0) {
+						if (artis.size() == 1) {
+							Artifact arti = artis.get(0);
+							answer.setAnswer("Version of " + filter + " in: \"" + prdName + ":" + prdVersion + "\" is: " + arti.getVersion());
+							return answer;
+						} else if (artis.size() > 1) {
+							StringBuilder sb = new StringBuilder();
+							sb.append("[");
+							boolean first = true;
+							for (Artifact arti: artis) {
+								if (first) {
+									first = false;
+								} else {
+									sb.append(", ");
+								}
+								sb.append("{");
+								sb.append("\"groupId\": \"" + arti.getGroupId() + "\", ");
+								sb.append("\"artifactId\": \"" + arti.getArtifactId() + "\", ");
+								sb.append("\"version\": \"" + arti.getVersion() + "\"");
+								if (arti.getBuildInfo() != null && arti.getBuildInfo().length() > 0) {
+									sb.append(", ");
+									sb.append("\"buildInfo\": \"" + arti.getBuildInfo() + "\"");
+								}
+								sb.append("}");
 							}
-							JsonNode node = nodes.next(); // each one is an Artifact Node
-							String artiId = node.get("artifactId").getTextValue();
-							String groupId = node.get("groupId").getTextValue();
-							String version = node.get("version").getTextValue();
-							
-							String buildInfo = node.get("buildInfo").getTextValue();
-							sb.append("{");
-							sb.append("\"groupId\": \"" + groupId + "\", ");
-							sb.append("\"artifactId\": \"" + artiId + "\", ");
-							sb.append("\"version\": \"" + version + "\"");
-							if (buildInfo != null && buildInfo.length() > 0 && !buildInfo.toLowerCase().equals("null")) {
-								sb.append(", ");
-								sb.append("\"buildInfo\": \"" + buildInfo + "\"");
-							}
-							sb.append("}");
+							sb.append("]");
+							answer.setAnswer("Version of " + filter + " in: \"" + prdName + ":" + prdVersion + "\" is: " + sb.toString());
+							return answer;
 						}
-						sb.append("]");
-						answer.setAnswer("Artifacts of Product: \"" + prdName + ":" + prdVersion + "\" are: " + sb.toString());
-						return answer;
 					}
 				}
 			} else if (status == 404) {

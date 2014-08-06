@@ -24,6 +24,11 @@
       <classifier>classes</classifier>
       <version>${project.version}</version>
     </dependency>
+      <dependency>
+         <groupId>org.hibernate.javax.persistence</groupId>
+         <artifactId>hibernate-jpa-2.0-api</artifactId>
+         <scope>compile</scope>
+      </dependency>
   </dependencies>
 
    <build>

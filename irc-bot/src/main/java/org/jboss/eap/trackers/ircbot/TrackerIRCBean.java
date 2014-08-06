@@ -30,8 +30,9 @@ public class TrackerIRCBean {
 	
 	public static final String METHOD_NAME = "chatIRC";
 	private static final String MAX_ANSWER_LEN_KEY = "irc.answer.max.length";
-	private static final String MAX_ANSWER_PRIVATE_KEY = "irc.answer.private.length";
+//	private static final String MAX_ANSWER_PRIVATE_KEY = "irc.answer.private.length";
 	private static final String PRIVATE_ANSWER = "privately";
+	private static final String FULLY_ANSWER = "fully";
 	
 	private static final String PASTEBIN_URI = "http://pastebin.test.redhat.com/pastebin.php";
 
@@ -71,8 +72,15 @@ public class TrackerIRCBean {
 		try {
 			AnswerMe answerMe = getAnswerMe(ircMsgIn);
 			if (answerMe != null) {
-				answerMe.setQuestion(trimQuestion(ircMsgIn.getMessage()));
+				String msgIn = ircMsgIn.getMessage();
+				String question = trimQuestion(msgIn);
+				answerMe.setQuestion(question);
 				answerMe.setRestAPIBase(api);
+				boolean fullAnswer = false;
+				if (msgIn.toLowerCase().trim().endsWith(FULLY_ANSWER)) {
+					fullAnswer = true;
+				}
+				answerMe.setFullAnswer(fullAnswer);
 				Answer answer = answerMe.answer();
 				if (answer != null && answer.isAnswered()) {
 					maybePostToPastebin(answer);
@@ -136,11 +144,11 @@ public class TrackerIRCBean {
 		if (wantsoToTalkPrivately(ircMsgIn.getMessage())) {
 			return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
 		}
-		if (answer.getPastebinLink() == null) {
-			if (answer.getAnswer().length() > Integer.getInteger(MAX_ANSWER_PRIVATE_KEY, 150)) {
-				return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
-			}
-		}
+//		if (answer.getPastebinLink() == null) {
+//			if (answer.getAnswer().length() > Integer.getInteger(MAX_ANSWER_PRIVATE_KEY, 150)) {
+//				return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
+//			}
+//		}
 		if (QuestionType.HELP.equals(getQuestionType(ircMsgIn))) {
 			return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class); 
 		}

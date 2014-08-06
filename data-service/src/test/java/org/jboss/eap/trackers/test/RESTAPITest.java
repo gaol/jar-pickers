@@ -23,6 +23,7 @@ import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
+import org.jboss.eap.trackers.utils.ArtifactsUtil;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
@@ -62,6 +63,7 @@ public class RESTAPITest {
 				.addClass(SetString.class)
 				.addClass(GroupIdRestService.class)
 				.addClass(TrackerRestApplication.class)
+				.addClass(ArtifactsUtil.class)
 				.addClass(DBDataService.class)
 				.addPackage(Product.class.getPackage())
 				.addPackage(RESTAPITest.class.getPackage())
@@ -167,7 +169,7 @@ public class RESTAPITest {
 		
 
 		// get artifacts list by groupId
-		ctxPath = "http://localhost:8080/test/api/groupids/artifacts/org.jboss.as";
+		ctxPath = "http://localhost:8080/test/api/groupids/artifacts/org.jboss.ironjacamar";
 		request = new ClientRequest(ctxPath);
 		request.accept(MediaType.APPLICATION_JSON_TYPE);
 		artisResp = request.get(List.class);
@@ -177,7 +179,16 @@ public class RESTAPITest {
 		Assert.assertEquals(2, artis.size());
 		
 		// get groupId by artifactId
-		ctxPath = "http://localhost:8080/test/api/groupids/jboss-as-picketlink";
+		ctxPath = "http://localhost:8080/test/api/groupids/jsf-impl";
+		request = new ClientRequest(ctxPath);
+		request.accept(MediaType.APPLICATION_JSON_TYPE);
+		artisResp = request.get(List.class);
+		Assert.assertEquals(200, artisResp.getStatus());
+		artis = (List<Artifact>) artisResp.getEntity();
+		Assert.assertNotNull(artis);
+		Assert.assertEquals(2, artis.size());
+		
+		ctxPath = "http://localhost:8080/test/api/groupids/ironjacamar-common-api";
 		request = new ClientRequest(ctxPath);
 		request.accept(MediaType.APPLICATION_JSON_TYPE);
 		artisResp = request.get(List.class);

@@ -6,6 +6,7 @@ package org.jboss.eap.trackers.ircbot;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -32,7 +33,6 @@ public class GroupIdAnswer extends AbstractAnswer {
 		return QuestionType.GROUPD_ID_OF;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Answer answer() throws Exception {
 		Matcher matcher = PATTERN_GRP_ID_OF.matcher(getQuestion());
@@ -49,34 +49,39 @@ public class GroupIdAnswer extends AbstractAnswer {
 				// Good
 				MediaType mediaType = resp.getMediaType();
 				if (mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
-					Object entity = resp.getEntity();
-					if (entity != null && entity instanceof List) {
-						List<Artifact> artis = (List<Artifact>)entity;
-						if (artis != null && artis.size() > 0) {
-							StringBuilder sb = new StringBuilder();
+					GenericType<List<Artifact>> artisType = new GenericType<List<Artifact>>(){};
+					List<Artifact> artis = resp.readEntity(artisType);
+					if (artis != null && artis.size() > 0) {
+						StringBuilder sb = new StringBuilder();
+						if (artis.size() == 1) {
+							Artifact arti = artis.get(0);
+							if (isFullAnswer()) {
+								sb.append("{");
+								sb.append("\"groupId\" : \"" + arti.getGroupId() + "\", ");
+								sb.append("\"version\" : \"" + arti.getVersion() + "\"");
+								sb.append("}");
+							} else {
+								sb.append(artis.get(0).getGroupId());
+							}
+						} else {
+							 // more than one groupId found
 							sb.append("[");
-							if (artis.size() == 1) {
-								Artifact arti = artis.get(0);
-								sb.append(arti.getGroupId());
-							} else { 
-								 // more than one groupId found
-								boolean first = true;
-								for (Artifact arti: artis) {
-									if (first) {
-										first = false;
-									} else {
-										sb.append(", ");
-									}
-									sb.append("{");
-									sb.append("\"groupId\" : \"" + arti.getGroupId() + "\", ");
-									sb.append("\"version\" : \"" + arti.getVersion() + "\"");
-									sb.append("}");
+							boolean first = true;
+							for (Artifact arti: artis) {
+								if (first) {
+									first = false;
+								} else {
+									sb.append(", ");
 								}
+								sb.append("{");
+								sb.append("\"groupId\" : \"" + arti.getGroupId() + "\", ");
+								sb.append("\"version\" : \"" + arti.getVersion() + "\"");
+								sb.append("}");
 							}
 							sb.append("]");
-							answer.setAnswer("Artifacts under: \"" + artifactToQuery + "\" are: " + sb.toString());
-							return answer;
 						}
+						answer.setAnswer("GroupId(s) of: \"" + artifactToQuery + "\": " + sb.toString());
+						return answer;
 					}
 				} else {
 					logger.error("Unkown content type: " + mediaType.getType());
@@ -90,5 +95,4 @@ public class GroupIdAnswer extends AbstractAnswer {
 		}
 		return null;
 	}
-
 }

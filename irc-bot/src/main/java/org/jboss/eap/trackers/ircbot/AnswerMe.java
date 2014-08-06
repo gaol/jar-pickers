@@ -44,6 +44,10 @@ public interface AnswerMe {
 		}
 	}
 	
+	boolean isFullAnswer();
+	
+	void setFullAnswer(boolean fullAnswer);
+	
 	String getQuestion();
 	
 	void setQuestion(String question);
