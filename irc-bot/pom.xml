@@ -28,6 +28,12 @@
       <groupId>org.jboss.eap.trackers</groupId>
       <artifactId>data-service-client</artifactId>
       <scope>compile</scope>
+    <exclusions>
+      <exclusion>
+        <groupId>org.jboss.eap.trackers</groupId>
+        <artifactId>data-service</artifactId>
+      </exclusion>
+    </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -44,6 +50,11 @@
       <artifactId>args4j</artifactId>
       <scope>compile</scope>
     </dependency>
+      <dependency>
+         <groupId>org.hibernate.javax.persistence</groupId>
+         <artifactId>hibernate-jpa-2.0-api</artifactId>
+         <scope>compile</scope>
+      </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-client</artifactId>
