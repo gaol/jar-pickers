@@ -30,9 +30,13 @@
       <useProjectArtifact>true</useProjectArtifact>
       <unpack>true</unpack>
       <scope>runtime</scope>
+      <excludes>
+        <exclude>org.jboss.eap.trackers:irc-bot:jar</exclude>
+      </excludes>
       <unpackOptions>
         <excludes>
           <exclude>META-INF/ASL*</exclude>
+          <exclude>META-INF/services/javax.ws.rs.ext.Providers</exclude>
           <exclude>META-INF/DEPENDENCIES</exclude>
           <exclude>META-INF/MANIFEST.MF</exclude>
           <exclude>META-INF/INDEX.LIST</exclude>
@@ -43,4 +47,15 @@
       </unpackOptions>
     </dependencySet>
   </dependencySets>
+  <fileSets>
+    <fileSet>
+      <directory>target/classes</directory>
+      <outputDirectory>/</outputDirectory>
+      <!--includes>
+        <include>org/jboss/eap/trackers/ProductsTracker.class</include>
+        <include>**/client/*.class</include>
+        <include>logging.properties</include>
+      </includes-->
+    </fileSet>
+  </fileSets>
 </assembly>
