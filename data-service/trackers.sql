@@ -40,7 +40,7 @@
         buildInfo varchar(255),
         groupId varchar(255),
         note varchar(255),
-        type  varchar(10) DEFAULT 'jar',
+        type  varchar(50) DEFAULT 'jar',
         version varchar(255),
         component_id int8,
         primary key (id)
