@@ -59,7 +59,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 public class RestService {
 	
 	@EJB
-	private DataService dataService;
+	private DataServiceLocal dataService;
 	
 	@Inject
 	private EntityManager em;

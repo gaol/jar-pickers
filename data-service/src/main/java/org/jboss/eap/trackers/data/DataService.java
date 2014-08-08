@@ -3,12 +3,9 @@
  */
 package org.jboss.eap.trackers.data;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
-
-import javax.ejb.Remote;
 
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
@@ -20,7 +17,6 @@ import org.jboss.eap.trackers.model.ProductVersion;
  *
  * This is a facade interface for all data operations 
  */
-@Remote
 public interface DataService {
 	
 	String ARTI_STR_REGEX = "^[^\n|^:]+:[^\n|^:]+:[^\n|^:]+[^\n]*";
@@ -148,10 +144,6 @@ public interface DataService {
 	 */
 	void importArtifacts(URL artifactListURL) throws DataServiceException;
 	
-	/**
-	 * Imports artifacts from an Inputstream
-	 */
-	void importArtifactsFromInput(InputStream input) throws DataServiceException;
 	
 	/**
 	 * Gets the Artifact by groupId, artifactId and version.

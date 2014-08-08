@@ -14,6 +14,8 @@ import java.util.Set;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.ejb.Local;
+import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -37,8 +39,10 @@ import org.jboss.logging.Logger;
  */
 @Stateless
 @PermitAll
+@Local(DataServiceLocal.class)
+@Remote(DataService.class)
 @SecurityDomain("other")
-public class DBDataService implements DataService {
+public class DBDataService implements DataServiceLocal {
 
 	@Inject
 	private Logger logger;

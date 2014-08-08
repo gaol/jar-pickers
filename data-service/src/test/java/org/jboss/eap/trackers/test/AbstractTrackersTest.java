@@ -9,11 +9,8 @@ import javax.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.eap.trackers.data.DataService;
-import org.jboss.eap.trackers.data.db.CDIResources;
 import org.jboss.eap.trackers.data.db.DBDataService;
-import org.jboss.eap.trackers.data.db.RestService;
-import org.jboss.eap.trackers.data.db.SetString;
-import org.jboss.eap.trackers.data.db.TrackerRestApplication;
+import org.jboss.eap.trackers.data.db.DataServiceLocal;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.utils.ArtifactsUtil;
 import org.jboss.logging.Logger;
@@ -41,19 +38,15 @@ public abstract class AbstractTrackersTest {
 				.addAsResource("comps.txt", "comps.txt")
 				.addAsResource("import.sql", "import.sql")
 				.addPackage(DataService.class.getPackage())
-				.addClass(CDIResources.class)
-				.addClass(RestService.class)
-				.addClass(SetString.class)
-				.addClass(ArtifactsUtil.class)
-				.addClass(TrackerRestApplication.class)
-				.addClass(DBDataService.class)
+				.addPackage(DBDataService.class.getPackage())
 				.addPackage(Product.class.getPackage())
 				.addPackage(AbstractTrackersTest.class.getPackage())
+				.addClass(ArtifactsUtil.class)
 				.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 	}
 
 	@EJB
-	DataService dataService;
+	DataServiceLocal dataService;
 	
 	@EJB(name = "TrackerBean")
 	TrackerBean tracker;
