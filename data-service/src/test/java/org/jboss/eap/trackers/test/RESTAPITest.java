@@ -9,6 +9,7 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -28,6 +29,7 @@ import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.jboss.resteasy.util.Base64;
+import org.jboss.resteasy.util.GenericType;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -196,6 +198,36 @@ public class RESTAPITest {
 		artis = (List<Artifact>) artisResp.getEntity();
 		Assert.assertNotNull(artis);
 		Assert.assertEquals(1, artis.size());
+		
+		// load All artifacts
+		ctxPath = "http://localhost:8080/test/api/a/all";
+		request = new ClientRequest(ctxPath);
+		request.accept(MediaType.TEXT_PLAIN_TYPE);
+		GenericType<StreamingOutput> streamType = new GenericType<StreamingOutput>(){};
+		ClientResponse<GenericType<StreamingOutput>> streamingOut = request.get(streamType);
+		Assert.assertEquals(200, streamingOut.getStatus());
+		String artisList = streamingOut.getEntity(String.class);
+		String expectedList = "org.jboss.as:jboss-as-picketlink:7.2.0.Final-redhat-3:jar:\n"
+				+ "org.jboss.as:jboss-as-security:7.2.0.Final-redhat-3:jar:\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.3.Final:jar:\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.2.Final:jar:\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.2.Final:jar:\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.3.Final:jar:\n"
+				+ "javax.jsf:jsf-impl:1.0.2.:jar:\n"
+				+ "com.sun.jsf:jsf-impl:2.0.1:jar:\n";
+		Assert.assertEquals(expectedList, artisList);
+		
+		// load all components
+		ctxPath = "http://localhost:8080/test/api/c/all";
+		request = new ClientRequest(ctxPath);
+		request.accept(MediaType.TEXT_PLAIN_TYPE);
+		streamType = new GenericType<StreamingOutput>(){};
+		streamingOut = request.get(streamType);
+		Assert.assertEquals(200, streamingOut.getStatus());
+		String compList = streamingOut.getEntity(String.class);
+		String expectedCompList = "picketlink:7.2.0.Final:org.picketlink\n"
+				+ "mod_cluster:1.2.9.Final-redhat-1:null\n";
+		Assert.assertEquals(expectedCompList, compList);
 	}
 
 	@SuppressWarnings({ "unchecked" })

@@ -5,6 +5,8 @@ package org.jboss.eap.trackers.data.db;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,8 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Encoded;
@@ -26,10 +30,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.model.Artifact;
@@ -52,6 +60,9 @@ public class RestService {
 	
 	@EJB
 	private DataService dataService;
+	
+	@Inject
+	private EntityManager em;
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -411,6 +422,70 @@ public class RestService {
 			throws DataServiceException {
 		dataService.updateNote(id, type, note);
 		return Response.ok().build();
+	}
+	
+	@GET
+	@Path("/a/all")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAllArtifacts() throws DataServiceException {
+		// each line: groupId:artifactId:version:type:buildInfo
+		String SQL = "SELECT a.groupId, a.artifactId, a.version, a.type, a.buildInfo FROM Artifact a";
+		Session session = (Session)this.em.unwrap(Session.class);
+		final ScrollableResults rs = session.createSQLQuery(SQL).scroll();
+		StreamingOutput streamOut = new StreamingOutput() {
+			
+			@Override
+			public void write(OutputStream output) throws IOException,
+					WebApplicationException {
+				PrintWriter writer = new PrintWriter(output);
+				try {
+					rs.beforeFirst();
+					while (rs.next()) {
+						Object[] objs = rs.get();
+						String grpId = objs[0] != null ? objs[0].toString() : null;
+						String artiId = objs[1] != null ? objs[1].toString() : null;
+						String version = objs[2] != null ? objs[2].toString() : null;
+						String type = objs[3] != null ? objs[3].toString() : null;
+						String buildInfo = objs[4] != null ? objs[4].toString() : null;
+						writer.println(grpId + ":" + artiId + ":" + version + ":" + type + ":" + buildInfo);
+					}
+				} finally {
+					writer.close();
+				}
+			}
+		};
+		return Response.ok(streamOut).build();
+	}
+	
+	@GET
+	@Path("/c/all")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAllComponents() throws DataServiceException {
+		// each line: name:version:groupId
+		String SQL = "SELECT c.name, c.version, c.groupId FROM Component c";
+		Session session = (Session)this.em.unwrap(Session.class);
+		final ScrollableResults rs = session.createSQLQuery(SQL).scroll();
+		StreamingOutput streamOut = new StreamingOutput() {
+			
+			@Override
+			public void write(OutputStream output) throws IOException,
+					WebApplicationException {
+				PrintWriter writer = new PrintWriter(output);
+				try {
+					rs.beforeFirst();
+					while (rs.next()) {
+						Object[] objs = rs.get();
+						String name = objs[0] != null ? objs[0].toString() : null;
+						String version = objs[1] != null ? objs[1].toString() : null;
+						String groupId = objs[2] != null ? objs[2].toString() : null;
+						writer.println(name + ":" + version + ":" + groupId);
+					}
+				} finally {
+					writer.close();
+				}
+			}
+		};
+		return Response.ok(streamOut).build();
 	}
 	
 }
