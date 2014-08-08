@@ -56,7 +56,23 @@ public class ArtifactsVersionAnswer extends AbstractAnswer {
 					if (artis != null && artis.size() > 0) {
 						if (artis.size() == 1) {
 							Artifact arti = artis.get(0);
-							answer.setAnswer("Version of " + filter + " in: \"" + prdName + ":" + prdVersion + "\" is: " + arti.getVersion());
+							String msgPrefix = "Version of " + arti.getArtifactId() + " in: \"" + prdName + ":" + prdVersion + "\" is: ";
+							if (isFullAnswer()) {
+								StringBuilder sb = new StringBuilder();
+								sb.append(msgPrefix);
+								sb.append("{");
+								sb.append("\"groupId\": \"" + arti.getGroupId() + "\", ");
+								sb.append("\"artifactId\": \"" + arti.getArtifactId() + "\", ");
+								sb.append("\"version\": \"" + arti.getVersion() + "\"");
+								if (arti.getBuildInfo() != null && arti.getBuildInfo().length() > 0) {
+									sb.append(", ");
+									sb.append("\"buildInfo\": \"" + arti.getBuildInfo() + "\"");
+								}
+								sb.append("}");
+								answer.setAnswer(sb.toString());
+							} else {
+								answer.setAnswer(msgPrefix + arti.getVersion());
+							}
 							return answer;
 						} else if (artis.size() > 1) {
 							StringBuilder sb = new StringBuilder();
