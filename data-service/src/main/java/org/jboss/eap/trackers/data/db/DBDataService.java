@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -31,6 +32,7 @@ import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
 import org.jboss.eap.trackers.model.Queries;
 import org.jboss.ejb3.annotation.SecurityDomain;
+import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.logging.Logger;
 
 /**
@@ -472,6 +474,7 @@ public class DBDataService implements DataServiceLocal {
 	
 	@Override
 	@RolesAllowed("tracker")
+	@TransactionTimeout(unit = TimeUnit.MINUTES, value = 30L)
 	public void importArtifactsFromInput(InputStream input) throws DataServiceException {
 		if (input == null) {
 			throw new NullPointerException("InputStream is null");
