@@ -429,7 +429,7 @@ public class RestService {
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getAllArtifacts() throws DataServiceException {
 		// each line: groupId:artifactId:version:type:buildInfo
-		String SQL = "SELECT a.groupId, a.artifactId, a.version, a.type, a.buildInfo FROM Artifact a";
+		String SQL = "SELECT a.groupId, a.artifactId, a.version, a.type, a.buildInfo, a.component_id FROM Artifact a";
 		Session session = (Session)this.em.unwrap(Session.class);
 		final ScrollableResults rs = session.createSQLQuery(SQL).scroll();
 		StreamingOutput streamOut = new StreamingOutput() {
@@ -447,7 +447,24 @@ public class RestService {
 						String version = objs[2] != null ? objs[2].toString() : null;
 						String type = objs[3] != null ? objs[3].toString() : null;
 						String buildInfo = objs[4] != null ? objs[4].toString() : null;
-						writer.println(grpId + ":" + artiId + ":" + version + ":" + type + ":" + buildInfo);
+						String component_id = objs[5] != null ? objs[5].toString() : null;
+						StringBuilder sb = new StringBuilder();
+						sb.append(grpId);
+						sb.append(":");
+						sb.append(artiId);
+						sb.append(":");
+						sb.append(version);
+						sb.append(":");
+						sb.append(type);
+						sb.append(":");
+						if (buildInfo != null) {
+							sb.append(buildInfo);
+						}
+						sb.append(":");
+						if (component_id != null) {
+							sb.append(component_id);
+						}
+						writer.println(sb.toString());
 					}
 				} finally {
 					writer.close();
@@ -478,7 +495,15 @@ public class RestService {
 						String name = objs[0] != null ? objs[0].toString() : null;
 						String version = objs[1] != null ? objs[1].toString() : null;
 						String groupId = objs[2] != null ? objs[2].toString() : null;
-						writer.println(name + ":" + version + ":" + groupId);
+						StringBuilder sb = new StringBuilder();
+						sb.append(name);
+						sb.append(":");
+						sb.append(version);
+						sb.append(":");
+						if (groupId != null) {
+							sb.append(groupId);
+						}
+						writer.println(sb.toString());
 					}
 				} finally {
 					writer.close();

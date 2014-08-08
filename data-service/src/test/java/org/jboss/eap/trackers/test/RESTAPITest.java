@@ -199,14 +199,14 @@ public class RESTAPITest {
 		ClientResponse<GenericType<StreamingOutput>> streamingOut = request.get(streamType);
 		Assert.assertEquals(200, streamingOut.getStatus());
 		String artisList = streamingOut.getEntity(String.class);
-		String expectedList = "org.jboss.as:jboss-as-picketlink:7.2.0.Final-redhat-3:jar:\n"
-				+ "org.jboss.as:jboss-as-security:7.2.0.Final-redhat-3:jar:\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.3.Final:jar:\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.2.Final:jar:\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.2.Final:jar:\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.3.Final:jar:\n"
-				+ "javax.jsf:jsf-impl:1.0.2.:jar:\n"
-				+ "com.sun.jsf:jsf-impl:2.0.1:jar:\n";
+		String expectedList = "org.jboss.as:jboss-as-picketlink:7.2.0.Final-redhat-3:jar::0\n"
+				+ "org.jboss.as:jboss-as-security:7.2.0.Final-redhat-3:jar::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.3.Final:jar::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.2.Final:jar::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.2.Final:jar::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.3.Final:jar::\n"
+				+ "javax.jsf:jsf-impl:1.0.2.:jar::\n"
+				+ "com.sun.jsf:jsf-impl:2.0.1:jar::\n";
 		Assert.assertEquals(expectedList, artisList);
 		
 		// load all components
@@ -218,7 +218,7 @@ public class RESTAPITest {
 		Assert.assertEquals(200, streamingOut.getStatus());
 		String compList = streamingOut.getEntity(String.class);
 		String expectedCompList = "picketlink:7.2.0.Final:org.picketlink\n"
-				+ "mod_cluster:1.2.9.Final-redhat-1:null\n";
+				+ "mod_cluster:1.2.9.Final-redhat-1:\n";
 		Assert.assertEquals(expectedCompList, compList);
 	}
 
