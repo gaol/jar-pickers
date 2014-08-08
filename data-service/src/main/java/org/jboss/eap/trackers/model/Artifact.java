@@ -67,7 +67,7 @@ public class Artifact implements Serializable {
 	@NotNull(message = "ArtifactId can't be empty.")
 	private String artifactId;
 	
-	@Column(columnDefinition = " varchar(10) DEFAULT 'jar'")
+	@Column(columnDefinition = " varchar(50) DEFAULT 'jar'")
 	private String type;
 	
 	/**
