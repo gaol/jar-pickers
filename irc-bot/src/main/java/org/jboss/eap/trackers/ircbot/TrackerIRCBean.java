@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 
 import org.apache.camel.Exchange;
@@ -35,6 +37,8 @@ public class TrackerIRCBean {
 	private static final String FULLY_ANSWER = "fully";
 	
 	private static final String PASTEBIN_URI = "http://pastebin.test.redhat.com/pastebin.php";
+	
+	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
 
 	private static final Logger logger = LoggerFactory.getLogger(TrackerIRCBean.class);
 	
@@ -85,9 +89,6 @@ public class TrackerIRCBean {
 				if (answer != null && answer.isAnswered()) {
 					maybePostToPastebin(answer);
 					String target = getTarget(ircMsgIn, answer);
-					if (logger.isDebugEnabled()) {
-						logger.debug("Will answer the question to: " + target);
-					}
 					IRCUser user = new IRCUser(getTrackerBotNickName(), ircConfig.getUsername(), InetAddress.getLocalHost().getHostName());
 					String messageBack = getAnswerMessage(answer);
 					Exchange outExchange = ircEnd.createOnPrivmsgExchange(target, user, messageBack);
@@ -106,6 +107,12 @@ public class TrackerIRCBean {
 					}
 					logger.info(sb.toString());
 				}
+			} else {
+				// log out the issues
+				String messageLog = "\n Date: " + format.format(Calendar.getInstance().getTime()) + "\t"
+						+ "From: " + ircMsgIn.getUser().getNick() + "\n"
+						+ "\t Message: " + ircMsgIn.getMessage();
+				logger.info(messageLog);
 			}
 		} catch (Exception e) {
 			logger.error("Error when answer question: \"" + ircMsgIn.getMessage() + "\" from: " + ircMsgIn.getUser().getNick(), e);

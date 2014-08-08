@@ -176,6 +176,7 @@ public class MainApp {
     	}
     	
     	IrcConfiguration ircConfig = new IrcConfiguration();
+    	ircConfig.setOnReply(true);
     	ircConfig.setChannel(channels);
     	ircConfig.setHostname(ircHostName);
     	ircConfig.setNickname(ircNickName);
