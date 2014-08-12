@@ -7,6 +7,7 @@
 import sys
 import os
 import os.path
+import hashlib
 
 import urlgrabber
 import urlgrabber.progress
@@ -130,6 +131,19 @@ def unzipFile(zipFile, dir):
     log.error("Exception on extracting the zip file: %s" % zipFile)
     return None
 # end of unzipFile
+
+
+def md5(filePath):
+  if not os.path.exists(filePath):
+    return None
+  md5 = hashlib.md5()
+  f = open(filePath)
+  for line in f:
+    md5.update(line)
+  f.close
+  return md5.digest()
+
+# end of md5
 
 def getJarList(dir, filters=["-jandex.jar", "-javadoc.jar", "-sources.jar"]):
   """
@@ -268,7 +282,7 @@ class Picker(object):
   def getArtifactInfo(self,jar):
     """
     Get artifacts information from a jar file.
-    Return a triple of: groupId, artifactId, version, artiType
+    Return a triple of: groupId, artifactId, version, artiType, artiMd5
     """
     groupId = None
     artifactId = None
@@ -298,7 +312,8 @@ class Picker(object):
       # try to parse the jar information from file name
       groupId, artifactId, version = parserFromFileName(jar)
     artiType = guessJarType(jar, artifactId, version)
-    return groupId, artifactId, version, artiType
+    artiMd5 = md5(jar)
+    return groupId, artifactId, version, artiType, artiMd5
   #end of getArtifactInfo
 
   def prepare(self, request, dirname):
@@ -352,7 +367,7 @@ class Picker(object):
       log.info("Starts parsing jar information at directory: '%s'" % dirName)
       self.prepare(request, dirName)
       for jar in getJarList(dirName):
-        groupId, artifactId, artiVersion, artiType = self.getArtifactInfo(jar)
+        groupId, artifactId, artiVersion, artiType, artiMd5 = self.getArtifactInfo(jar)
         if artifactId is None or artiVersion is None:
           log.debug("ERROR: Can't parse jar: %s" % jar)
           errors.append("ERROR: when parse : %s" % os.path.basename(jar))
@@ -362,7 +377,7 @@ class Picker(object):
         if groupId is None:
           log.debug("No groupId found in jar file: %s" % os.path.basename(jar))
           errors.append("WARN: No GroupId: %s" % os.path.basename(jar))
-        artifactstr = "%s:%s:%s:%s" % (groupId, artifactId, artiVersion, artiType)
+        artifactstr = "%s:%s:%s:%s:%s" % (groupId, artifactId, artiVersion, artiType, artiMd5)
         if not artifactstr in artifacts:
           artifacts.append(artifactstr)
       if isLocalDir:
