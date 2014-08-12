@@ -109,9 +109,10 @@ public class TrackerIRCBean {
 				}
 			} else {
 				// log out the issues
-				String messageLog = "\n Date: " + format.format(Calendar.getInstance().getTime()) + "\t"
-						+ "From: " + ircMsgIn.getUser().getNick() + "\n"
-						+ "\t Message: " + ircMsgIn.getMessage();
+				String messageLog = "[" + format.format(Calendar.getInstance().getTime()) + "] "
+						+ "<" + ircMsgIn.getUser().getNick()
+						+ "@#" + ircMsgIn.getTarget() + ">: "
+						+ ircMsgIn.getMessage();
 				logger.info(messageLog);
 			}
 		} catch (Exception e) {
