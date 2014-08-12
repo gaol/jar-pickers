@@ -141,7 +141,7 @@ def md5(filePath):
   for line in f:
     md5.update(line)
   f.close
-  return md5.digest()
+  return md5.hexdigest()
 
 # end of md5
 
