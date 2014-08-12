@@ -38,6 +38,7 @@
         id int8 not null,
         artifactId varchar(255),
         buildInfo varchar(255),
+        checksum varchar(255),
         groupId varchar(255),
         note varchar(255),
         type  varchar(50) DEFAULT 'jar',
