@@ -45,7 +45,8 @@ class EAP5Picker(Picker):
         if j.get('name') == jarFileName:
           artiVersion = j.get('implVersion')
           log.debug("%s: -- %s:%s:%s:%s" % (jarFileName, groupId, artifactId, artiVersion, artiType))
-    return groupId, artifactId, artiVersion, artiType 
+    artiMd5 = md5(jar)
+    return groupId, artifactId, artiVersion, artiType, artiMd5
   #end of getArtifactInfo
   
 #end of EAP5Picker
