@@ -100,11 +100,15 @@ getArtifacts() {
     do
       grpURL=$(echo -e ${groupId} |sed "s/\./\//g")
       pomURL="${url}/${grpURL}/${artifactId}/${ver}/${artifactId}-${ver}.pom"
+      jarURL="${url}/${grpURL}/${artifactId}/${ver}/${artifactId}-${ver}.jar"
+      wget $jarURL
+      checksum=`md5sum ${artifactId}-${ver}.jar | cut -d " " -f1`
+      rm -rf ${artifactId}-${ver}.jar
       local tp=$(curl -s ${pomURL} |grep "<packaging>" | cut -d ">" -f2 | cut -d "<" -f1)
       if [ "${tp}" == "" ]; then
         tp="jar"
       fi
-      echo -e "${groupId}:${artifactId}:${ver}:${tp}" | tee -a $output
+      echo -e "${groupId}:${artifactId}:${ver}:${tp}:${checksum}" | tee -a $output
     done
     return
   fi
