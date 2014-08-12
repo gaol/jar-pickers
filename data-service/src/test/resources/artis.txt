@@ -1,5 +1,5 @@
-antlr:antlr:2.7.7.redhat-4
-asm:asm:3.3.1-redhat-5
+antlr:antlr:2.7.7.redhat-4:jar:testchecksum
+asm:asm:3.3.1-redhat-5::checksum-asm
 ch.qos.cal10n:cal10n-api:0.7.3-redhat-2
 com.github.relaxng:relaxngDatatype:2011.1-redhat-6
 com.google.guava:guava:13.0.1-redhat-1

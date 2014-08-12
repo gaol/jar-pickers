@@ -60,6 +60,9 @@ public class Artifact implements Serializable {
 	@NotNull(message = "GroupId can't be empty.")
 	private String groupId;
 	
+	@Column
+	private String checksum;
+	
 	/**
 	 * artifactId of the jar
 	 */
@@ -100,6 +103,20 @@ public class Artifact implements Serializable {
 	 */
 	public void setPvs(List<ProductVersion> pvs) {
 		this.pvs = pvs;
+	}
+
+	/**
+	 * @return the checksum
+	 */
+	public String getChecksum() {
+		return checksum;
+	}
+
+	/**
+	 * @param checksum the checksum to set
+	 */
+	public void setChecksum(String checksum) {
+		this.checksum = checksum;
 	}
 
 	/**

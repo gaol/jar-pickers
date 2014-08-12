@@ -211,6 +211,20 @@ public class RestService {
 	}
 	
 	@POST
+	@Path("/ach/{groupId}:{artifactId}:{artiVersion}")
+	@RolesAllowed("tracker")
+	public Response updateArtifactCheckSum(@PathParam("groupId") String groupId, 
+			@PathParam("artifactId") String artifactId, 
+			@PathParam("artiVersion") String artiVersion, @FormParam("checksum") String checksum) throws DataServiceException {
+		try {
+			dataService.updateArtifactChecksum(groupId, artifactId, artiVersion, checksum);
+		} catch (IllegalArgumentException e) {
+			return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
+		}
+		return Response.ok().build();
+	}
+	
+	@POST
 	@Path("/ab/{groupId}:{artifactId}:{artiVersion}")
 	@RolesAllowed("tracker")
 	public Response updateArtifactBuildInfo(@PathParam("groupId") String groupId, 
@@ -428,8 +442,8 @@ public class RestService {
 	@Path("/a/all")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getAllArtifacts() throws DataServiceException {
-		// each line: groupId:artifactId:version:type:buildInfo
-		String SQL = "SELECT a.groupId, a.artifactId, a.version, a.type, a.buildInfo, a.component_id FROM Artifact a";
+		// each line: groupId:artifactId:version:type:buildInfo:checksum
+		String SQL = "SELECT a.groupId, a.artifactId, a.version, a.type, a.buildInfo, a.component_id, a.checksum FROM Artifact a";
 		Session session = (Session)this.em.unwrap(Session.class);
 		final ScrollableResults rs = session.createSQLQuery(SQL).scroll();
 		StreamingOutput streamOut = new StreamingOutput() {
@@ -448,6 +462,7 @@ public class RestService {
 						String type = objs[3] != null ? objs[3].toString() : null;
 						String buildInfo = objs[4] != null ? objs[4].toString() : null;
 						String component_id = objs[5] != null ? objs[5].toString() : null;
+						String checksum = objs[6] != null ? objs[6].toString() : null;
 						StringBuilder sb = new StringBuilder();
 						sb.append(grpId);
 						sb.append(":");
@@ -463,6 +478,10 @@ public class RestService {
 						sb.append(":");
 						if (component_id != null) {
 							sb.append(component_id);
+						}
+						sb.append(":");
+						if (checksum != null) {
+							sb.append(checksum);
 						}
 						writer.println(sb.toString());
 					}

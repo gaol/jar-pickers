@@ -31,7 +31,7 @@ public class Pojo2JSTest {
 		String expected = "function Product(){}Product.prototype={id:'',fullName:'',name:'',description:'',versions:[]}\n" +
 				"function ProductVersion(){}ProductVersion.prototype={product:'',parent:'',nativeComps:[],version:'',id:'',note:'',artifacts:[]}\n" +
 				"function Component(){}Component.prototype={version:'',scm:'',id:'',name:'',description:'',groupId:'',pvs:[]}\n" +
-				"function Artifact(){}Artifact.prototype={buildInfo:'',version:'',groupId:'',artifactId:'',type:'',component:'',id:'',note:'',pvs:[]}\n";
+				"function Artifact(){}Artifact.prototype={buildInfo:'',version:'',groupId:'',checksum:'',artifactId:'',type:'',component:'',id:'',note:'',pvs:[]}\n";
 		
 		Assert.assertEquals(expected, js);
 	}

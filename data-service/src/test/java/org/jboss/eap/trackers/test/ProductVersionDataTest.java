@@ -340,6 +340,14 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   Assert.assertNotNull(eap624Artis);
 			   Assert.assertEquals(355, eap624Artis.size());
 			   
+			   Artifact asmArti = dataService.getArtifact("asm", "asm", "3.3.1-redhat-5");
+			   Assert.assertNotNull(asmArti);
+			   Assert.assertEquals("checksum-asm", asmArti.getChecksum());
+			   
+			   Artifact antlrArti = dataService.getArtifact("antlr", "antlr", "2.7.7.redhat-4");
+			   Assert.assertNotNull(antlrArti);
+			   Assert.assertEquals("testchecksum", antlrArti.getChecksum());
+			   
 			   // import native components to EAP 6.2.4
 			   URL compsURL = getClass().getClassLoader().getResource("comps.txt");
 			   Assert.assertNotNull(compsURL);

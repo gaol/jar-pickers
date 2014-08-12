@@ -117,6 +117,17 @@ public interface DataService {
 	void updateArtifactComponent(String groupId, String artifactId, String artiVersion, String compName, String compVer) throws DataServiceException;
 	
 	/**
+	 * Updates MD5 checksum of the artifact.
+	 * 
+	 * @param groupId the groupId
+	 * @param artifactId the artifactId
+	 * @param artiVersion the version of the artifact
+	 * @param checksum md5 checksum
+	 * @throws DataServiceException
+	 */
+	void updateArtifactChecksum(String groupId, String artifactId, String artiVersion, String checksum) throws DataServiceException; 
+	
+	/**
 	 * Removes Artifacts from product version.
 	 * 
 	 * @param productName the product name

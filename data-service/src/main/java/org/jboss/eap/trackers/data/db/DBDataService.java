@@ -194,11 +194,11 @@ public class DBDataService implements DataServiceLocal {
 	@RolesAllowed("tracker")
 	public void addArtifact(String productName, String version, String groupId, String artifactId, 
 			String artiVersion) throws DataServiceException {
-		addArtifact(productName, version, groupId, artifactId, artiVersion, DEFAULT_ARTIFACT_TYPE);
+		addArtifact(productName, version, groupId, artifactId, artiVersion, DEFAULT_ARTIFACT_TYPE, null);
 	}
 	
 	public void addArtifact(String productName, String version, String groupId, String artifactId, 
-			String artiVersion, String type) throws DataServiceException {
+			String artiVersion, String type, String checksum) throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
 		if (pv == null) {
 			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
@@ -219,6 +219,7 @@ public class DBDataService implements DataServiceLocal {
 			arti.setGroupId(groupId);
 			arti.setVersion(artiVersion);
 			arti.setType(type == null ? DEFAULT_ARTIFACT_TYPE : type);
+			arti.setChecksum(checksum);
 			Component component = guessComponent(groupId, null, artiVersion);
 			if (component != null) {
 				arti.setComponent(component);
@@ -350,7 +351,12 @@ public class DBDataService implements DataServiceLocal {
 			throws DataServiceException {
 		Component comp = getComponent(compName, compVer);
 		if (comp == null) {
-			throw new DataServiceException("No component found: " + compName + ":" + compVer);
+			comp = new Component();
+			comp.setName(compName);
+			comp.setVersion(compVer);
+			comp.setGroupId(groupId);
+			this.em.persist(comp);
+			logger.debug("No component found: " + compName + ":" + compVer + ", Create one.");
 		}
 		if (groupId == null || artiVersion == null) {
 			throw new IllegalArgumentException("groupId and version of the Artifact can't be null.");
@@ -367,6 +373,18 @@ public class DBDataService implements DataServiceLocal {
 			query.setParameter("artifactId", artifactId);
 		}
 		query.executeUpdate();
+	}
+	
+	@RolesAllowed("tracker")
+	@Override
+	public void updateArtifactChecksum(String groupId, String artifactId,
+			String version, String checksum) throws DataServiceException {
+		Artifact arti = getArtifact(groupId, artifactId, version);
+		if (arti == null) {
+			throw new IllegalArgumentException("Artifact is Not found");
+		}
+		arti.setChecksum(checksum);
+		this.em.merge(arti);
 	}
 
 	/* (non-Javadoc)
@@ -442,7 +460,7 @@ public class DBDataService implements DataServiceLocal {
 			List<String> artiStrs) throws DataServiceException {
 		if (artiStrs != null && artiStrs.size() > 0) {
 			for (String artiStr: artiStrs) {
-				// Format: groupId:artifactId:version:type
+				// Format: groupId:artifactId:version:type:checksum
 				String[] artiArray = artiStr.split(":");
 				if (artiArray.length < 3) {
 					throw new DataServiceException("Wrong Format of Artifact String: " + artiStr);
@@ -454,7 +472,11 @@ public class DBDataService implements DataServiceLocal {
 				if (artiArray.length >= 4 && artiArray[3] != null && artiArray[3].length() > 0) {
 					type = artiArray[3].trim();
 				}
-				addArtifact(productName, version, groupId, artifactId, artiVersion, type);
+				String checksum = null;
+				if (artiArray.length >= 5 && artiArray[4] != null && artiArray[4].length() > 0) {
+					checksum = artiArray[4].trim();
+				}
+				addArtifact(productName, version, groupId, artifactId, artiVersion, type, checksum);
 			}
 		}
 	}
@@ -487,7 +509,6 @@ public class DBDataService implements DataServiceLocal {
 				if (line.startsWith("#")) {
 					continue;
 				}
-				line = line.replace("::", "");
 				if (line.matches(ARTI_STR_REGEX)) {
 					String[] artiArray = line.split(":");
 					String groupId = artiArray[0].trim();
@@ -496,6 +517,10 @@ public class DBDataService implements DataServiceLocal {
 					String type = DEFAULT_ARTIFACT_TYPE;
 					if (artiArray.length >= 4 && artiArray[3] != null && artiArray[3].length() > 0) {
 						type = artiArray[3].trim();
+					}
+					String checksum = null;
+					if (artiArray.length >= 5 && artiArray[4] != null && artiArray[4].length() > 0) {
+						checksum = artiArray[4].trim();
 					}
 					Artifact arti = getArtifact(groupId, artifactId, artiVersion);
 					if (arti != null) {
@@ -507,6 +532,7 @@ public class DBDataService implements DataServiceLocal {
 						arti.setGroupId(groupId);
 						arti.setVersion(artiVersion);
 						arti.setType(type == null ? DEFAULT_ARTIFACT_TYPE : type);
+						arti.setChecksum(checksum);
 						Component component = guessComponent(groupId, null, artiVersion);
 						if (component != null) {
 							arti.setComponent(component);
@@ -725,7 +751,6 @@ public class DBDataService implements DataServiceLocal {
 				if (line.startsWith("#")) {
 					continue;
 				}
-				line = line.replace("::", "");
 				if (line.matches(regex)) {
 					result.add(line);
 				}
