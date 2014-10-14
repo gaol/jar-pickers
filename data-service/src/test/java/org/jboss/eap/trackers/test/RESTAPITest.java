@@ -118,7 +118,7 @@ public class RESTAPITest {
 		request = new ClientRequest(ctxPath);
 		request.accept(MediaType.APPLICATION_JSON_TYPE);
 		ClientResponse<List> artisResp = request.get(List.class);
-		List<Artifact> artis = (List<Artifact>) artisResp.getEntity();
+		List<Artifact> artis = artisResp.getEntity();
 		Assert.assertNotNull(artis);
 		Assert.assertEquals(2, artis.size());
 
@@ -168,7 +168,7 @@ public class RESTAPITest {
 		request.accept(MediaType.APPLICATION_JSON_TYPE);
 		artisResp = request.get(List.class);
 		Assert.assertEquals(200, artisResp.getStatus());
-		artis = (List<Artifact>) artisResp.getEntity();
+		artis = artisResp.getEntity();
 		Assert.assertNotNull(artis);
 		Assert.assertEquals(2, artis.size());
 		
@@ -178,7 +178,7 @@ public class RESTAPITest {
 		request.accept(MediaType.APPLICATION_JSON_TYPE);
 		artisResp = request.get(List.class);
 		Assert.assertEquals(200, artisResp.getStatus());
-		artis = (List<Artifact>) artisResp.getEntity();
+		artis = artisResp.getEntity();
 		Assert.assertNotNull(artis);
 		Assert.assertEquals(2, artis.size());
 		
@@ -187,7 +187,7 @@ public class RESTAPITest {
 		request.accept(MediaType.APPLICATION_JSON_TYPE);
 		artisResp = request.get(List.class);
 		Assert.assertEquals(200, artisResp.getStatus());
-		artis = (List<Artifact>) artisResp.getEntity();
+		artis = artisResp.getEntity();
 		Assert.assertNotNull(artis);
 		Assert.assertEquals(1, artis.size());
 		
@@ -199,14 +199,14 @@ public class RESTAPITest {
 		ClientResponse<GenericType<StreamingOutput>> streamingOut = request.get(streamType);
 		Assert.assertEquals(200, streamingOut.getStatus());
 		String artisList = streamingOut.getEntity(String.class);
-		String expectedList = "org.jboss.as:jboss-as-picketlink:7.2.0.Final-redhat-3:jar::0\n"
-				+ "org.jboss.as:jboss-as-security:7.2.0.Final-redhat-3:jar::\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.3.Final:jar::\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.2.Final:jar::\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.2.Final:jar::\n"
-				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.3.Final:jar::\n"
-				+ "javax.jsf:jsf-impl:1.0.2.:jar::\n"
-				+ "com.sun.jsf:jsf-impl:2.0.1:jar::\n";
+		String expectedList = "org.jboss.as:jboss-as-picketlink:7.2.0.Final-redhat-3:jar::0:\n"
+				+ "org.jboss.as:jboss-as-security:7.2.0.Final-redhat-3:jar:::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.3.Final:jar:::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-api:1.0.2.Final:jar:::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.2.Final:jar:::\n"
+				+ "org.jboss.ironjacamar:ironjacamar-common-impl:1.0.3.Final:jar:::\n"
+				+ "javax.jsf:jsf-impl:1.0.2:jar:::\n"
+				+ "com.sun.jsf:jsf-impl:2.0.1:jar:::\n";
 		Assert.assertEquals(expectedList, artisList);
 		
 		// load all components
@@ -232,7 +232,7 @@ public class RESTAPITest {
 		prd.setName("Prod-Name");
 		prd.setFullName("This is a test product");
 		request.body(MediaType.APPLICATION_JSON_TYPE, prd);
-		List<Product> prds = (List<Product>) request.post(List.class)
+		List<Product> prds = request.post(List.class)
 				.getEntity();
 		Assert.assertNotNull(prds);
 		Assert.assertEquals(5, prds.size());
@@ -240,7 +240,7 @@ public class RESTAPITest {
 		// remove a product
 		ctxPath = "http://localhost:8080/test/api/p/Prod-Name";
 		request = getClientRequest(ctxPath);
-		prds = (List<Product>) request.delete(List.class).getEntity();
+		prds = request.delete(List.class).getEntity();
 		Assert.assertNotNull(prds);
 		Assert.assertEquals(4, prds.size());
 
@@ -269,8 +269,8 @@ public class RESTAPITest {
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		List<Artifact> artis = dataService.loadArtifacts("EAP", "6.2.4");
 		Assert.assertNotNull(artis);
-		Assert.assertEquals(1, artis.size());
-		Artifact arti = artis.get(0);
+		Assert.assertEquals(3, artis.size());
+		Artifact arti = artis.get(2);
 		Assert.assertEquals("org.jboss.ironjacamar", arti.getGroupId());
 		Assert.assertEquals("ironjacamar-core", arti.getArtifactId());
 		Assert.assertEquals("1.1.3.Final", arti.getVersion());
@@ -351,7 +351,7 @@ public class RESTAPITest {
 		resp = request.delete();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		artis = dataService.loadArtifacts("EAP", "6.2.4");
-		Assert.assertEquals(0, artis.size());
+		Assert.assertEquals(2, artis.size());
 
 		// import artifacts
 		URL artisURL = getClass().getClassLoader().getResource("artis.txt");
@@ -362,7 +362,7 @@ public class RESTAPITest {
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
 		List<Artifact> eap624Artis = dataService.loadArtifacts("EAP", "6.2.4");
 		Assert.assertNotNull(eap624Artis);
-		Assert.assertEquals(355, eap624Artis.size());
+		Assert.assertEquals(357, eap624Artis.size());
 		
 		// import artifacts by uploading file
 		ctxPath = "http://localhost:8080/test/api/aiu/EAP:6.2.3";

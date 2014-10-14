@@ -6,8 +6,12 @@ package org.jboss.eap.trackers.data;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.regex.Pattern;
 
+import org.jboss.eap.trackers.model.AffectedArtifact;
 import org.jboss.eap.trackers.model.Artifact;
+import org.jboss.eap.trackers.model.CVE;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -26,6 +30,8 @@ public interface DataService {
 	String RED_HAT_SUFFIX = "-redhat-[^\n].*$";
 	
 	String DEFAULT_ARTIFACT_TYPE = "jar";
+	
+	Pattern CVE_NAME_PATTERN = Pattern.compile("CVE-([0-9]{4})-([0-9]{4})");
 
 	/**
 	 * Loads all Product information including all ProductVersion information.
@@ -231,4 +237,91 @@ public interface DataService {
 	 * @throws DataServiceException if type is not ProductVersion | Artifact
 	 */
 	void updateNote(Long id, String type, String note) throws DataServiceException;
+	
+	/**
+	 * Gets the CVE according to the cve name.
+	 * 
+	 * @param cveName the cve name
+	 * @return the CVE entity
+	 * @throws DataServiceException the exception
+	 */
+	CVE getCVE(String cveName) throws DataServiceException;
+	
+	
+	List<AffectedArtifact> getAffectedArtis(String grpId, String artiId) throws DataServiceException;
+	
+	/**
+	 * Gets affected product versions according to CVE Name
+	 * 
+	 * @param cveName the cve name
+	 * @return the set of affected ProductVersion
+	 * @throws DataServiceException exception
+	 */
+	Set<ProductVersion> affectedProducts(String cveName) throws DataServiceException;
+	
+	/**
+	 * Gets affected artifacts according to CVE name
+	 * 
+	 * @param cveName the cve name
+	 * @return the set of affected Artifacts
+	 * @throws DataServiceException exception
+	 */
+	Set<Artifact> affectedArtifacts(String cveName) throws DataServiceException;
+	
+	/**
+	 * Gets a sorted set of CVEs according to product name and version.
+	 * 
+	 * @param prdName the product name
+	 * @param prdVersion the product version
+	 * @return the sorted set of CVEs it has
+	 * @throws DataServiceException the exception
+	 */
+	SortedSet<CVE> productCVEs(String prdName, String prdVersion) throws DataServiceException;
+	
+	/**
+	 * Gets a sorted set of CVEs according to the artifact's groupId, artifactId and version
+	 * 
+	 * @param groupId the groupId of the artifact
+	 * @param artifactId the artifactId of the artifact
+	 * @param version the version of the artifact
+	 * @return a sorted set of CVEs it has
+	 * @throws DataServiceException the exception
+	 */
+	SortedSet<CVE> artifactCVEs(String groupId, String artifactId, String version) throws DataServiceException;
+	
+	/**
+	 * Track new CVE into the system. Nothing happens if it is tracked already.
+	 * 
+	 * @param cveName the CVE name, must follow the CVE name format: CVE-XXXX-YYYY, where X and Y are all numbers.
+	 * @return CVE entity after tracking.
+	 * @throws IllegalArgumentException if the @cveName does not follow the format.
+	 * @throws DataServiceException the exception
+	 */
+	CVE newCVE(String cveName) throws IllegalArgumentException, DataServiceException;
+	
+	/**
+	 * Updates CVE, including the affected artifacts.
+	 * 
+	 * The associated AffectedArtifact must be provided to avoid data missing.
+	 * 
+	 * @param cve the CVE
+	 * @return the CVE after modification
+	 * @throws DataServiceException the exception
+	 */
+	CVE updateCVE(CVE cve) throws DataServiceException;
+	
+	/**
+	 * Adds new CVE affected artifacts.
+	 * 
+	 * @param cveName the CVE name, must follow CVE name format.
+	 * @param groupId groupId of the Artifact
+	 * @param artiId artifactId of the Artifact
+	 * @return the CVE entity
+	 * @param versionScope version scope of the Artifact
+	 * @throws IllegalArgumentException
+	 * @throws DataServiceException
+	 */
+	CVE cveAffected(String cveName, String groupId, String artiId, String versionScope) 
+	        throws IllegalArgumentException, DataServiceException;
+	
 }

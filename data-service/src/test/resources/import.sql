@@ -42,16 +42,27 @@ insert into Artifact (id, groupid, artifactid, version, buildinfo, type, note) v
 insert into Artifact (id, groupid, artifactid, version, buildinfo, type, note) values (5, 'org.jboss.ironjacamar','ironjacamar-common-impl','1.0.3.Final','','jar','')
 
 -- 2 artifacts with differnt groupIds
-insert into Artifact (id, groupid, artifactid, version, buildinfo, type, note) values (6, 'javax.jsf','jsf-impl','1.0.2.','','jar','')
+insert into Artifact (id, groupid, artifactid, version, buildinfo, type, note) values (6, 'javax.jsf','jsf-impl','1.0.2','','jar','')
 insert into Artifact (id, groupid, artifactid, version, buildinfo, type, note) values (7, 'com.sun.jsf','jsf-impl','2.0.1','','jar','')
 
 
 insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (10, 0)
 insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (10, 1)
 
+insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (7, 3)
+insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (7, 4)
+
 insert into ProductVersion_Component (pvs_id, nativeComps_id) values (7, 1)
 insert into ProductVersion_Component (pvs_id, nativeComps_id) values (11, 1)
 
+-- cve data
+insert into cve (name) values ('CVE-2014-3547')
+insert into cve (name) values ('CVE-2012-3645')
+insert into cve (name) values ('CVE-2013-0017')
 
+
+insert into AffectedArtifact (id, artiGrpId, artiId, versionScopes) values (1, 'org.jboss.ironjacamar', 'ironjacamar-common-impl', '<=1.0.2.Final')
+
+insert into CVE_AffectedArtifact (cves_name, affectedArtis_id) values ('CVE-2014-3547', 1)
 
 

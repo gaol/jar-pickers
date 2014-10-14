@@ -67,4 +67,15 @@ public interface Queries {
 			+ " WHERE c.groupId = :groupId"
 			+ " AND c.version like :version";
 	
+	/** load artifacts only by grpId and artiId **/
+	String QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID = "artifacts.loadArtifactsByGrpIdAndArtiId";
+	String _QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM Artifact a WHERE a.groupId = :groupId AND a.artifactId = :artifactId";
+	
+	String QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "affectedArtis.loadAffectedArtis";
+	String _QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM AffectedArtifact a WHERE a.artiGrpId = :groupId AND a.artiId = :artifactId";
+	
+	
+	/** cve related queries **/
+	String QUERY_GET_CVE_BY_NAME = "cve.getCVEByName";
+	String _QUERY_GET_CVE_BY_NAME = "SELECT c FROM CVE c WHERE c.name = :name";
 }

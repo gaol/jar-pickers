@@ -20,7 +20,7 @@ import org.jboss.logging.Logger;
  * @author lgao
  *
  */
-public class VersionScopes implements Serializable {
+public class VersionScopes implements Serializable, Cloneable {
     /**
      * default serial version uid
      */
@@ -46,6 +46,8 @@ public class VersionScopes implements Serializable {
     private static final String COND_EQ = "==";
 
     private final List<VersionScope> versionScopes = new ArrayList<VersionScopes.VersionScope>(2);
+    
+    private final String rawStrToClone;
 
     public VersionScopes(String versionScopes) {
         super();
@@ -68,6 +70,16 @@ public class VersionScopes implements Serializable {
             VersionScope scope = new VersionScope(condition, version, series);
             this.versionScopes.add(scope);
         }
+        this.rawStrToClone = versionScopes;
+    }
+    
+    public VersionScopes clone() {
+        return new VersionScopes(this.rawStrToClone);
+    }
+    
+    @Override
+    public String toString() {
+        return this.rawStrToClone;
     }
 
     private static class VersionScope implements Serializable {

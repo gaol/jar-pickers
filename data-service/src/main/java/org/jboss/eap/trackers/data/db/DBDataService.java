@@ -9,8 +9,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.security.PermitAll;
@@ -26,7 +30,10 @@ import javax.persistence.TypedQuery;
 import org.hibernate.Session;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
+import org.jboss.eap.trackers.data.VersionScopes;
+import org.jboss.eap.trackers.model.AffectedArtifact;
 import org.jboss.eap.trackers.model.Artifact;
+import org.jboss.eap.trackers.model.CVE;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -816,5 +823,176 @@ public class DBDataService implements DataServiceLocal {
 			throw new DataServiceException("Error to update note of " + type + ":" + id);
 		}
 	}
+
+    /* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#affectedProducts(java.lang.String)
+     */
+    @Override
+    public Set<ProductVersion> affectedProducts(String cveName) throws DataServiceException {
+        Set<Artifact> artis = affectedArtifacts(cveName);
+        Set<ProductVersion> pvs = new HashSet<ProductVersion>();
+        for (Artifact arti: artis) {
+            if (arti.getPvs() != null) {
+                for (ProductVersion pv: arti.getPvs()) {
+                    if (!pvs.contains(pv)) {
+                        pvs.add(pv);
+                    }
+                }
+            }
+        }
+        return pvs;
+    }
+    
+    List<Artifact> getArtifacts(String grpId, String artiId) throws DataServiceException {
+        return this.em.createNamedQuery(Queries.QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID, Artifact.class)
+                .setParameter("groupId", grpId)
+                .setParameter("artifactId", artiId)
+                .getResultList();
+    }
+    
+    @Override
+    public CVE getCVE(String cveName) throws DataServiceException {
+        List<CVE> cves = this.em.createNamedQuery(Queries.QUERY_GET_CVE_BY_NAME, CVE.class)
+          .setParameter("name", cveName).getResultList();
+        return cves.size() > 0 ? cves.get(0) : null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#affectedArtifacts(java.lang.String)
+     */
+    @Override
+    public Set<Artifact> affectedArtifacts(String cveName) throws DataServiceException {
+        CVE cve = getCVE(cveName);
+        if (cve == null) {
+            return Collections.emptySet();
+        }
+        Set<AffectedArtifact> artis = cve.getAffectedArtis();
+        if (artis != null) {
+            Set<Artifact> result = new HashSet<Artifact>();
+            for (AffectedArtifact arti: artis) {
+                String grpId = arti.getArtiGrpId();
+                String artiId = arti.getArtiId();
+                VersionScopes versionScopes = arti.getVersionScopes();
+                for (Artifact a: getArtifacts(grpId, artiId)) {
+                    if (versionScopes.isCaptured(a.getVersion())) {
+                        result.add(a);
+                    }
+                }
+            }
+            return result;
+        }
+        return Collections.emptySet();
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#productCVEs(java.lang.String, java.lang.String)
+     */
+    @Override
+    public SortedSet<CVE> productCVEs(String prdName, String prdVersion) throws DataServiceException {
+        ProductVersion pv = getProductVersion(prdName, prdVersion);
+        SortedSet<CVE> cves = new TreeSet<CVE>();
+        if (pv != null && pv.getArtifacts() != null) {
+            for (Artifact arti: pv.getArtifacts()) {
+                for (AffectedArtifact affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
+                    if (affectedArti.getVersionScopes().isCaptured(arti.getVersion())) {
+                        cves.addAll(affectedArti.getCves());
+                    }
+                }
+            }
+        }
+        return cves;
+    }
+    
+    @Override
+    public List<AffectedArtifact> getAffectedArtis(String grpId, String artiId) throws DataServiceException {
+        return this.em.createNamedQuery(Queries.QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID, AffectedArtifact.class)
+                .setParameter("groupId", grpId)
+                .setParameter("artifactId", artiId)
+                .getResultList();
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#artifactCVEs(java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public SortedSet<CVE> artifactCVEs(String groupId, String artifactId, String version) throws DataServiceException {
+        Artifact arti = getArtifact(groupId, artifactId, version);
+        if (arti == null) {
+            return new TreeSet<CVE>();
+        }
+        SortedSet<CVE> cves = new TreeSet<CVE>();
+        for (AffectedArtifact affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
+            if (affectedArti.getVersionScopes().isCaptured(arti.getVersion())) {
+                cves.addAll(affectedArti.getCves());
+            }
+        }
+        return cves;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#newCVE(java.lang.String)
+     */
+    @Override
+    @RolesAllowed("tracker")
+    public CVE newCVE(String cveName) throws IllegalArgumentException, DataServiceException {
+        if (cveName == null || cveName.length() == 0) {
+            throw new IllegalArgumentException("CVE Name must be provided.");
+        }
+        if (!CVE_NAME_PATTERN.matcher(cveName).matches()) {
+            throw new IllegalArgumentException("Illegal CVE name, must follow: CVE-XXXX-XXXX, X is the number.");
+        }
+        CVE cve = getCVE(cveName);
+        if (cve != null) {
+            return cve;
+        }
+        cve = new CVE();
+        cve.setName(cveName);
+        this.em.persist(cve);
+        return cve;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#updateCVE(org.jboss.eap.trackers.model.CVE)
+     */
+    @Override
+    @RolesAllowed("tracker")
+    public CVE updateCVE(CVE cve) throws DataServiceException {
+        if (cve == null) {
+            throw new IllegalArgumentException("CVE is null");
+        }
+        Session session = (Session)em.getDelegate();
+        session.saveOrUpdate(cve);
+        return getCVE(cve.getName());
+    }
+
+    /* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#cveAffected(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    @RolesAllowed("tracker")
+    public CVE cveAffected(String cveName, String groupId, String artiId, String versionScope) throws IllegalArgumentException,
+            DataServiceException {
+        CVE cve = newCVE(cveName);
+        AffectedArtifact affectedArti = new AffectedArtifact();
+        affectedArti.setArtiGrpId(groupId);
+        affectedArti.setArtiId(artiId);
+        affectedArti.setVersionScopes(new VersionScopes(versionScope));
+        SortedSet<CVE> cveSet = new TreeSet<CVE>();
+        cveSet.add(cve);
+        affectedArti.setCves(cveSet);
+        
+        Set<AffectedArtifact> affectedArtis = cve.getAffectedArtis();
+        if (affectedArtis == null) {
+            affectedArtis = new HashSet<AffectedArtifact>();
+            cve.setAffectedArtis(affectedArtis);
+        }
+        affectedArtis.add(affectedArti);
+        
+        Session session = (Session)em.getDelegate();
+        session.saveOrUpdate(cve);
+        return getCVE(cveName);
+    }
 	
+    
 }
+;

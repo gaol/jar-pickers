@@ -12,9 +12,16 @@
 	@NamedQuery(name = Queries.QUERY_LOAD_COMPS_BY_GROUPID, query = Queries._QUERY_LOAD_COMPS_BY_GROUPID),
 	@NamedQuery(name = Queries.QUERY_LOAD_ARTIFACTS_BY_PV, query = Queries._QUERY_LOAD_ARTIFACTS_BY_PV),
 	@NamedQuery(name = Queries.QUERY_LOAD_COMPS_BY_PV, query = Queries._QUERY_LOAD_COMPS_BY_PV),
+	
+	@NamedQuery(name = Queries.QUERY_GET_CVE_BY_NAME, query = Queries._QUERY_GET_CVE_BY_NAME),
+	@NamedQuery(name = Queries.QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID, query = Queries._QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID),
+	
+	@NamedQuery(name = Queries.QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID, query = Queries._QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID),
+	
 	})
 
 package org.jboss.eap.trackers.model;
 
 import org.hibernate.annotations.NamedQueries;
 import org.hibernate.annotations.NamedQuery;
+
