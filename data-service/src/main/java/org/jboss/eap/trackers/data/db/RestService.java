@@ -535,12 +535,66 @@ public class RestService {
 	}
 	
 	@GET
-	@Path("/cves/{prdName}:{prdVersion}")
+	@Path("/cves/p/{prdName}:{prdVersion}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response productsCVEs(@PathParam("prdName") String prdName, @PathParam("prdVersion") String prdVersion) 
+	public Response productCVEs(@PathParam("prdName") String prdName, @PathParam("prdVersion") String prdVersion) 
 	        throws DataServiceException {
 	    SortedSet<CVE> cves = this.dataService.productCVEs(prdName, prdVersion);
 	    return Response.ok(cves).build();
+	}
+	
+	@GET
+    @Path("/cves/a/{grpId}:{artiId}:{version}")
+    @Produces(MediaType.APPLICATION_JSON)
+	public Response artifactCVEs(@PathParam("grpId") String grpId, @PathParam("artiId") String artiId, 
+	        @PathParam("version") String version) throws DataServiceException {
+	    SortedSet<CVE> cves = this.dataService.artifactCVEs(grpId, artiId, version);
+	    return Response.ok(cves).build();
+	}
+	
+	@GET
+    @Path("/cves/p/{cveName}")
+    @Produces(MediaType.APPLICATION_JSON)
+	public Response affectedProductVersions(@PathParam("cveName") String cveName) throws DataServiceException {
+	    CVE cve = this.dataService.getCVE(cveName);
+	    if (cve == null) {
+	        return Response.status(Status.NOT_FOUND).build();
+	    }
+	    Set<ProductVersion> pvs = this.dataService.affectedProducts(cveName);
+	    return Response.ok(pvs).build();
+	}
+	
+	@GET
+    @Path("/cves/a/{cveName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response affectedArticactss(@PathParam("cveName") String cveName) throws DataServiceException {
+        CVE cve = this.dataService.getCVE(cveName);
+        if (cve == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        Set<Artifact> artis = this.dataService.affectedArtifacts(cveName);
+        return Response.ok(artis).build();
+    }
+	
+	@PUT
+    @Path("/cves/{cveName}")
+    @Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed("tracker")
+	public Response trackCVE(@PathParam("cveName") String cveName) throws DataServiceException {
+	    CVE cve = this.dataService.newCVE(cveName);
+	    return Response.ok(cve).build();
+	}
+	
+	@POST
+    @Path("/cves/{cveName}/{groupId}:{artiId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed("tracker")
+	public Response updateCVEAffects(@PathParam("cveName") String cveName,
+	        @PathParam("groupId")  String groupId,
+	        @PathParam("artiId") String artiId, 
+	        @QueryParam("verscope") String versionScope) throws DataServiceException {
+	    CVE cve = this.dataService.cveAffected(cveName, groupId, artiId, versionScope);
+	    return Response.ok(cve).build();
 	}
 	
 }
