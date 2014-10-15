@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -41,6 +42,7 @@ import org.hibernate.Session;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.model.Artifact;
+import org.jboss.eap.trackers.model.CVE;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -444,7 +446,7 @@ public class RestService {
 	public Response getAllArtifacts() throws DataServiceException {
 		// each line: groupId:artifactId:version:type:buildInfo:checksum
 		String SQL = "SELECT a.groupId, a.artifactId, a.version, a.type, a.buildInfo, a.component_id, a.checksum FROM Artifact a";
-		Session session = (Session)this.em.unwrap(Session.class);
+		Session session = this.em.unwrap(Session.class);
 		final ScrollableResults rs = session.createSQLQuery(SQL).scroll();
 		StreamingOutput streamOut = new StreamingOutput() {
 			
@@ -499,7 +501,7 @@ public class RestService {
 	public Response getAllComponents() throws DataServiceException {
 		// each line: name:version:groupId
 		String SQL = "SELECT c.name, c.version, c.groupId FROM Component c";
-		Session session = (Session)this.em.unwrap(Session.class);
+		Session session = this.em.unwrap(Session.class);
 		final ScrollableResults rs = session.createSQLQuery(SQL).scroll();
 		StreamingOutput streamOut = new StreamingOutput() {
 			
@@ -530,6 +532,15 @@ public class RestService {
 			}
 		};
 		return Response.ok(streamOut).build();
+	}
+	
+	@GET
+	@Path("/cves/{prdName}:{prdVersion}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response productsCVEs(@PathParam("prdName") String prdName, @PathParam("prdVersion") String prdVersion) 
+	        throws DataServiceException {
+	    SortedSet<CVE> cves = this.dataService.productCVEs(prdName, prdVersion);
+	    return Response.ok(cves).build();
 	}
 	
 }
