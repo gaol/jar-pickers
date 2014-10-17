@@ -72,7 +72,7 @@ public interface Queries {
 	String _QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM Artifact a WHERE a.groupId = :groupId AND a.artifactId = :artifactId";
 	
 	String QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "affectedArtis.loadAffectedArtis";
-	String _QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM AffectedArtifact a WHERE a.artiGrpId = :groupId AND a.artiId = :artifactId";
+	String _QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM AffectedArtifact a WHERE a.nativeComponent = false AND a.artiGrpId = :groupId AND a.artiId = :artifactId";
 	
 	
 	/** cve related queries **/

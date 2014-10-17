@@ -269,6 +269,15 @@ public interface DataService {
 	Set<Artifact> affectedArtifacts(String cveName) throws DataServiceException;
 	
 	/**
+	 * Gets affected native components according to CVE name
+	 * 
+	 * @param cveName the CVE name
+	 * @return the set of affected native components
+	 * @throws DataServiceException exception
+	 */
+	Set<Component> affectedNativeCompoents(String cveName) throws DataServiceException;
+	
+	/**
 	 * Gets a sorted set of CVEs according to product name and version.
 	 * 
 	 * @param prdName the product name
@@ -288,6 +297,16 @@ public interface DataService {
 	 * @throws DataServiceException the exception
 	 */
 	SortedSet<CVE> artifactCVEs(String groupId, String artifactId, String version) throws DataServiceException;
+	
+	/**
+	 * Gets a sorted set of CVEs according to the local component name and version
+	 * 
+	 * @param compName local component name
+	 * @param version version of the component
+	 * @return a sorted set of CVEs it has
+	 * @throws DataServiceException the exception
+	 */
+	SortedSet<CVE> nativeComponentCVEs(String compName, String version) throws DataServiceException;
 	
 	/**
 	 * Track new CVE into the system. Nothing happens if it is tracked already.
@@ -321,7 +340,9 @@ public interface DataService {
 	 * @throws IllegalArgumentException
 	 * @throws DataServiceException
 	 */
-	CVE cveAffected(String cveName, String groupId, String artiId, String versionScope) 
+	CVE cveAffected(String cveName, String groupId, String artiId, String versionScope, boolean component) 
 	        throws IllegalArgumentException, DataServiceException;
+	
+	
 	
 }

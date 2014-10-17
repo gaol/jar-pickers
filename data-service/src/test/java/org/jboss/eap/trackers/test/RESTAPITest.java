@@ -218,7 +218,8 @@ public class RESTAPITest {
 		Assert.assertEquals(200, streamingOut.getStatus());
 		String compList = streamingOut.getEntity(String.class);
 		String expectedCompList = "picketlink:7.2.0.Final:org.picketlink\n"
-				+ "mod_cluster:1.2.9.Final-redhat-1:\n";
+				+ "mod_cluster:1.2.9.Final-redhat-1:\n"
+				+ "openssl:1.0.1:\n";
 		Assert.assertEquals(expectedCompList, compList);
 	}
 

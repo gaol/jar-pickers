@@ -31,6 +31,7 @@ insert into Component (id, name, version, groupid, description, scm) values (0, 
 
 -- sample native components
 insert into Component (id, name, version, description, scm) values (1, 'mod_cluster', '1.2.9.Final-redhat-1', '', 'https://github.com/modcluster/mod_cluster') 
+insert into Component (id, name, version, description, scm) values (2, 'openssl', '1.0.1', '', 'https://git.openssl.org') 
 
 -- sample artifacts in EWP 5.2.0
 insert into Artifact (id, component_id, groupid, artifactid, version, buildinfo, type, note) values (0, 0,'org.jboss.as','jboss-as-picketlink','7.2.0.Final-redhat-3','','jar','')
@@ -55,14 +56,21 @@ insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (7, 4)
 insert into ProductVersion_Component (pvs_id, nativeComps_id) values (7, 1)
 insert into ProductVersion_Component (pvs_id, nativeComps_id) values (11, 1)
 
+-- example: EAP 6.2.0 has openssl 1.0.1
+insert into ProductVersion_Component (pvs_id, nativeComps_id) values (3, 2)
+
 -- cve data
 insert into cve (name) values ('CVE-2014-3547')
 insert into cve (name) values ('CVE-2012-3645')
 insert into cve (name) values ('CVE-2013-0017')
+insert into cve (name) values ('CVE-2014-3566')
 
 
-insert into AffectedArtifact (id, artiGrpId, artiId, versionScopes) values (1, 'org.jboss.ironjacamar', 'ironjacamar-common-impl', '<=1.0.2.Final')
+insert into AffectedArtifact (id, artiGrpId, artiId, versionScopes, nativeComponent) values (1, 'org.jboss.ironjacamar', 'ironjacamar-common-impl', '<=1.0.2.Final', 'false')
+insert into AffectedArtifact (id, artiId, versionScopes, nativeComponent) values (2, 'openssl', '<=1.0.1', 'true')
 
 insert into CVE_AffectedArtifact (cves_name, affectedArtis_id) values ('CVE-2014-3547', 1)
+insert into CVE_AffectedArtifact (cves_name, affectedArtis_id) values ('CVE-2014-3566', 2)
+
 
 

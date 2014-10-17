@@ -72,10 +72,27 @@ public class AffectedArtifact implements Serializable {
     
     @Column
     private String artiId;
+    
+    @Column(columnDefinition = "boolean DEFAULT false")
+    private boolean nativeComponent;
   
     @Sort(type = SortType.NATURAL)
     @ManyToMany(mappedBy = "affectedArtis", fetch = FetchType.EAGER)
     private SortedSet<CVE> cves;
+    
+    /**
+     * @return the nativeComponent
+     */
+    public boolean isNativeComponent() {
+        return nativeComponent;
+    }
+
+    /**
+     * @param nativeComponent the nativeComponent to set
+     */
+    public void setNativeComponent(boolean nativeComponent) {
+        this.nativeComponent = nativeComponent;
+    }
 
     /**
      * @return the id

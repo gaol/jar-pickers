@@ -357,6 +357,10 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   Assert.assertNotNull(eap624NativeComps);
 			   Assert.assertEquals(17, eap624NativeComps.size());
 			   
+			   List<Component> eap620NativeComps = dataService.loadNativeComponents("EAP", "6.2.0");
+			   Assert.assertNotNull(eap620NativeComps);
+               Assert.assertEquals(1, eap620NativeComps.size());
+			   
 			   // check one of the native component
 			   Component checkComp = dataService.getComponent("guava", "13.0.1-redhat-1");
 			   Assert.assertNotNull(checkComp);

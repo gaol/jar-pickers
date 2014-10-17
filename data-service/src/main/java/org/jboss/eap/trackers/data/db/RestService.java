@@ -592,9 +592,13 @@ public class RestService {
 	public Response updateCVEAffects(@PathParam("cveName") String cveName,
 	        @PathParam("groupId")  String groupId,
 	        @PathParam("artiId") String artiId, 
-	        @QueryParam("verscope") String versionScope) throws DataServiceException {
-	    CVE cve = this.dataService.cveAffected(cveName, groupId, artiId, versionScope);
+	        @QueryParam("verscope") String versionScope,
+	        @QueryParam("native") boolean nComp) throws DataServiceException {
+	    CVE cve = this.dataService.cveAffected(cveName, groupId, artiId, versionScope, nComp);
 	    return Response.ok(cve).build();
 	}
+	
+	
+	
 	
 }
