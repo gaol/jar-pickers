@@ -5,7 +5,6 @@ package org.jboss.eap.trackers.ircbot;
 
 import java.util.regex.Matcher;
 
-import org.jboss.eap.trackers.ircbot.AnswerMe.QuestionType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,125 +14,169 @@ import org.junit.Test;
  */
 public class CommandMatchTest {
 
-	@Test
-	public void testQuestionTypeMatch () {
-		String question = "groupid_of ironjacamar-common-api";
-		QuestionType type = QuestionType.forName(question);
-		Assert.assertNotNull(type);
-		Assert.assertEquals(QuestionType.GROUPD_ID_OF, type);
-		
-		question = " groupid_of   ironjacamar-common-api dddsdf ";
-		type = QuestionType.forName(question);
-		Assert.assertNotNull(type);
-		Assert.assertEquals(QuestionType.GROUPD_ID_OF, type);
-		
-		question = "artifacts_of org.jboss.ironjacamar";
-		type = QuestionType.forName(question);
-		Assert.assertNotNull(type);
-		Assert.assertEquals(QuestionType.ARTIFACTS_OF, type);
-		
-		question = " artifacts_of   org.jboss.ironjacamar  ";
-		type = QuestionType.forName(question);
-		Assert.assertNotNull(type);
-		Assert.assertEquals(QuestionType.ARTIFACTS_OF, type);
-		
-		question = " help ";
-		type = QuestionType.forName(question);
-		Assert.assertNotNull(type);
-		Assert.assertEquals(QuestionType.HELP, type);
-		
-		question = "version_of ironjacamar-common-api in EAP:6.2.4";
-		type = QuestionType.forName(question);
-		Assert.assertNotNull(type);
-		Assert.assertEquals(QuestionType.VERSION_OF_ARTI_IN_PV, type);
-		
-		question = " version_of    ironjacamar-common-api       in    EAP:6.2.4   ddd ";
-		type = QuestionType.forName(question);
-		Assert.assertNotNull(type);
-		Assert.assertEquals(QuestionType.VERSION_OF_ARTI_IN_PV, type);
-	}
-	
-	@Test
-	public void testFilterQuestionOutGroupIdOf() {
-		String question = "groupid_of ironjacamar-common-api";
-		Matcher matcher = AnswerMe.PATTERN_GRP_ID_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(1, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
-		
-		question = "groupid_of ironjacamar-common-api privately";
-		matcher = AnswerMe.PATTERN_GRP_ID_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(1, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
-		
-		question = " groupid_of ironjacamar-common-api privately "; // space before and end
-		matcher = AnswerMe.PATTERN_GRP_ID_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(1, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
-	}
-	
-	@Test
-	public void testFilterQuestionOutArtifactsOf() {
-		String question = "artifacts_of org.jboss.ironjacamar";
-		Matcher matcher = AnswerMe.PATTERN_ARTIS_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(1, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertEquals("org.jboss.ironjacamar", matcher.group(1).trim());
-		
-		question = "artifacts_of org.jboss.ironjacamar privately";
-		matcher = AnswerMe.PATTERN_ARTIS_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(1, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertEquals("org.jboss.ironjacamar", matcher.group(1).trim());
-		
-		question = " artifacts_of org.jboss.ironjacamar privately ";
-		matcher = AnswerMe.PATTERN_ARTIS_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(1, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertEquals("org.jboss.ironjacamar", matcher.group(1).trim());
-	}
-	
-	@Test
-	public void testFilterQuestionOutArtifactsVersionsInPV() {
-		String question = "version_of ironjacamar-common-api in EAP:6.2.4";
-		Matcher matcher = AnswerMe.PATTERN_ARTI_VERSION_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(3, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertNotNull(matcher.group(2));
-		Assert.assertNotNull(matcher.group(3));
-		Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
-		Assert.assertEquals("EAP", matcher.group(2).trim());
-		Assert.assertEquals("6.2.4", matcher.group(3).trim());
-		
-		question = "version_of ironjacamar-common-api in EAP:6.2.4 privately";
-		matcher = AnswerMe.PATTERN_ARTI_VERSION_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(3, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertNotNull(matcher.group(2));
-		Assert.assertNotNull(matcher.group(3));
-		Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
-		Assert.assertEquals("EAP", matcher.group(2).trim());
-		Assert.assertEquals("6.2.4", matcher.group(3).trim());
-		
-		question = " version_of ironjacamar-common-api in EAP:6.2.4 privately ";
-		matcher = AnswerMe.PATTERN_ARTI_VERSION_OF.matcher(question);
-		Assert.assertTrue(matcher.matches());
-		Assert.assertEquals(3, matcher.groupCount());
-		Assert.assertNotNull(matcher.group(1));
-		Assert.assertNotNull(matcher.group(2));
-		Assert.assertNotNull(matcher.group(3));
-		Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
-		Assert.assertEquals("EAP", matcher.group(2).trim());
-		Assert.assertEquals("6.2.4", matcher.group(3).trim());
-	}
+    @Test
+    public void testQuestionTypeMatch() {
+        String question = "groupid_of ironjacamar-common-api";
+        AnswerMe answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(GroupIdAnswer.class, answerMe.getClass());
+
+        question = " groupid of  ironjacamar-common-api dddsdf ";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(GroupIdAnswer.class, answerMe.getClass());
+
+        question = " groupid_of   ironjacamar-common-api dddsdf ";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(GroupIdAnswer.class, answerMe.getClass());
+
+        question = "artifacts_of org.jboss.ironjacamar";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(ArtifactsAnswer.class, answerMe.getClass());
+
+        question = "artifacts of org.jboss.ironjacamar";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(ArtifactsAnswer.class, answerMe.getClass());
+        
+        question = " artifacts_of   org.jboss.ironjacamar  ";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(ArtifactsAnswer.class, answerMe.getClass());
+
+        question = "help";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(HelpAnswer.class, answerMe.getClass());
+
+        question = "version_of ironjacamar-common-api in EAP:6.2.4";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(ArtifactsVersionAnswer.class, answerMe.getClass());
+        
+        question = "version of ironjacamar-common-api in EAP:6.2.4";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(ArtifactsVersionAnswer.class, answerMe.getClass());
+
+        question = " version_of    ironjacamar-common-api       in    EAP:6.2.4   ddd ";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+
+        Assert.assertNotNull(answerMe);
+        Assert.assertEquals(ArtifactsVersionAnswer.class, answerMe.getClass());
+    }
+
+    @Test
+    public void testFilterQuestionOutGroupIdOf() {
+        String question = "groupid_of ironjacamar-common-api";
+        AnswerMe answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        Matcher matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
+
+        question = "groupid_of ironjacamar-common-api privately";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
+
+        question = " groupid_of ironjacamar-common-api privately "; // space before and end
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
+    }
+
+    @Test
+    public void testFilterQuestionOutArtifactsOf() {
+        String question = "artifacts_of org.jboss.ironjacamar";
+        AnswerMe answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        Matcher matcher = answerMe.getPattern().matcher(question);
+        
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("org.jboss.ironjacamar", matcher.group(1).trim());
+
+        question = "artifacts_of org.jboss.ironjacamar privately";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("org.jboss.ironjacamar", matcher.group(1).trim());
+
+        question = " artifacts_of org.jboss.ironjacamar privately ";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("org.jboss.ironjacamar", matcher.group(1).trim());
+    }
+
+    @Test
+    public void testFilterQuestionOutArtifactsVersionsInPV() {
+        String question = "version_of ironjacamar-common-api in EAP:6.2.4";
+        AnswerMe answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        Matcher matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(3, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertNotNull(matcher.group(2));
+        Assert.assertNotNull(matcher.group(3));
+        Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
+        Assert.assertEquals("EAP", matcher.group(2).trim());
+        Assert.assertEquals("6.2.4", matcher.group(3).trim());
+
+        question = "version_of ironjacamar-common-api in EAP:6.2.4 privately";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(3, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertNotNull(matcher.group(2));
+        Assert.assertNotNull(matcher.group(3));
+        Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
+        Assert.assertEquals("EAP", matcher.group(2).trim());
+        Assert.assertEquals("6.2.4", matcher.group(3).trim());
+
+        question = " version_of ironjacamar-common-api in EAP:6.2.4 privately ";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(3, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertNotNull(matcher.group(2));
+        Assert.assertNotNull(matcher.group(3));
+        Assert.assertEquals("ironjacamar-common-api", matcher.group(1).trim());
+        Assert.assertEquals("EAP", matcher.group(2).trim());
+        Assert.assertEquals("6.2.4", matcher.group(3).trim());
+    }
 }

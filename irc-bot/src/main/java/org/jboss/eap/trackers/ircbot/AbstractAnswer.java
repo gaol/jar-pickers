@@ -3,6 +3,8 @@
  */
 package org.jboss.eap.trackers.ircbot;
 
+import java.util.regex.Pattern;
+
 /**
  * @author lgao
  *
@@ -15,8 +17,23 @@ public abstract class AbstractAnswer implements AnswerMe {
 	
 	private boolean fullAnswer;
 	
+	private Pattern pattern;
 
 	/**
+     * @return the pattern
+     */
+    public Pattern getPattern() {
+        return pattern;
+    }
+
+    /**
+     * @param pattern the pattern to set
+     */
+    public void setPattern(Pattern pattern) {
+        this.pattern = pattern;
+    }
+
+    /**
 	 * @return the fullAnswer
 	 */
 	public boolean isFullAnswer() {

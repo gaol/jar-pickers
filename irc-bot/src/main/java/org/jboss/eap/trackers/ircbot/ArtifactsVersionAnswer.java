@@ -23,15 +23,10 @@ import org.jboss.eap.trackers.utils.ArtifactsUtil;
 public class ArtifactsVersionAnswer extends AbstractAnswer {
 
 	private static final String API_PATH = "/a/";
-	
-	@Override
-	public QuestionType getQuestionType() {
-		return QuestionType.VERSION_OF_ARTI_IN_PV;
-	}
 
 	@Override
 	public Answer answer() throws Exception {
-		Matcher matcher = PATTERN_ARTI_VERSION_OF.matcher(getQuestion());
+		Matcher matcher = getPattern().matcher(getQuestion());
 		if (matcher.matches()) {
 			String filter = matcher.group(1);
 			String prdName = matcher.group(2);

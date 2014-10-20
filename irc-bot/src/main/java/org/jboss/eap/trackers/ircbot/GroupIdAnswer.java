@@ -29,13 +29,8 @@ public class GroupIdAnswer extends AbstractAnswer {
 	private static final Logger logger = LoggerFactory.getLogger(GroupIdAnswer.class);
 	
 	@Override
-	public QuestionType getQuestionType() {
-		return QuestionType.GROUPD_ID_OF;
-	}
-
-	@Override
 	public Answer answer() throws Exception {
-		Matcher matcher = PATTERN_GRP_ID_OF.matcher(getQuestion());
+		Matcher matcher = getPattern().matcher(getQuestion());
 		if (matcher.matches()) {
 			String artifactToQuery = matcher.group(1);
 			String ctxPath = getRestAPIBase() + API_PATH + artifactToQuery;

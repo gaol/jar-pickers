@@ -29,13 +29,8 @@ public class ArtifactsAnswer extends AbstractAnswer  {
 	private static final Logger logger = LoggerFactory.getLogger(ArtifactsAnswer.class);
 	
 	@Override
-	public QuestionType getQuestionType() {
-		return QuestionType.ARTIFACTS_OF;
-	}
-
-	@Override
 	public Answer answer() throws Exception {
-		Matcher matcher = PATTERN_ARTIS_OF.matcher(getQuestion());
+		Matcher matcher = getPattern().matcher(getQuestion());
 		if (matcher.matches()) {
 			String groupIdToQuery = matcher.group(1);
 			String ctxPath = getRestAPIBase() + API_PATH + groupIdToQuery;

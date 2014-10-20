@@ -9,7 +9,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -17,7 +16,6 @@ import org.apache.camel.component.irc.IrcConfiguration;
 import org.apache.camel.component.irc.IrcConstants;
 import org.apache.camel.component.irc.IrcEndpoint;
 import org.apache.camel.component.irc.IrcMessage;
-import org.jboss.eap.trackers.ircbot.AnswerMe.QuestionType;
 import org.schwering.irc.lib.IRCUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,14 +39,6 @@ public class TrackerIRCBean {
 	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
 
 	private static final Logger logger = LoggerFactory.getLogger(TrackerIRCBean.class);
-	
-	private static HashMap<QuestionType, Class<? extends AnswerMe>> answerMap = new HashMap<QuestionType, Class<? extends AnswerMe>>();
-	static {
-		answerMap.put(QuestionType.HELP, HelpAnswer.class);
-		answerMap.put(QuestionType.ARTIFACTS_OF, ArtifactsAnswer.class);
-		answerMap.put(QuestionType.GROUPD_ID_OF, GroupIdAnswer.class);
-		answerMap.put(QuestionType.VERSION_OF_ARTI_IN_PV, ArtifactsVersionAnswer.class);
-	}
 	
 	private final IrcConfiguration ircConfig;
 	private final String api;
@@ -157,9 +147,6 @@ public class TrackerIRCBean {
 //				return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class);
 //			}
 //		}
-		if (QuestionType.HELP.equals(getQuestionType(ircMsgIn))) {
-			return ircMsgIn.getHeader(IrcConstants.IRC_USER_NICK, String.class); 
-		}
 		return target;
 	}
 
@@ -171,29 +158,8 @@ public class TrackerIRCBean {
 	}
 	
 	private AnswerMe getAnswerMe(IrcMessage ircMsg) throws InstantiationException, IllegalAccessException {
-		QuestionType questionType = getQuestionType(ircMsg);
-		if (questionType == null) {
-			return null;
-		}
-		Class<? extends AnswerMe> cls = answerMap.get(questionType);
-		if (cls == null) {
-			throw new IllegalStateException("Unkown answer for QuestionType: " + questionType);
-		}
-		if (questionType.equals(QuestionType.HELP)) {
-			if (ircMsg.getMessage().startsWith(getTrackerBotNickName())) {
-				return cls.newInstance(); // trackerBot HELP
-			}
-			if (ircMsg.getTarget().equals(getTrackerBotNickName())) {
-				return cls.newInstance(); // HELP in private dialog
-			}
-			return null; // ignore!
-		}
-		return cls.newInstance();
-	}
-
-	private QuestionType getQuestionType(IrcMessage ircMsg) {
-		String question = trimQuestion(ircMsg.getMessage());
-		return QuestionType.forName(question);
+	    AnswerMe answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(trimQuestion(ircMsg.getMessage()));
+	    return answerMe;
 	}
 	
 	private String trimQuestion(String question) {

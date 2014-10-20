@@ -9,18 +9,13 @@ package org.jboss.eap.trackers.ircbot;
  */
 public class HelpAnswer extends AbstractAnswer {
 
-	@Override
-	public QuestionType getQuestionType() {
-		return QuestionType.HELP;
-	}
 
 	@Override
 	public Answer answer() throws Exception {
 		Answer answer = new Answer();
-		String msg = AnswerMe.QuestionType.HELP_
-				+ "\t| " + AnswerMe.QuestionType.ARTIS_OF + " <GROUP_ID>"
-				+ "\t| " + AnswerMe.QuestionType.GRP_ID_OF + " <ARTIFACT_ID>"
-				+ "\t| " + AnswerMe.QuestionType.ARTIS_VERS_OF + " <ARTIFACT_ID> in <PRD_NAME>:<PRD_VERSION>"
+		String msg = "help\t| groupid_of <GROUP_ID>"
+				+ "\t|  artifactid_of <ARTIFACT_ID>"
+				+ "\t|  version_of <ARTIFACT_ID> in <PRD_NAME>:<PRD_VERSION>"
 				;
 		answer.setAnswer(msg);
 		answer.setAnswered(true);
