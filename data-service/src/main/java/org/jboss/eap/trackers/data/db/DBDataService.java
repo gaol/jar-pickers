@@ -38,6 +38,7 @@ import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
 import org.jboss.eap.trackers.model.Queries;
+import org.jboss.eap.trackers.utils.ArtifactsUtil;
 import org.jboss.ejb3.annotation.SecurityDomain;
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.logging.Logger;
@@ -228,9 +229,14 @@ public class DBDataService implements DataServiceLocal {
 			arti.setType(type == null ? DEFAULT_ARTIFACT_TYPE : type);
 			arti.setChecksum(checksum);
 			Component component = guessComponent(groupId, null, artiVersion);
-			if (component != null) {
-				arti.setComponent(component);
+			if (component == null) { // create one if does not found.
+			    component = new Component();
+			    component.setGroupId(groupId);
+			    component.setVersion(artiVersion);
+			    component.setName(ArtifactsUtil.guessComponentNameFromAritifact(groupId, artifactId, artiVersion));
+			    this.em.persist(component);
 			}
+			arti.setComponent(component);
 			this.em.persist(arti);
 		}
 		if (artifacts.contains(arti)) {

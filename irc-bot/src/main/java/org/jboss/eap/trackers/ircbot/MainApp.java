@@ -36,13 +36,11 @@ public class MainApp {
 	public static final String CONFIG_CHANNELS = "irc.channels";
 	public static final List<String> DEFAULT_IRC_CHANNELS = new ArrayList<String>();
 	static {
-//		DEFAULT_IRC_CHANNELS.add("#jbosscn");
 		DEFAULT_IRC_CHANNELS.add("#trackerbot-channel");
 	}
 	
 	public static final String TRACKER_REST_API = "tracker.rest.api";
 	public static final String DEFAULT_REST_API = "http://10.66.78.40:8080/trackers/api/";
-	
 	
 	
 	@Option(name = "--config", metaVar = "CONFIG_FILE", aliases = {"-f"}, usage = "Specify the config file. The configuration in the file can be overrided using command line options.")

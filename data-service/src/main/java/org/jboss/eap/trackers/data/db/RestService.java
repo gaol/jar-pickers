@@ -204,6 +204,27 @@ public class RestService {
 	}
 	
 	@GET
+    @Path("/artis/{artiId}:{version}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getArtifactsByArtiIdAndVersion(@PathParam("artiId") String artiId, @PathParam("version") String version) throws DataServiceException {
+	    if (artiId == null || artiId.length() == 0) {
+	        return Response.status(Status.NOT_FOUND).build();
+	    }
+	    if (version == null || version.length() == 0) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        String hql = "SELECT a FROM Artifact a WHERE a.artifactId = :artiId AND a.version = :version";
+        List<Artifact> artis = this.em.createQuery(hql, Artifact.class)
+                .setParameter("artiId", artiId)
+                .setParameter("version", version)
+                .getResultList();
+        if (artis == null || artis.size() == 0) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+	    return Response.ok(artis).build();
+    }
+	
+	@GET
 	@Path("/c/{groupId}:{artifactId}:{artiVersion}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Component guessComponent(@PathParam("groupId") String groupId, 
@@ -567,7 +588,7 @@ public class RestService {
 	@GET
     @Path("/cves/a/{cveName}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response affectedArticactss(@PathParam("cveName") String cveName) throws DataServiceException {
+    public Response affectedArticacts(@PathParam("cveName") String cveName) throws DataServiceException {
         CVE cve = this.dataService.getCVE(cveName);
         if (cve == null) {
             return Response.status(Status.NOT_FOUND).build();

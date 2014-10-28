@@ -13,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
@@ -71,8 +72,24 @@ public class Component implements Serializable  {
 	@ManyToMany(mappedBy = "nativeComps", fetch = FetchType.LAZY)
 	private List<ProductVersion> pvs;
 	
+	@OneToMany(mappedBy = "component", fetch = FetchType.EAGER)
+	private List<Artifact> artis;
 
 	/**
+     * @return the artis
+     */
+    public List<Artifact> getArtis() {
+        return artis;
+    }
+
+    /**
+     * @param artis the artis to set
+     */
+    public void setArtis(List<Artifact> artis) {
+        this.artis = artis;
+    }
+
+    /**
 	 * @return the pvs
 	 */
 	@XmlTransient

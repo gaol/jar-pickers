@@ -18,7 +18,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -216,7 +215,8 @@ public class Artifact implements Serializable {
 	/**
 	 * @return the component
 	 */
-	@XmlElementRef
+	@XmlTransient
+	@JsonIgnore
 	public Component getComponent() {
 		return component;
 	}

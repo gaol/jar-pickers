@@ -133,11 +133,7 @@ public class RESTAPITest {
 		Assert.assertEquals("7.2.0.Final-redhat-3", arti.getVersion());
 
 		Component artiComp = arti.getComponent();
-		Assert.assertNotNull(artiComp);
-		Assert.assertEquals("picketlink", artiComp.getName());
-		Assert.assertEquals("7.2.0.Final", artiComp.getVersion());
-		Assert.assertEquals("https://github.com/jbossas/picketlink",
-				artiComp.getScm());
+		Assert.assertNull(artiComp);
 
 		// guess component
 		ctxPath = "http://localhost:8080/test/api/c/org.jboss.as:jboss-as-picketlink:7.2.0.Final-redhat-3";

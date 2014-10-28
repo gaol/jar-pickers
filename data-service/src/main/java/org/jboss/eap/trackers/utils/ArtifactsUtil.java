@@ -18,6 +18,11 @@ public final class ArtifactsUtil {
 		//ops
 	}
 	
+	public static String guessComponentNameFromAritifact(String groupId, String artiId, String version) {
+	    // currently only returns groupId
+	    return groupId;
+	}
+	
 	/**
 	 * select distinct(artifactId) from the list
 	 */
