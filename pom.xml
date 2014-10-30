@@ -28,7 +28,6 @@
   <modules>
     <module>data-service</module>
     <module>data-service-client</module>
-    <module>client</module>
     <module>irc-bot</module>
   </modules>
 
