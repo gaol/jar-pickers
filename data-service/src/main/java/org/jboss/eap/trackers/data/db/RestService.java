@@ -597,6 +597,18 @@ public class RestService {
         return Response.ok(artis).build();
     }
 	
+	@GET
+    @Path("/cves/c/{cveName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response affectedNativeComponents(@PathParam("cveName") String cveName) throws DataServiceException {
+        CVE cve = this.dataService.getCVE(cveName);
+        if (cve == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        Set<Component> comps = this.dataService.affectedNativeCompoents(cveName);
+        return Response.ok(comps).build();
+    }
+	
 	@PUT
     @Path("/cves/{cveName}")
     @Produces(MediaType.APPLICATION_JSON)

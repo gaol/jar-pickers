@@ -258,5 +258,58 @@ public class CommandMatchTest {
         Assert.assertEquals("ironjacamar-common-impl", matcher.group(1).trim());
         Assert.assertEquals("1.0.27.Final", matcher.group(2).trim());
         
+        question = "artifacts of CVE-2014-3657";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("CVE-2014-3657", matcher.group(1).trim());
+        
+        question = "artifacts_of CVE-2014-3657";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("CVE-2014-3657", matcher.group(1).trim());
+        
+        question = "components of CVE-2014-3657";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("CVE-2014-3657", matcher.group(1).trim());
+        
+        question = "components_of CVE-2014-3657";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("CVE-2014-3657", matcher.group(1).trim());
+        
+        question = "products of CVE-2014-3657";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("CVE-2014-3657", matcher.group(1).trim());
+        
+        question = "products_of CVE-2014-3657";
+        answerMe = AnswerMeLoader.INSTANCE.getAnswerMeBySentence(question);
+        Assert.assertNotNull(answerMe);
+        matcher = answerMe.getPattern().matcher(question);
+        Assert.assertTrue(matcher.matches());
+        Assert.assertEquals(1, matcher.groupCount());
+        Assert.assertNotNull(matcher.group(1));
+        Assert.assertEquals("CVE-2014-3657", matcher.group(1).trim());
     }
 }
