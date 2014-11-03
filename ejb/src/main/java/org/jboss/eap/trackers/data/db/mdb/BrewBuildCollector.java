@@ -155,9 +155,6 @@ public class BrewBuildCollector {
                     this.dataService.addArtifact(arti);
                 }
             }
-            
-            
-            
         } else if (buildMethod.contains("build")) {
             // buildArch, native components, no artifacts collected.
             collectsNativeComponents(buildInfo);
@@ -166,36 +163,6 @@ public class BrewBuildCollector {
             LOGGER.info("Build: " + build + " not interested.");
             return;
         }
-        
-        
-        // gets outputs files list
-        // List<Artifacts>
-        // build Type: build-maven
-        // build nvr
-        // package name in dist-git, thus should be the component name
-        // package version to be built
-        // 
-       
-        Component comp = new Component();
-        comp.setGroupId("same with arti groupId");
-        comp.setName("dist-git package name");
-        comp.setScm("file from source-mead-url");
-        comp.setVersion("same with arti version");
-        
-        dataService.saveComponent(comp);
-        
-        Artifact arti = new Artifact();
-        arti.setGroupId("");
-        arti.setArtifactId("");
-        arti.setVersion("");
-        arti.setType("jar|war");
-        arti.setBuildInfo("[[nvr] + link to brewweb]");
-        arti.setChecksum("SHA-256 checksum of the file");
-        
-        arti.setComponent(comp);
-        
-        dataService.addArtifact(arti);
-        
     }
     
     private void collectsNativeComponents(Map<Object, Object> buildInfo) throws DataServiceException {

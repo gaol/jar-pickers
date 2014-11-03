@@ -39,7 +39,8 @@ import org.jboss.logging.Logger;
  * @author lgao
  *
  */
-@MessageDriven(name = "BrewBuildTopicMDB", description = "MDB to listen on the Brew Build information", activationConfig = {
+@MessageDriven(name = "BrewBuildTopicMDB", description = "MDB to listen on the Brew Build information", 
+     messageListenerInterface = MessageListener.class, activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "XXXX")
