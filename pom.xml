@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jboss.eap.trackers</groupId>
-  <artifactId>trackers-parent</artifactId>
+  <artifactId>trackers</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -23,12 +23,15 @@
       <httpclient.version>4.3.4</httpclient.version>
       <httpcore.version>4.3.2</httpcore.version>
       <jackson.version>1.9.9</jackson.version>
+      <xmlrpc.version>3.1.3</xmlrpc.version>
    </properties>
 
   <modules>
-    <module>data-service</module>
-    <module>data-service-client</module>
-    <module>irc-bot</module>
+    <module>ejb</module>
+    <module>client</module>
+    <module>war</module>
+    <module>ear</module>
+    <module>irc</module>
   </modules>
 
  <!-- Dependencies version and common configurations -->
@@ -56,6 +59,16 @@
              <scope>import</scope>
          </dependency>
 
+    <dependency>
+      <groupId>org.apache.xmlrpc</groupId>
+      <artifactId>xmlrpc-common</artifactId>
+      <version>${xmlrpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.xmlrpc</groupId>
+      <artifactId>xmlrpc-client</artifactId>
+      <version>${xmlrpc.version}</version>
+    </dependency>
       <dependency>
          <groupId>org.jdom</groupId>
          <artifactId>jdom</artifactId>
@@ -104,22 +117,33 @@
 
       <dependency>
         <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>data-service</artifactId>
+        <artifactId>trackers-ejb</artifactId>
         <version>${project.version}</version>
+	<type>ejb</type>
       </dependency>
-
       <dependency>
         <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>trackers-web</artifactId>
-        <type>war</type>
+        <artifactId>trackers-ejb</artifactId>
         <version>${project.version}</version>
+	<type>ejb</type>
+        <classifier>test</classifier>
       </dependency>
-
       <dependency>
-          <groupId>org.jboss.as</groupId>
-          <artifactId>jboss-as-ejb-client-bom</artifactId>
-          <type>pom</type>
-          <version>7.2.0.Final</version>
+        <groupId>org.jboss.eap.trackers</groupId>
+        <artifactId>trackers-war</artifactId>
+        <version>${project.version}</version>
+	<type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.eap.trackers</groupId>
+        <artifactId>trackers-ear</artifactId>
+        <version>${project.version}</version>
+	<type>ear</type>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.eap.trackers</groupId>
+        <artifactId>trackers-client</artifactId>
+        <version>${project.version}</version>
       </dependency>
 
       <dependency>
@@ -146,17 +170,6 @@
       <artifactId>jboss-remoting</artifactId>
       <version>3.2.19.GA</version>
     </dependency>
-
-      <dependency>
-        <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>data-service</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>data-service-client</artifactId>
-        <version>${project.version}</version>
-      </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-client</artifactId>
@@ -209,6 +222,10 @@
                   up! -->
                <failOnMissingWebXml>false</failOnMissingWebXml>
             </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-ear-plugin</artifactId>
+            <version>2.9.1</version>
          </plugin>
          <plugin>
             <groupId>org.jboss.as.plugins</groupId>
