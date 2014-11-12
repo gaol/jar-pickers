@@ -169,6 +169,6 @@ public class TrackerIRCBean {
 		if (question.contains(PRIVATE_ANSWER)) {
 			question = question.replace(PRIVATE_ANSWER, "");
 		}
-		return question;
+		return question.trim();
 	}
 }

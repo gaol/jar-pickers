@@ -29,7 +29,6 @@ import java.util.Map;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -56,8 +55,7 @@ public final class RestAPInvoker {
         if (status == 200) {
             MediaType mediaType = resp.getMediaType();
             if (mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
-                GenericType<T> type = new GenericType<T>(){};
-                return resp.readEntity(type);
+                return resp.readEntity(entityType);
             }
             return null;
         } else if (status == 404) {
