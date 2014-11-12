@@ -31,7 +31,9 @@ class EAP5Picker(Picker):
 
   def getArtifactInfo(self, jar):
     jarFileName = os.path.basename(jar)
-    groupId, artifactId, artiVersion = getArtifactInforFromMetaInf(jar)
+    groupId, artifactId, artiVersion = getArtifactByPom(jar)
+    if artifactId is None:
+      groupId, artifactId, artiVersion = getArtifactInforFromMetaInf(jar)
     if artifactId is None:
       artifactId = jarFileName[:-4]
     artiType = "jar"
@@ -48,7 +50,7 @@ class EAP5Picker(Picker):
     artiMd5 = md5(jar)
     return groupId, artifactId, artiVersion, artiType, artiMd5
   #end of getArtifactInfo
-  
+
 #end of EAP5Picker
 if __name__ == '__main__':
   log.info("This is not exectable, please use ./picker.py -n EAP -v 5.x.x -u url for EAP 5")

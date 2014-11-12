@@ -16,6 +16,9 @@ import zipfile
 import re
 import shutil
 
+import json
+import urllib2
+
 VERSION_RE = re.compile(r'\-\d')
 
 class logger():
@@ -69,12 +72,16 @@ class Config():
 
   def __init__(self):
     self.baseDir = Config.BASE_DIR
+    self.groupIdAPI = "http://10.66.78.40:8080/trackers/api/groupids/"
     self.groupIdFile = "%s/data/products/groupids.ini" % self.baseDir
     if not os.path.exists(self.groupIdFile):
       log.warn("group id file does not exist.")
 
   def setBaseDir(self, baseDir):
     self.baseDir = baseDir
+
+  def setGroupIdAPI(self, groupIdAPI):
+    self.groupIdAPI = groupIdAPI
 
   def getTmpDir(self):
     return "%s/tmp" % self.baseDir
@@ -171,19 +178,36 @@ def getGroupId(artifactId, version):
   """
   Gets groupId according to the artifactId, it is used when the groupId can't be found during the zip parse.
   """
-  if not os.path.exists(config.groupIdFile):
-    log.debug("GroupIDFile does not exit")
-    return None
-  f = file(config.groupIdFile, 'r')
-  for line in f:
-    compK = "%s:%s=" % (artifactId, version[:1])
-    if line.startswith(compK):
-      return "".join(line[len(compK):].split("\n"))
-    if line.startswith("%s=" % artifactId):
-      return "".join(line[len(artifactId) + 1:].split("\n"))
-  f.close()
+  groupIdAPI = "%s%s" % (config.groupIdAPI, artifactId)
+  req = urllib2.Request(groupIdAPI)
+  req.add_header("Accepts", "application/json")
+  try:
+    data = json.load(urllib2.urlopen(req))
+    if len(data) == 1:
+      return str(data[0]["groupId"])
+    elif len(data) > 1:
+      for d in data:
+        if d["version"].startswith(version[:1]):
+          return d["groupId"]
+  except urllib2.HTTPError:
+      return None
   return None
- #end of getGroupId
+#end of getGroupId
+
+def getArtifactByPom(jar):
+  log.debug("Try to read pom.properties from jar: %s" % jar)
+  try:
+    zf=zipfile.ZipFile(jar)
+    for name in zf.namelist():
+      # parse jar information from pom.properties
+      if "pom.properties" in name:
+        log.debug("Find pom.properties in jar: %s" % jar)
+        return parseFromPom(zf, name)
+    zf.close()
+    return None, None, None
+  except:
+    log.error("Error when reading pom.properties from jar: %s " % jar)
+
 
 def parseFromPom(zf, pomFile):
   groupId = None
@@ -201,7 +225,7 @@ def parseFromPom(zf, pomFile):
   if groupId is None:
     groupId = getGroupId(artifactId, version)
   return groupId, artifactId, version
-  
+
 # end of parseFromPom
 
 
@@ -221,7 +245,7 @@ def parserFromFileName(jar):
     artifactId = jarFileName[:versionStart]
     version = jarFileName[versionStart + 1:]
   return getGroupId(artifactId, version), artifactId, version
-  
+
 # end of parserFromFileName
 
 def guessJarType(jar, artifactId, version):
@@ -307,7 +331,7 @@ class Picker(object):
         groupId, artifactId, version = getArtifactInforFromMetaInf(jar)
     except:
       log.error("Error when reading META-INF/MANIFEST from jar: %s " % jar)
-  
+
     if groupId is None or artifactId is None or version is None:
       # try to parse the jar information from file name
       groupId, artifactId, version = parserFromFileName(jar)
