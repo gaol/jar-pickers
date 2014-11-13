@@ -13,10 +13,7 @@ public class HelpAnswer extends AbstractAnswer {
 	@Override
 	public Answer answer() throws Exception {
 		Answer answer = new Answer();
-		String msg = "help\t| groupid_of <GROUP_ID>"
-				+ "\t|  artifactid_of <ARTIFACT_ID>"
-				+ "\t|  version_of <ARTIFACT_ID> in <PRD_NAME>:<PRD_VERSION>"
-				;
+		String msg = "Please see: https://github.com/gaol/trackers/wiki/IRC_Bot_Help";
 		answer.setAnswer(msg);
 		answer.setAnswered(true);
 		return answer;
