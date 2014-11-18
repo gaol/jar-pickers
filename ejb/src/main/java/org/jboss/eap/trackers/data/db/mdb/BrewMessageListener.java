@@ -62,7 +62,7 @@ public class BrewMessageListener implements MessageListener {
                 LOGGER.info("Message: " + txt);
                 String buildId = parseBuildId(txt);
                 if (buildId != null) {
-                    controller.collectBrewBuilds(buildId);
+                    controller.collectBrewBuild(buildId);
                 }
             }
         } catch (JMSException e) {

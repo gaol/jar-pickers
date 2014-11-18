@@ -50,7 +50,6 @@
         id int8 not null,
         artiGrpId varchar(255),
         artiId varchar(255),
-        nativeComponent boolean DEFAULT false,
         versionScopes varchar(512),
         primary key (id)
     );

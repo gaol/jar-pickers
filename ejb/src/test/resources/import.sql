@@ -65,8 +65,8 @@ insert into cve (name) values ('CVE-2013-0017')
 insert into cve (name) values ('CVE-2014-3566')
 
 
-insert into AffectedArtifact (id, artiGrpId, artiId, versionScopes, nativeComponent) values (1, 'org.jboss.ironjacamar', 'ironjacamar-common-impl', '<=1.0.2.Final', 'false')
-insert into AffectedArtifact (id, artiId, versionScopes, nativeComponent) values (2, 'openssl', '<=1.0.1', 'true')
+insert into AffectedArtifact (id, artiGrpId, artiId, versionScopes) values (1, 'org.jboss.ironjacamar', 'ironjacamar-common-impl', '<=1.0.2.Final')
+insert into AffectedArtifact (id, artiId, versionScopes) values (2, 'openssl', '<=1.0.1')
 
 insert into CVE_AffectedArtifact (cves_name, affectedArtis_id) values ('CVE-2014-3547', 1)
 insert into CVE_AffectedArtifact (cves_name, affectedArtis_id) values ('CVE-2014-3566', 2)

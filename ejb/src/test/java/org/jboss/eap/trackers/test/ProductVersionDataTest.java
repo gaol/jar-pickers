@@ -325,13 +325,6 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   Assert.assertNotNull(artifacts);
 			   Assert.assertEquals(0, artifacts.size());
 			   
-			   // guess component
-			   Component comp = dataService.guessComponent("org.jboss.as", null, "7.2.0.Final-redhat-3");
-			   Assert.assertNotNull(comp);
-			   Assert.assertEquals("picketlink", comp.getName());
-			   Assert.assertEquals("7.2.0.Final", comp.getVersion());
-			   
-			   
 			   //import artifacts to EAP 6.2.4
 			   URL artisURL = getClass().getClassLoader().getResource("artis.txt");
 			   Assert.assertNotNull(artisURL);

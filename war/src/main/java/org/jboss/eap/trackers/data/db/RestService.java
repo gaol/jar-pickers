@@ -225,15 +225,6 @@ public class RestService {
 	    return Response.ok(artis).build();
     }
 	
-	@GET
-	@Path("/c/{groupId}:{artifactId}:{artiVersion}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Component guessComponent(@PathParam("groupId") String groupId, 
-			@PathParam("artifactId") String artifactId, 
-			@PathParam("artiVersion") String artiVersion) throws DataServiceException {
-		return dataService.guessComponent(groupId, artifactId, artiVersion);
-	}
-	
 	@POST
 	@Path("/ach/{groupId}:{artifactId}:{artiVersion}")
 	@RolesAllowed("tracker")
@@ -606,7 +597,7 @@ public class RestService {
         if (cve == null) {
             return Response.status(Status.NOT_FOUND).build();
         }
-        Set<Component> comps = this.dataService.affectedNativeCompoents(cveName);
+        Set<Component> comps = this.dataService.affectedCompoents(cveName);
         return Response.ok(comps).build();
     }
 	
@@ -626,9 +617,8 @@ public class RestService {
 	public Response updateCVEAffects(@PathParam("cveName") String cveName,
 	        @PathParam("groupId")  String groupId,
 	        @PathParam("artiId") String artiId, 
-	        @QueryParam("verscope") String versionScope,
-	        @QueryParam("native") boolean nComp) throws DataServiceException {
-	    CVE cve = this.dataService.cveAffected(cveName, groupId, artiId, versionScope, nComp);
+	        @QueryParam("verscope") String versionScope) throws DataServiceException {
+	    CVE cve = this.dataService.cveAffected(cveName, groupId, artiId, versionScope);
 	    return Response.ok(cve).build();
 	}
 	

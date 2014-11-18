@@ -238,15 +238,6 @@ public class DBDataService implements DataServiceLocal {
 			arti.setVersion(artiVersion);
 			arti.setType(type == null ? DEFAULT_ARTIFACT_TYPE : type);
 			arti.setChecksum(checksum);
-			Component component = guessComponent(groupId, null, artiVersion);
-			if (component == null) { // create one if does not found.
-			    component = new Component();
-			    component.setGroupId(groupId);
-			    component.setVersion(artiVersion);
-			    component.setName(ArtifactsUtil.guessComponentNameFromAritifact(groupId, artifactId, artiVersion));
-			    this.em.persist(component);
-			}
-			arti.setComponent(component);
 			this.em.persist(arti);
 		}
 		if (artifacts.contains(arti)) {
@@ -280,64 +271,6 @@ public class DBDataService implements DataServiceLocal {
 				.setParameter("version", version)
 				.getResultList();
 		return artis.size() > 0 ? artis.get(0) : null;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jboss.eap.trackers.data.DataService#guessComponent(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Component guessComponent(String groupId, String artifactId, String artiVersion) throws DataServiceException {
-		if (groupId == null || artiVersion == null) {
-			throw new IllegalArgumentException("groupId and version of the Artifact can't be null.");
-		}
-		String HQL = "SELECT a.component FROM Artifact a WHERE a.groupId = :groupId AND a.version = :version";
-		if (artifactId != null && artifactId.length() > 0) {
-			HQL = HQL + " AND a.artifactId = :artifactId";
-		}
-		TypedQuery<Component> query = this.em.createQuery(HQL,Component.class).setParameter("groupId", groupId)
-				.setParameter("version", artiVersion);
-		if (artifactId != null && artifactId.length() > 0) {
-			query.setParameter("artifactId", artifactId);
-		}
-		List<Component> comps = query.getResultList();
-		Component comp = comps.size() > 0 ? comps.get(0) : null;
-		if (comp != null) {
-			return comp;
-		}
-		// guess by groupId and version
-		comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
-				.setParameter("groupId", groupId)
-				.setParameter("version", artiVersion)
-				.getResultList();
-		comp = comps.size() > 0 ? comps.get(0) : null;
-		if (comp != null) {
-			return comp;
-		}
-		// remove -redhat-X suffix
-		String version = artiVersion.replaceAll(RED_HAT_SUFFIX, "");
-		comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
-				.setParameter("groupId", groupId)
-				.setParameter("version", version + "%")
-				.getResultList();
-		comp = comps.size() > 0 ? comps.get(0) : null;
-		if (comp != null) {
-			return comp;
-		}
-		
-//		int idx = version.indexOf(".");
-//		if (idx > 0) {
-//			version = version.substring(0, version.indexOf("."));
-//			comps = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_GROUPID, Component.class)
-//					.setParameter("groupId", groupId)
-//					.setParameter("version", version + "%")
-//					.getResultList();
-//			comp = comps.size() > 0 ? comps.get(0) : null;
-//			if (comp != null) {
-//				return comp;
-//			}
-//		}
-//		return comps.size() > 0 ? comps.get(0) : null;
-		return null;
 	}
 
 	/* (non-Javadoc)
@@ -556,10 +489,6 @@ public class DBDataService implements DataServiceLocal {
 						arti.setVersion(artiVersion);
 						arti.setType(type == null ? DEFAULT_ARTIFACT_TYPE : type);
 						arti.setChecksum(checksum);
-						Component component = guessComponent(groupId, null, artiVersion);
-						if (component != null) {
-							arti.setComponent(component);
-						}
 						this.em.persist(arti);
 					}
 				}
@@ -602,10 +531,20 @@ public class DBDataService implements DataServiceLocal {
         if (productName == null || version == null) {
             throw new IllegalArgumentException("Both productName and version can't be null.");
         }
-        return this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_PV, Component.class)
+        List<Component> pvOwn = this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_PV, Component.class)
                 .setParameter("name", productName)
                 .setParameter("version", version)
                 .getResultList();
+        List<Component> result = new ArrayList<Component>();
+        result.addAll(pvOwn);
+        List<Artifact> pvArtis = loadArtifacts(productName, version);
+        for (Artifact arti: pvArtis) {
+            Component comp = arti.getComponent();
+            if (comp != null && ! result.contains(comp)) {
+                result.add(comp);
+            }
+        }
+        return result;
     }
 
     /* (non-Javadoc)
@@ -617,10 +556,14 @@ public class DBDataService implements DataServiceLocal {
 	    if (productName == null || version == null) {
             throw new IllegalArgumentException("Both productName and version can't be null.");
         }
-        return this.em.createNamedQuery(Queries.QUERY_LOAD_NATIVE_COMPS_BY_PV, Component.class)
-                .setParameter("name", productName)
-                .setParameter("version", version)
-                .getResultList();
+	    List<Component> comps = loadComponents(productName, version);
+	    List<Component> natives = new ArrayList<Component>();
+	    for (Component comp: comps) {
+	        if (comp.isNative() && !natives.contains(comp)) {
+	            natives.add(comp);
+	        }
+	    }
+	    return natives;
 	}
 
 	/* (non-Javadoc)
@@ -831,11 +774,16 @@ public class DBDataService implements DataServiceLocal {
                 pvs.addAll(arti.getPvs());
             }
         }
-        // look up for native components
-        Set<Component> nativeComps = affectedNativeCompoents(cveName);
-        for (Component comp: nativeComps) {
+        // look up for components
+        Set<Component> comps = affectedCompoents(cveName);
+        for (Component comp: comps) {
             if (comp.getPvs() != null) {
                 pvs.addAll(comp.getPvs());
+            }
+            for (Artifact arti: comp.getArtis()) {
+                if (arti.getPvs() != null) {
+                    pvs.addAll(arti.getPvs());
+                }
             }
         }
         return pvs;
@@ -868,14 +816,12 @@ public class DBDataService implements DataServiceLocal {
         if (artis != null) {
             Set<Artifact> result = new HashSet<Artifact>();
             for (AffectedArtifact arti: artis) {
-                if (!arti.isNativeComponent()) {
-                    String grpId = arti.getGroupId();
-                    String artiId = arti.getName();
-                    VersionScopes versionScopes = arti.getVersionScopes();
-                    for (Artifact a: getArtifacts(grpId, artiId)) {
-                        if (versionScopes.isCaptured(a.getVersion())) {
-                            result.add(a);
-                        }
+                String grpId = arti.getGroupId();
+                String artiId = arti.getName();
+                VersionScopes versionScopes = arti.getVersionScopes();
+                for (Artifact a: getArtifacts(grpId, artiId)) {
+                    if (versionScopes.isCaptured(a.getVersion())) {
+                        result.add(a);
                     }
                 }
             }
@@ -885,41 +831,37 @@ public class DBDataService implements DataServiceLocal {
     }
     
     @Override
-    public Set<Component> affectedNativeCompoents(String cveName) throws DataServiceException {
+    public Set<Component> affectedCompoents(String cveName) throws DataServiceException {
         CVE cve = getCVE(cveName);
         if (cve == null) {
             return Collections.emptySet();
         }
+        Set<Component> result = new HashSet<Component>();
         Set<AffectedArtifact> artis = cve.getAffectedArtis();
         if (artis != null) {
-            Set<Component> result = new HashSet<Component>();
             for (AffectedArtifact arti: artis) {
-                if (arti.isNativeComponent()) {
-                    String grpId = arti.getGroupId();
-                    String artiId = arti.getName();
-                    VersionScopes versionScopes = arti.getVersionScopes();
-                    for (Component c: getNativeComponets(grpId, artiId)) {
-                        if (versionScopes.isCaptured(c.getVersion())) {
-                            result.add(c);
-                        }
+                String compName = arti.getName();
+                VersionScopes versionScopes = arti.getVersionScopes();
+                for (Component c: getComponets(compName)) {
+                    if (versionScopes.isCaptured(c.getVersion())) {
+                        result.add(c);
                     }
                 }
             }
-            return result;
         }
-        return Collections.emptySet();
+        for (Artifact arti: affectedArtifacts(cveName)) {
+            Component comp = arti.getComponent();
+            if (comp != null) {
+                result.add(comp);
+            }
+        }
+        return result;
     }
 
-    private List<Component> getNativeComponets(String grpId, String name) {
+    private List<Component> getComponets(String name) {
         String hql = "SELECT c FROM Component c WHERE c.name = :name";
-        if (grpId != null && grpId.length() > 0) {
-            hql = hql + " AND c.groupId = :groupId";
-        }
         TypedQuery<Component> query = this.em.createQuery(hql, Component.class)
                 .setParameter("name", name);
-        if (grpId != null && grpId.length() > 0) {
-            query.setParameter("groupId", grpId);
-        }
         return query.getResultList();
     }
 
@@ -942,7 +884,7 @@ public class DBDataService implements DataServiceLocal {
             }
             if (pv.getNativeComps() != null) {
                 for (Component comp: pv.getNativeComps()) {
-                    for (AffectedArtifact affectedArti: getAffectedArtisNativeComps(comp.getName())) {
+                    for (AffectedArtifact affectedArti: getAffectedArtisByName(comp.getName())) {
                         if (affectedArti.getVersionScopes().isCaptured(comp.getVersion())) {
                             cves.addAll(affectedArti.getCves());
                         }
@@ -961,8 +903,8 @@ public class DBDataService implements DataServiceLocal {
                 .getResultList();
     }
     
-    public List<AffectedArtifact> getAffectedArtisNativeComps(String name) throws DataServiceException {
-        String hql = "SELECT a FROM AffectedArtifact a WHERE a.nativeComponent = true AND a.name = :name";
+    public List<AffectedArtifact> getAffectedArtisByName(String name) throws DataServiceException {
+        String hql = "SELECT a FROM AffectedArtifact a WHERE a.name = :name";
         TypedQuery<AffectedArtifact> query = this.em.createQuery(hql, AffectedArtifact.class).setParameter("name", name);
         return query.getResultList();
     }
@@ -986,13 +928,13 @@ public class DBDataService implements DataServiceLocal {
     }
     
     @Override
-    public SortedSet<CVE> nativeComponentCVEs(String compName, String version) throws DataServiceException {
+    public SortedSet<CVE> componentCVEs(String compName, String version) throws DataServiceException {
         Component nativeComp = getComponent(compName, version);
         if (nativeComp == null) {
             return new TreeSet<CVE>();
         }
         SortedSet<CVE> cves = new TreeSet<CVE>();
-        for (AffectedArtifact affectedArti: getAffectedArtisNativeComps(nativeComp.getName())) {
+        for (AffectedArtifact affectedArti: getAffectedArtisByName(nativeComp.getName())) {
             if (affectedArti.getVersionScopes().isCaptured(nativeComp.getVersion())) {
                 cves.addAll(affectedArti.getCves());
             }
@@ -1037,17 +979,16 @@ public class DBDataService implements DataServiceLocal {
     }
 
     /* (non-Javadoc)
-     * @see org.jboss.eap.trackers.data.DataService#cveAffected(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+     * @see org.jboss.eap.trackers.data.DataService#cveAffected(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     @RolesAllowed("tracker")
-    public CVE cveAffected(String cveName, String groupId, String artiId, String versionScope, boolean component) throws IllegalArgumentException,
+    public CVE cveAffected(String cveName, String groupId, String name, String versionScope) throws IllegalArgumentException,
             DataServiceException {
         CVE cve = newCVE(cveName);
         AffectedArtifact affectedArti = new AffectedArtifact();
         affectedArti.setGroupId(groupId);
-        affectedArti.setName(artiId);
-        affectedArti.setNativeComponent(component);
+        affectedArti.setName(name);
         affectedArti.setVersionScopes(new VersionScopes(versionScope));
         SortedSet<CVE> cveSet = new TreeSet<CVE>();
         cveSet.add(cve);

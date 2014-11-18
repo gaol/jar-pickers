@@ -135,17 +135,6 @@ public class RESTAPITest {
 		Component artiComp = arti.getComponent();
 		Assert.assertNull(artiComp);
 
-		// guess component
-		ctxPath = "http://localhost:8080/test/api/c/org.jboss.as:jboss-as-picketlink:7.2.0.Final-redhat-3";
-		request = new ClientRequest(ctxPath);
-		request.accept(MediaType.APPLICATION_JSON_TYPE);
-		artiComp = request.get(Component.class).getEntity();
-		Assert.assertNotNull(artiComp);
-		Assert.assertEquals("picketlink", artiComp.getName());
-		Assert.assertEquals("7.2.0.Final", artiComp.getVersion());
-		Assert.assertEquals("https://github.com/jbossas/picketlink",
-				artiComp.getScm());
-
 		// get component by name & version
 		ctxPath = "http://localhost:8080/test/api/c/picketlink:7.2.0.Final";
 		request = new ClientRequest(ctxPath);
