@@ -18,10 +18,12 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  * @author lgao
@@ -32,6 +34,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"groupId", "artifactId", "version"})})
 @XmlRootElement
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Artifact implements Serializable {
 
 	/**
@@ -41,6 +44,8 @@ public class Artifact implements Serializable {
 	
 	/**
 	 * Build information about where to produce this component.
+	 * 
+	 * Value can be brew build id, brew build n-v-r, or a http(s) link.
 	 */
 	@Column
 	private String buildInfo;
@@ -219,6 +224,14 @@ public class Artifact implements Serializable {
 	@JsonIgnore
 	public Component getComponent() {
 		return component;
+	}
+	
+	@XmlElement(name = "component")
+	public String getComponentName() {
+	    if (this.component == null) {
+	        return "";
+	    }
+	    return this.component.getName() + ":" + this.component.getVersion();
 	}
 
 	/**

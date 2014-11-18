@@ -17,7 +17,7 @@
 	@NamedQuery(name = Queries.QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID, query = Queries._QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID),
 	
 	@NamedQuery(name = Queries.QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID, query = Queries._QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID),
-	
+	@NamedQuery(name = Queries.QUERY_LOAD_NATIVE_COMPS_BY_PV, query = Queries._QUERY_LOAD_NATIVE_COMPS_BY_PV),
 	})
 
 package org.jboss.eap.trackers.model;

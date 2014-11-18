@@ -4,6 +4,8 @@
 package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -19,10 +21,13 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * @author lgao
@@ -32,6 +37,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 @Entity
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"product_id", "version"})})
 @XmlRootElement
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductVersion implements Serializable {
 
 	/**
@@ -47,13 +53,16 @@ public class ProductVersion implements Serializable {
 	@ManyToOne(fetch = FetchType.EAGER)
 	private Product product;
 	
-	/** This is the based product version, for example, the layered products based on EAP **/
+	/** This is the based product version, for example, the layered products based on EAP
+	 */
 	@ManyToOne(fetch = FetchType.EAGER)
 	private ProductVersion parent;
 	
-	/** Each PV contains normal artifacts and some native components **/
+	/**
+	 * Components here is convenient way to collect, but it is not reliable, except for the native components.
+	 */
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-	private List<Component> nativeComps;
+	private List<Component> comps;
 	
 	/**
 	 * Version can be arbitrary string.
@@ -65,6 +74,13 @@ public class ProductVersion implements Serializable {
 	@NotNull(message = "Product version can't be empty.")
 	private String version;
 	
+	/**
+	 * If it is one-off release, the parent MUST NOT be null.
+	 * in this case, version is normally the bugzilla id or erratum or CVE number.
+	 */
+	@Column(columnDefinition = "boolean DEFAULT false")
+    private boolean isOneOff;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = Queries.SEQ_NAME)
 	private Long id;
@@ -75,7 +91,23 @@ public class ProductVersion implements Serializable {
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	private List<Artifact> artifacts;
 
+	
 	/**
+     * @return the isOneOff
+     */
+	@XmlAttribute
+    public boolean isOneOff() {
+        return isOneOff;
+    }
+
+    /**
+     * @param isOneOff the isOneOff to set
+     */
+    public void setOneOff(boolean isOneOff) {
+        this.isOneOff = isOneOff;
+    }
+
+    /**
 	 * @return the parent
 	 */
 	@XmlTransient
@@ -90,24 +122,60 @@ public class ProductVersion implements Serializable {
 	public void setParent(ProductVersion parent) {
 		this.parent = parent;
 	}
+	
+	@XmlElement(name = "name")
+	@JsonProperty("name")
+	public String getName() {
+	    if (this.product == null) {
+	        return "";
+	    }
+	    return this.product.getName();
+	}
+	
+	@XmlElement(name = "parent")
+	@JsonProperty("parent")
+	public String getParentPV() {
+	    if (this.parent == null) {
+	        return "";
+	    }
+	    return parent.getName() + ":" + parent.getVersion();
+	}
 
 	/**
 	 * @return the nativeComps
 	 */
 	@XmlTransient
-	@JsonIgnore
+    @JsonIgnore
 	public List<Component> getNativeComps() {
+	    if (this.comps == null || this.comps.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+	    List<Component> nativeComps = new ArrayList<Component>();
+	    for (Component c: this.comps) {
+	        if (c.isNative()) {
+	            nativeComps.add(c);
+	        }
+	    }
 		return nativeComps;
 	}
-
+	
 	/**
-	 * @param nativeComps the nativeComps to set
-	 */
-	public void setNativeComps(List<Component> nativeComps) {
-		this.nativeComps = nativeComps;
-	}
+     * @return the comps
+     */
+	@XmlTransient
+    @JsonIgnore
+    public List<Component> getComps() {
+        return comps;
+    }
 
-	/**
+    /**
+     * @param comps the comps to set
+     */
+    public void setComps(List<Component> comps) {
+        this.comps = comps;
+    }
+
+    /**
 	 * @return the artifacts
 	 */
 	@XmlTransient
@@ -131,7 +199,6 @@ public class ProductVersion implements Serializable {
 		this.note = note;
 	}
 
-	
 	/**
 	 * @return the id
 	 */

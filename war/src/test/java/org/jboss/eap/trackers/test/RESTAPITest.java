@@ -214,7 +214,7 @@ public class RESTAPITest {
 		Assert.assertEquals(200, streamingOut.getStatus());
 		String compList = streamingOut.getEntity(String.class);
 		String expectedCompList = "picketlink:7.2.0.Final:org.picketlink\n"
-				+ "mod_cluster:1.2.9.Final-redhat-1:\n"
+				+ "mod_cluster-native:1.2.9.Final-redhat-1:\n"
 				+ "openssl:1.0.1:\n";
 		Assert.assertEquals(expectedCompList, compList);
 	}
@@ -393,10 +393,15 @@ public class RESTAPITest {
 		request = getClientRequest(ctxPath);
 		resp = request.put();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
-		List<Component> eap624Comps = dataService.loadNativeComponents("EAP", "6.2.4");
+		List<Component> eap624Comps = dataService.loadComponents("EAP", "6.2.4");
 		Assert.assertNotNull(eap624Comps);
 		// eap624 has one predefined in import.sql
 		Assert.assertEquals(17, eap624Comps.size());
+		
+		List<Component> eap624NativeComps = dataService.loadNativeComponents("EAP", "6.2.4");
+        Assert.assertNotNull(eap624NativeComps);
+        // eap624 has one predefined in import.sql
+        Assert.assertEquals(2, eap624NativeComps.size());
 		
 		// import native components by uploading file to PV: EAP-6.2.3
 		ctxPath = "http://localhost:8080/test/api/ciu/EAP:6.2.3";
@@ -408,7 +413,7 @@ public class RESTAPITest {
 		
 		resp = request.put();
 		Assert.assertEquals(Status.OK, resp.getResponseStatus());
-		List<Component> eap623Comps = dataService.loadNativeComponents("EAP", "6.2.3");
+		List<Component> eap623Comps = dataService.loadComponents("EAP", "6.2.3");
 		Assert.assertNotNull(eap623Comps);
 		Assert.assertEquals(16, eap623Comps.size());
 		

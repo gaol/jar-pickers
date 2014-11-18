@@ -9,12 +9,14 @@ import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
 import org.jboss.eap.trackers.pojo2js.POJO2JS;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author lgao
  *
  */
+@Ignore("enbled when start web UI")
 public class Pojo2JSTest {
 	
 	@Test

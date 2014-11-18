@@ -6,6 +6,7 @@ package org.jboss.eap.trackers.model;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -28,7 +29,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
  *
  * This represents a component in a specific product version.
  * 
- * A component can be a Jar artifact, or a package like: tomcat 7.0.35, etc.
+ * A component can be native like openssl:1.0.1e, or a package like: ironjacamar:1.0.28.Final, etc.
  * 
  */
 @Entity
@@ -68,8 +69,10 @@ public class Component implements Serializable  {
 	@Column
 	private String groupId;
 	
-	/** In case it is a native components, it might belong to some PVs **/
-	@ManyToMany(mappedBy = "nativeComps", fetch = FetchType.LAZY)
+	@Column(columnDefinition = "boolean DEFAULT false")
+	private boolean isNative;
+	
+	@ManyToMany(mappedBy = "comps", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	private List<ProductVersion> pvs;
 	
 	@OneToMany(mappedBy = "component", fetch = FetchType.EAGER)
@@ -87,6 +90,20 @@ public class Component implements Serializable  {
      */
     public void setArtis(List<Artifact> artis) {
         this.artis = artis;
+    }
+
+    /**
+     * @return the isNative
+     */
+    public boolean isNative() {
+        return isNative;
+    }
+
+    /**
+     * @param isNative the isNative to set
+     */
+    public void setNative(boolean isNative) {
+        this.isNative = isNative;
     }
 
     /**

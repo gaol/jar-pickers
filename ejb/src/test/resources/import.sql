@@ -4,7 +4,6 @@ insert into Product (id, name, description, fullName) values (0, 'EAP', 'EAP pro
 insert into Product (id, name, description, fullName) values (1, 'EWS', 'EWS product seria', 'JBoss Enterprise Web Server')
 insert into Product (id, name, description, fullName) values (2, 'EWP', 'EWP product seria', 'JBoss Enterprise Web Platform')
 insert into Product (id, name, description, fullName) values (3, 'BRMS', 'Business Rule Management System', 'JBoss BRMS')
- 
 
 -- EAP 4 | 5 | 6
 insert into ProductVersion (id, product_id, version, note) values (0, 0, '5.2.0', '')
@@ -30,8 +29,8 @@ insert into ProductVersion (id, product_id, parent_id, version, note) values (11
 insert into Component (id, name, version, groupid, description, scm) values (0, 'picketlink', '7.2.0.Final', 'org.picketlink', '', 'https://github.com/jbossas/picketlink')
 
 -- sample native components
-insert into Component (id, name, version, description, scm) values (1, 'mod_cluster', '1.2.9.Final-redhat-1', '', 'https://github.com/modcluster/mod_cluster') 
-insert into Component (id, name, version, description, scm) values (2, 'openssl', '1.0.1', '', 'https://git.openssl.org') 
+insert into Component (id, name, version, description, scm, isnative) values (1, 'mod_cluster-native', '1.2.9.Final-redhat-1', '', 'https://github.com/modcluster/mod_cluster', 'true') 
+insert into Component (id, name, version, description, scm, isnative) values (2, 'openssl', '1.0.1', '', 'https://git.openssl.org', 'true') 
 
 -- sample artifacts in EWP 5.2.0
 insert into Artifact (id, component_id, groupid, artifactid, version, buildinfo, type, note) values (0, 0,'org.jboss.as','jboss-as-picketlink','7.2.0.Final-redhat-3','','jar','')
@@ -53,11 +52,11 @@ insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (10, 1)
 insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (7, 3)
 insert into ProductVersion_Artifact (pvs_id, artifacts_id) values (7, 4)
 
-insert into ProductVersion_Component (pvs_id, nativeComps_id) values (7, 1)
-insert into ProductVersion_Component (pvs_id, nativeComps_id) values (11, 1)
+insert into ProductVersion_Component (pvs_id, comps_id) values (7, 1)
+insert into ProductVersion_Component (pvs_id, comps_id) values (11, 1)
 
 -- example: EAP 6.2.0 has openssl 1.0.1
-insert into ProductVersion_Component (pvs_id, nativeComps_id) values (3, 2)
+insert into ProductVersion_Component (pvs_id, comps_id) values (3, 2)
 
 -- cve data
 insert into cve (name) values ('CVE-2014-3547')

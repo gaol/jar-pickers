@@ -21,7 +21,7 @@
         drop constraint FK_k8w3ldfo4ryxde05s0q5uw7ah;
 
     alter table ProductVersion_Component 
-        drop constraint FK_ngwyto8hcvcq9uua2xn96rhr6;
+        drop constraint FK_hr282h6orjcjp375nqq8kpmlk;
 
     alter table ProductVersion_Component 
         drop constraint FK_lbqgdp2tcmlaxclcysmoxg6dg;
@@ -86,6 +86,7 @@
         id int8 not null,
         description varchar(255),
         groupId varchar(255),
+        isNative boolean DEFAULT false,
         name varchar(255),
         scm varchar(255),
         version varchar(255),
@@ -102,6 +103,7 @@
 
     create table ProductVersion (
         id int8 not null,
+        isOneOff boolean DEFAULT false,
         note varchar(255),
         version varchar(255),
         parent_id int8,
@@ -116,7 +118,7 @@
 
     create table ProductVersion_Component (
         pvs_id int8 not null,
-        nativeComps_id int8 not null
+        comps_id int8 not null
     );
 
     alter table Artifact 
@@ -167,8 +169,8 @@
         references ProductVersion;
 
     alter table ProductVersion_Component 
-        add constraint FK_ngwyto8hcvcq9uua2xn96rhr6 
-        foreign key (nativeComps_id) 
+        add constraint FK_hr282h6orjcjp375nqq8kpmlk 
+        foreign key (comps_id) 
         references Component;
 
     alter table ProductVersion_Component 

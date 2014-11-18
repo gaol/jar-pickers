@@ -61,6 +61,9 @@ public class CommmonUtilsTest {
 		line = "antlr:2.7.7.redhat-4:mygroupId";
 		Assert.assertTrue(line.matches(DataService.COMP_STR_REGEX));
 		
+		line = "antlr:2.7.7.redhat-4:mygroupId:true";
+		Assert.assertTrue(line.matches(DataService.COMP_STR_REGEX));
+		
 		// False matches:
 		
 		line = "::::";

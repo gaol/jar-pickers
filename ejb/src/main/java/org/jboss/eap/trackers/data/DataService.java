@@ -172,6 +172,12 @@ public interface DataService {
 	 */
 	Artifact getArtifact(String groupId, String artifactId, String version) throws DataServiceException;
 	
+    /**
+     * Loads components of a specific product version
+     * 
+     */
+    List<Component> loadComponents(String productName, String version) throws DataServiceException;
+	
 	/**
 	 * Loads native components of a specific product version
 	 * 
@@ -179,29 +185,23 @@ public interface DataService {
 	List<Component> loadNativeComponents(String productName, String version) throws DataServiceException;
 	
 	/**
-	 * Add a native component to a specific product version
-	 * 
-	 */
-	void addNativeComponent(String productName, String version, String compName, String compVer) throws DataServiceException;
-	
-	/**
 	 * Removes a native component from a specific product version
 	 */
-	void removeNativeComponent(String productName, String version, String compName, String compVer) throws DataServiceException;
+	void removeComponent(String productName, String version, String compName, String compVer) throws DataServiceException;
 	
 	/**
 	 * Imports native components to a specific product version from an URL
 	 */
-	void importNativeComponents(String productName, String version, URL compListURL) throws DataServiceException;
+	void importComponents(String productName, String version, URL compListURL) throws DataServiceException;
 	
 	/**
 	 * Imports native components to a specific product version by specifying the component list
 	 * 
 	 * Format of the component list:
 	 *  1). Each component matches in each line
-	 *  2). For each line: ComponentName:ComponentVersion
+	 *  2). For each line: ComponentName:ComponentVersion[:[groupId][:true|false]]
 	 */
-	void importNativeComponents(String productName, String version, List<String> componentList) throws DataServiceException;
+	void importComponentsFromList(String productName, String version, List<String> componentList) throws DataServiceException;
 	
 	/**
 	 * Imports components by an URL
@@ -215,7 +215,7 @@ public interface DataService {
 	 *  1). Each component matches in each line
 	 *  2). For each line: ComponentName:ComponentVersion
 	 */
-	void importComponents(List<String> componentList) throws DataServiceException;
+	void importComponentsFromList(List<String> componentList) throws DataServiceException;
 	
 	/**
 	 * Gets Component by name and version

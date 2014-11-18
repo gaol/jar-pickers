@@ -67,11 +67,14 @@ public class AffectedArtifact implements Serializable {
     @Type(type = "org.jboss.eap.trackers.data.db.VersionScopeUserType")
     private VersionScopes versionScopes;
     
-    @Column
-    private String artiGrpId;
+    @Column(name = "artiGrpId")
+    private String groupId;
     
-    @Column
-    private String artiId;
+    /**
+     * name can be an artifact id or a component name.
+     */
+    @Column(name = "artiId")
+    private String name;
     
     @Column(columnDefinition = "boolean DEFAULT false")
     private boolean nativeComponent;
@@ -123,31 +126,31 @@ public class AffectedArtifact implements Serializable {
     }
 
     /**
-     * @return the artiGrpId
+     * @return the groupId
      */
-    public String getArtiGrpId() {
-        return artiGrpId;
+    public String getGroupId() {
+        return groupId;
     }
 
     /**
-     * @param artiGrpId the artiGrpId to set
+     * @param groupId the groupId to set
      */
-    public void setArtiGrpId(String artiGrpId) {
-        this.artiGrpId = artiGrpId;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
     /**
-     * @return the artiId
+     * @return the name
      */
-    public String getArtiId() {
-        return artiId;
+    public String getName() {
+        return name;
     }
 
     /**
-     * @param artiId the artiId to set
+     * @param name the name to set
      */
-    public void setArtiId(String artiId) {
-        this.artiId = artiId;
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**

@@ -595,68 +595,39 @@ public class DBDataService implements DataServiceLocal {
 	
 
 	/* (non-Javadoc)
+     * @see org.jboss.eap.trackers.data.DataService#loadComponents(java.lang.String, java.lang.String)
+     */
+    @Override
+    public List<Component> loadComponents(String productName, String version) throws DataServiceException {
+        if (productName == null || version == null) {
+            throw new IllegalArgumentException("Both productName and version can't be null.");
+        }
+        return this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_PV, Component.class)
+                .setParameter("name", productName)
+                .setParameter("version", version)
+                .getResultList();
+    }
+
+    /* (non-Javadoc)
 	 * @see org.jboss.eap.trackers.data.DataService#loadNativeComponents(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public List<Component> loadNativeComponents(String productName,
 			String version) throws DataServiceException {
-		if (productName == null || version == null) {
-			throw new IllegalArgumentException("Both productName and version can't be null.");
-		}
-		return this.em.createNamedQuery(Queries.QUERY_LOAD_COMPS_BY_PV, Component.class)
-				.setParameter("name", productName)
-				.setParameter("version", version)
-				.getResultList();
+	    if (productName == null || version == null) {
+            throw new IllegalArgumentException("Both productName and version can't be null.");
+        }
+        return this.em.createNamedQuery(Queries.QUERY_LOAD_NATIVE_COMPS_BY_PV, Component.class)
+                .setParameter("name", productName)
+                .setParameter("version", version)
+                .getResultList();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jboss.eap.trackers.data.DataService#addNativeComponent(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.jboss.eap.trackers.data.DataService#removeComponent(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void addNativeComponent(String productName, String version, String compName, String compVer)
-			throws DataServiceException {
-		ProductVersion pv = getProductVersion(productName, version);
-		if (pv == null) {
-			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
-		}
-		List<Component> nativeComps = pv.getNativeComps();
-		if (nativeComps == null) {
-			nativeComps = new ArrayList<Component>();
-			pv.setNativeComps(nativeComps);
-		}
-		Component comp = getComponent(compName, compVer);
-		if (comp != null) {
-			logger.debug("Component: " + comp.toString() + " has been added already. Associate it to " + 
-					productName + ":" + version); 
-		} else {
-			comp = new Component();
-			comp.setName(compName);
-			comp.setVersion(compVer);
-			this.em.persist(comp);
-		}
-		if (nativeComps.contains(comp)) {
-			throw new DataServiceException("Component: " + comp.toString() + " has been associated with the Product Version: " + pv.toString());
-		}
-		nativeComps.add(comp);
-		this.em.merge(pv);
-		List<ProductVersion> compPVs = comp.getPvs();
-		if (compPVs == null) {
-			compPVs = new ArrayList<ProductVersion>();
-			comp.setPvs(compPVs);
-		}
-		if (compPVs.contains(pv)) {
-			throw new DataServiceException("Wrong state");
-		}
-		compPVs.add(pv);
-		this.em.merge(comp);
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jboss.eap.trackers.data.DataService#removeNativeComponent(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public void removeNativeComponent(String productName, String version,
+	public void removeComponent(String productName, String version,
 			String compName, String compVer) throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
 		if (pv == null) {
@@ -667,7 +638,7 @@ public class DBDataService implements DataServiceLocal {
 			throw new DataServiceException("No Component found: " + compName + ":" + compVer);
 		}
 		
-		List<Component> comps = pv.getNativeComps();
+		List<Component> comps = pv.getComps();
 		if (comps == null) {
 			logger.warn("No native components found in Product version: " + pv.toString());
 			return;
@@ -698,8 +669,9 @@ public class DBDataService implements DataServiceLocal {
 			List<String> compList = ArtifactsUtil.getMatchRegexLines(compListURL.openStream(), COMP_STR_REGEX);
 			if (compList == null || compList.size() == 0) {
 				logger.warn("No Components will be imported, because there are no components in url: " + compListURL);
+				return;
 			}
-			importComponents(compList);
+			importComponentsFromList(compList);
 		} catch (IOException e) {
 			throw new DataServiceException("Can't read components information from URL: " + compListURL, e);
 		}
@@ -709,43 +681,53 @@ public class DBDataService implements DataServiceLocal {
 	 * @see org.jboss.eap.trackers.data.DataService#importComponents(java.util.List)
 	 */
 	@Override
-	public void importComponents(List<String> componentList)
+	public void importComponentsFromList(List<String> componentList)
 			throws DataServiceException {
 		if (componentList == null || componentList.size() == 0) {
 			logger.warn("No components are provided.");
 		}
 		for (String compStr: componentList) {
-			String[] artiArray = compStr.split(":");
-			if (artiArray.length < 2) {
-				throw new DataServiceException("Wrong Format of Component String: " + compStr);
-			}
-			String compName = artiArray[0].trim();
-			String compVer = artiArray[1].trim();
-			String groupId = null;
-			if (artiArray.length >= 3 && artiArray[2] != null) {
-				groupId = artiArray[2].trim();
-			}
-			Component comp = getComponent(compName, compVer);
-			if (comp != null){
-				logger.debug("Component: " + comp.toString() + " has been added already!");
-			} else {
-				comp = new Component();
-				comp.setName(compName);
-				comp.setVersion(compVer);
-				if (groupId != null) {
-					comp.setGroupId(groupId);
-				}
-				this.em.persist(comp);
-			}
+			createComponentFromString(compStr);
 		}
 	}
+
+    private Component createComponentFromString(String compStr) throws DataServiceException {
+        String[] artiArray = compStr.split(":");
+        if (artiArray.length < 2) {
+        	throw new DataServiceException("Wrong Format of Component String: " + compStr);
+        }
+        String compName = artiArray[0].trim();
+        String compVer = artiArray[1].trim();
+        String groupId = null;
+        if (artiArray.length >= 3 && artiArray[2] != null) {
+        	groupId = artiArray[2].trim();
+        }
+        boolean isNative = false;
+        if (artiArray.length >= 4 && artiArray[3] != null) {
+            isNative = Boolean.valueOf(artiArray[3].trim()).booleanValue();
+        }
+        Component comp = getComponent(compName, compVer);
+        if (comp != null){
+        	logger.debug("Component: " + comp.toString() + " has been added already!");
+        } else {
+        	comp = new Component();
+        	comp.setName(compName);
+        	comp.setVersion(compVer);
+        	comp.setNative(isNative);
+        	if (groupId != null) {
+        		comp.setGroupId(groupId);
+        	}
+        	this.em.persist(comp);
+        }
+        return comp;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.jboss.eap.trackers.data.DataService#importNativeComponents(java.lang.String, java.lang.String, java.net.URL)
 	 */
 	@Override
 	@RolesAllowed("tracker")
-	public void importNativeComponents(String productName, String version,
+	public void importComponents(String productName, String version,
 			URL compListURL) throws DataServiceException {
 		if (compListURL == null) {
 			throw new IllegalArgumentException("URL of the Component lists can't be null.");
@@ -754,8 +736,9 @@ public class DBDataService implements DataServiceLocal {
 			List<String> compList = ArtifactsUtil.getMatchRegexLines(compListURL.openStream(), COMP_STR_REGEX);
 			if (compList == null || compList.size() == 0) {
 				logger.warn("No Components will be imported, because there are no components in url: " + compListURL);
+				return;
 			}
-			importNativeComponents(productName, version, compList);
+			importComponentsFromList(productName, version, compList);
 		} catch (IOException e) {
 			throw new DataServiceException("Can't read components information from URL: " + compListURL, e);
 		}
@@ -766,23 +749,47 @@ public class DBDataService implements DataServiceLocal {
 	 */
 	@Override
 	@RolesAllowed("tracker")
-	public void importNativeComponents(String productName, String version,
+	public void importComponentsFromList(String productName, String version,
 			List<String> compList) throws DataServiceException {
+	    ProductVersion pv = getProductVersion(productName, version);
+        if (pv == null) {
+            throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
+        }
 		if (compList != null && compList.size() > 0) {
 			for (String compStr: compList) {
-				// Format: name:version
-				String[] artiArray = compStr.split(":");
-				if (artiArray.length < 2) {
-					throw new DataServiceException("Wrong Format of Component String: " + compStr);
-				}
-				String compName = artiArray[0].trim();
-				String compVer = artiArray[1].trim();
-				addNativeComponent(productName, version, compName, compVer);
+			    Component comp = createComponentFromString(compStr);
+			    associateComponentPV(pv, comp);
 			}
 		}
 	}
 
-	/* (non-Javadoc)
+	private void associateComponentPV(ProductVersion pv, Component comp) throws DataServiceException {
+	    assert pv != null : "ProductVersion can't be null";
+	    assert comp != null : "Component can't be null";
+	    
+        List<Component> comps = pv.getComps();
+        if (comps == null) {
+            comps = new ArrayList<Component>();
+            pv.setComps(comps);
+        }
+        if (comps.contains(comp)) {
+            throw new DataServiceException("Component: " + comp.toString() + " has been associated with the Product Version: " + pv.toString());
+        }
+        comps.add(comp);
+        this.em.merge(pv);
+        List<ProductVersion> compPVs = comp.getPvs();
+        if (compPVs == null) {
+            compPVs = new ArrayList<ProductVersion>();
+            comp.setPvs(compPVs);
+        }
+        if (compPVs.contains(pv)) {
+            throw new DataServiceException("Wrong state");
+        }
+        compPVs.add(pv);
+        this.em.merge(comp);
+    }
+
+    /* (non-Javadoc)
 	 * @see org.jboss.eap.trackers.data.DataService#saveComponent(org.jboss.eap.trackers.model.Component)
 	 */
 	@Override
@@ -862,8 +869,8 @@ public class DBDataService implements DataServiceLocal {
             Set<Artifact> result = new HashSet<Artifact>();
             for (AffectedArtifact arti: artis) {
                 if (!arti.isNativeComponent()) {
-                    String grpId = arti.getArtiGrpId();
-                    String artiId = arti.getArtiId();
+                    String grpId = arti.getGroupId();
+                    String artiId = arti.getName();
                     VersionScopes versionScopes = arti.getVersionScopes();
                     for (Artifact a: getArtifacts(grpId, artiId)) {
                         if (versionScopes.isCaptured(a.getVersion())) {
@@ -888,8 +895,8 @@ public class DBDataService implements DataServiceLocal {
             Set<Component> result = new HashSet<Component>();
             for (AffectedArtifact arti: artis) {
                 if (arti.isNativeComponent()) {
-                    String grpId = arti.getArtiGrpId();
-                    String artiId = arti.getArtiId();
+                    String grpId = arti.getGroupId();
+                    String artiId = arti.getName();
                     VersionScopes versionScopes = arti.getVersionScopes();
                     for (Component c: getNativeComponets(grpId, artiId)) {
                         if (versionScopes.isCaptured(c.getVersion())) {
@@ -903,13 +910,13 @@ public class DBDataService implements DataServiceLocal {
         return Collections.emptySet();
     }
 
-    private List<Component> getNativeComponets(String grpId, String artiId) {
+    private List<Component> getNativeComponets(String grpId, String name) {
         String hql = "SELECT c FROM Component c WHERE c.name = :name";
         if (grpId != null && grpId.length() > 0) {
             hql = hql + " AND c.groupId = :groupId";
         }
         TypedQuery<Component> query = this.em.createQuery(hql, Component.class)
-                .setParameter("name", artiId);
+                .setParameter("name", name);
         if (grpId != null && grpId.length() > 0) {
             query.setParameter("groupId", grpId);
         }
@@ -935,7 +942,7 @@ public class DBDataService implements DataServiceLocal {
             }
             if (pv.getNativeComps() != null) {
                 for (Component comp: pv.getNativeComps()) {
-                    for (AffectedArtifact affectedArti: getAffectedArtisNativeComps(null, comp.getName())) {
+                    for (AffectedArtifact affectedArti: getAffectedArtisNativeComps(comp.getName())) {
                         if (affectedArti.getVersionScopes().isCaptured(comp.getVersion())) {
                             cves.addAll(affectedArti.getCves());
                         }
@@ -954,15 +961,9 @@ public class DBDataService implements DataServiceLocal {
                 .getResultList();
     }
     
-    public List<AffectedArtifact> getAffectedArtisNativeComps(String grpId, String name) throws DataServiceException {
-        String hql = "SELECT a FROM AffectedArtifact a WHERE a.nativeComponent = true AND a.artiId = :name";
-        if (grpId != null && grpId.length() > 0) {
-            hql = hql + " AND a.artiGrpId = :groupId";
-        }
+    public List<AffectedArtifact> getAffectedArtisNativeComps(String name) throws DataServiceException {
+        String hql = "SELECT a FROM AffectedArtifact a WHERE a.nativeComponent = true AND a.name = :name";
         TypedQuery<AffectedArtifact> query = this.em.createQuery(hql, AffectedArtifact.class).setParameter("name", name);
-        if (grpId != null && grpId.length() > 0) {
-            query.setParameter("groupId", grpId);
-        }
         return query.getResultList();
     }
     
@@ -991,7 +992,7 @@ public class DBDataService implements DataServiceLocal {
             return new TreeSet<CVE>();
         }
         SortedSet<CVE> cves = new TreeSet<CVE>();
-        for (AffectedArtifact affectedArti: getAffectedArtisNativeComps(null, nativeComp.getName())) {
+        for (AffectedArtifact affectedArti: getAffectedArtisNativeComps(nativeComp.getName())) {
             if (affectedArti.getVersionScopes().isCaptured(nativeComp.getVersion())) {
                 cves.addAll(affectedArti.getCves());
             }
@@ -1044,8 +1045,8 @@ public class DBDataService implements DataServiceLocal {
             DataServiceException {
         CVE cve = newCVE(cveName);
         AffectedArtifact affectedArti = new AffectedArtifact();
-        affectedArti.setArtiGrpId(groupId);
-        affectedArti.setArtiId(artiId);
+        affectedArti.setGroupId(groupId);
+        affectedArti.setName(artiId);
         affectedArti.setNativeComponent(component);
         affectedArti.setVersionScopes(new VersionScopes(versionScope));
         SortedSet<CVE> cveSet = new TreeSet<CVE>();

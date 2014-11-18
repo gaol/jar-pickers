@@ -53,13 +53,22 @@ public interface Queries {
 			+ " WHERE p.name = :name"
 			+ " AND pv.version = :version";
 	
-	/** load native components by product name and version **/
+	/** load components by product name and version **/
 	String QUERY_LOAD_COMPS_BY_PV = "components.loadComponentsByPV";
 	String _QUERY_LOAD_COMPS_BY_PV = "SELECT c FROM Component c"
 			+ " INNER JOIN c.pvs pv"
 			+ " INNER JOIN pv.product p"
 			+ " WHERE p.name = :name"
 			+ " AND pv.version = :version";
+	
+    /** load native components by product name and version **/
+    String QUERY_LOAD_NATIVE_COMPS_BY_PV = "components.loadNativeComponentsByPV";
+    String _QUERY_LOAD_NATIVE_COMPS_BY_PV = "SELECT c FROM Component c"
+            + " INNER JOIN c.pvs pv"
+            + " INNER JOIN pv.product p"
+            + " WHERE p.name = :name"
+            + " AND pv.version = :version"
+            + " AND c.isNative = 'True'";
 	
 	/** load components by groupId if any **/
 	String QUERY_LOAD_COMPS_BY_GROUPID = "components.loadComponentsByGroupId";
@@ -72,7 +81,7 @@ public interface Queries {
 	String _QUERY_LOAD_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM Artifact a WHERE a.groupId = :groupId AND a.artifactId = :artifactId";
 	
 	String QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "affectedArtis.loadAffectedArtis";
-	String _QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM AffectedArtifact a WHERE a.nativeComponent = false AND a.artiGrpId = :groupId AND a.artiId = :artifactId";
+	String _QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID = "SELECT a FROM AffectedArtifact a WHERE a.nativeComponent = false AND a.groupId = :groupId AND a.name = :artifactId";
 	
 	
 	/** cve related queries **/

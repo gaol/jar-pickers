@@ -343,9 +343,9 @@ public class RestService {
 	@PUT
 	@Path("/ci/{productName}:{version}")
 	@RolesAllowed("tracker")
-	public Response importNativeComponents(@PathParam("productName") String productName, @PathParam("version") String version,
+	public Response importComponents(@PathParam("productName") String productName, @PathParam("version") String version,
 			@QueryParam("url") URL composURL) throws DataServiceException {
-		dataService.importNativeComponents(productName, version, composURL);
+		dataService.importComponents(productName, version, composURL);
 		return Response.ok().build();
 	}
 	
@@ -368,7 +368,7 @@ public class RestService {
 			}
 			// the getMatchRegexLines will close the InputStream at last
 			List<String> composStrs = ArtifactsUtil.getMatchRegexLines(input, DataService.COMP_STR_REGEX);
-			dataService.importComponents(composStrs);
+			dataService.importComponentsFromList(composStrs);
 		} catch (IOException e) {
 			throw new DataServiceException("Can't read the uploaded file.", e);
 		}
@@ -379,7 +379,7 @@ public class RestService {
 	@Path("/ciu/{productName}:{version}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@RolesAllowed("tracker")
-	public Response importNativeComponentsWithUploadFile(@PathParam("productName") String productName, @PathParam("version") String version,
+	public Response importComponentsWithUploadFile(@PathParam("productName") String productName, @PathParam("version") String version,
 			MultipartFormDataInput multipPartInput) throws DataServiceException {
 		try {
 			InputStream input = getFileInputFromMultipartFormDataInput(multipPartInput);
@@ -388,7 +388,7 @@ public class RestService {
 			}
 			// the getMatchRegexLines will close the InputStream at last
 			List<String> composStrs = ArtifactsUtil.getMatchRegexLines(input, DataService.COMP_STR_REGEX);
-			dataService.importNativeComponents(productName, version, composStrs);
+			dataService.importComponentsFromList(productName, version, composStrs);
 		} catch (IOException e) {
 			throw new DataServiceException("Can't read the uploaded file.", e);
 		}

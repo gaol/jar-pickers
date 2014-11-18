@@ -351,11 +351,15 @@ public class ProductVersionDataTest extends AbstractTrackersTest {
 			   // import native components to EAP 6.2.4
 			   URL compsURL = getClass().getClassLoader().getResource("comps.txt");
 			   Assert.assertNotNull(compsURL);
-			   dataService.importNativeComponents("EAP", "6.2.4", compsURL);
+			   dataService.importComponents("EAP", "6.2.4", compsURL);
 			   
+			   List<Component> eap624Comps = dataService.loadComponents("EAP", "6.2.4");
+               Assert.assertNotNull(eap624Comps);
+               Assert.assertEquals(17, eap624Comps.size());
+               
 			   List<Component> eap624NativeComps = dataService.loadNativeComponents("EAP", "6.2.4");
 			   Assert.assertNotNull(eap624NativeComps);
-			   Assert.assertEquals(17, eap624NativeComps.size());
+			   Assert.assertEquals(2, eap624NativeComps.size());
 			   
 			   List<Component> eap620NativeComps = dataService.loadNativeComponents("EAP", "6.2.0");
 			   Assert.assertNotNull(eap620NativeComps);
