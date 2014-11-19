@@ -13,6 +13,18 @@
     
     <security-constraint>
       <web-resource-collection>
+        <web-resource-name>BrewBuildServlet</web-resource-name>
+        <url-pattern>/brewBuild</url-pattern>
+        <http-method>PUT</http-method>
+      </web-resource-collection>
+      
+      <auth-constraint>
+        <role-name>tracker</role-name>
+      </auth-constraint>
+    </security-constraint>
+    
+    <security-constraint>
+      <web-resource-collection>
         <web-resource-name>Resteasy</web-resource-name>
         <url-pattern>/api/*</url-pattern>
         <http-method>PUT</http-method>
