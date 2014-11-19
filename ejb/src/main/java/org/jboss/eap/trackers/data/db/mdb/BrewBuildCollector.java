@@ -31,14 +31,24 @@ import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 
+import org.apache.ws.commons.util.NamespaceContextImpl;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.common.TypeFactoryImpl;
+import org.apache.xmlrpc.common.XmlRpcController;
+import org.apache.xmlrpc.common.XmlRpcStreamConfig;
+import org.apache.xmlrpc.parser.NullParser;
+import org.apache.xmlrpc.parser.TypeParser;
+import org.apache.xmlrpc.serializer.TypeSerializer;
+import org.apache.xmlrpc.serializer.TypeSerializerImpl;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.data.db.DataServiceLocal;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.logging.Logger;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * 
@@ -62,6 +72,7 @@ public class BrewBuildCollector {
     public void setUp() {
         XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
         client = new XmlRpcClient();
+        client.setTypeFactory(new NilFactory(client));
         client.setConfig(config);
         try {
             config.setServerURL(new URL(BREW_URL));
@@ -94,7 +105,7 @@ public class BrewBuildCollector {
         }
         
         String buildId = buildInfo.get("id").toString();
-        String taskId = buildInfo.get("task_id").toString();
+        Integer taskId = Integer.valueOf(buildInfo.get("task_id").toString());
         
         Map taskInfo = getTaskInfo(taskId);
         if ((taskInfo == null) || taskInfo.isEmpty()) {
@@ -119,40 +130,27 @@ public class BrewBuildCollector {
         }
     }
     
-    @SuppressWarnings({ "rawtypes" })
+    /**
+     * Only collects Maven Artifacts, no dist-git components collected.
+     */
     private void collectsMaven(Map<Object, Object> buildInfo) throws DataServiceException, XmlRpcException {
         String nvr = buildInfo.get("nvr").toString();
         String build = buildInfo.get("id").toString();
-        
-        // mead maven build
-        String version = buildInfo.get("version").toString();
-        Component comp = new Component();
-        comp.setVersion(version);
-        
-        Map mavenBuildInfo = getMavenBuildInfo(build);
-        if (mavenBuildInfo == null || mavenBuildInfo.isEmpty()) {
-            throw new RuntimeException("Maven build of: " + build + " is not found after it has been identified.");
-        }
-        String groupId = mavenBuildInfo.get("group_id").toString();
-        comp.setGroupId(groupId);
-        
-        String compName = mavenBuildInfo.get("artifact_id").toString();
-        comp.setName(compName);
-        this.dataService.saveComponent(comp);
-        
-        collectAllMavenJarArtifacts(buildInfo, nvr, comp);
+        Integer buildId = Integer.valueOf(build);
+        collectAllMavenJarArtifacts(buildId, nvr, null);
     }
     
+    /**
+     * This will collects both component and the artifacts.
+     */
     @SuppressWarnings("rawtypes")
     private void collectsWrapperRPM(Map<Object, Object> buildInfo, Map<Object, Object> taskInfo) throws DataServiceException, XmlRpcException { 
         String packageName = buildInfo.get("package_name").toString(); // this is the real dist-git package name.
-        String version = buildInfo.get("version").toString();
-        String taskId = buildInfo.get("task_id").toString();
+        Integer taskId = Integer.valueOf(buildInfo.get("task_id").toString());
         String build = buildInfo.get("id").toString();
         
         Component comp = new Component();
         comp.setName(packageName);
-        comp.setVersion(version);
         
         // getTaskRequest
         Object[] taskRequestResult = getTaskRequest(taskId);
@@ -168,17 +166,18 @@ public class BrewBuildCollector {
                     if ((meadBuildInfo == null) || meadBuildInfo.isEmpty()) {
                         throw new RuntimeException("Mead Build: " + meadBuildNVR + " is not found after wrapperRPM build: " + build + " has been found.");
                     }
-                    String meadTaskId = meadBuildInfo.get("task_id").toString();
+                    Integer meadTaskId = Integer.valueOf(meadBuildInfo.get("task_id").toString());
                     Map meadTaskInfo = getTaskInfo(meadTaskId);
                     if ("maven".equals(meadTaskInfo.get("method"))) {
                         // OK, it is really a maven build, instead of another wrapperRPM build
                         Map meadMavenBuildInfo = getMavenBuildInfo(meadBuildNVR);
                         String groupId = meadMavenBuildInfo.get("group_id").toString();
                         comp.setGroupId(groupId);
+                        comp.setVersion(meadMavenBuildInfo.get("version").toString());
                         this.dataService.saveComponent(comp);
                         
                         // maven artifacts collection.
-                        collectAllMavenJarArtifacts(meadBuildInfo, meadBuildNVR, comp);
+                        collectAllMavenJarArtifacts(Integer.valueOf(meadBuildInfo.get("id").toString()), meadBuildNVR, comp);
                     }
                     break;
                 }
@@ -188,9 +187,9 @@ public class BrewBuildCollector {
     }
 
     @SuppressWarnings("rawtypes")
-    private void collectAllMavenJarArtifacts(Map meadBuildInfo, String meadBuildNVR, Component comp) throws XmlRpcException, DataServiceException {
+    private void collectAllMavenJarArtifacts(Integer buildId, String meadBuildNVR, Component comp) throws XmlRpcException, DataServiceException {
         // maven artifacts:  listArchives
-        Object[] mavenArchives = listMavenBuildArchives(meadBuildNVR);
+        Object[] mavenArchives = listMavenBuildArchives(buildId);
         if (mavenArchives == null || mavenArchives.length == 0) {
             LOGGER.warn("No Maven Artifacts output of build: " + meadBuildNVR);
             return;
@@ -201,7 +200,7 @@ public class BrewBuildCollector {
             String fileName = mavenArchiveMap.get("filename").toString().trim().toLowerCase();
             if (typeName.equals("jar") && !fileName.endsWith("-sources.jar") && !fileName.endsWith("-javadoc.jar")) {  // no sources nor javadoc jars
                 // only collect jar
-                String id = mavenArchiveMap.get("id").toString();
+                Integer id = Integer.valueOf(mavenArchiveMap.get("id").toString());
                 String checksum = mavenArchiveMap.get("checksum").toString();
                 
                 // getMavenArchive
@@ -214,16 +213,25 @@ public class BrewBuildCollector {
                 String artiId = mavenArchiveInfo.get("artifact_id").toString();
                 String version = mavenArchiveInfo.get("version").toString();
                 
-                Artifact arti = new Artifact();
-                arti.setArtifactId(artiId);
-                String buildInfoLink = "[" + meadBuildNVR + "](https://brewweb.devel.redhat.com/buildinfo?buildID=" + meadBuildInfo.get("id") + ")";
-                arti.setBuildInfo(buildInfoLink);
-                arti.setChecksum(checksum);
-                arti.setComponent(comp);
-                arti.setGroupId(artiGrpId);
-                arti.setType(typeName);
-                arti.setVersion(version);
-                this.dataService.addArtifact(arti);
+                Artifact arti = this.dataService.getArtifact(artiGrpId, artiId, version);
+                if (arti == null) {
+                    arti = new Artifact();
+                    arti.setArtifactId(artiId);
+                    String buildInfoLink = "[" + meadBuildNVR + "](https://brewweb.devel.redhat.com/buildinfo?buildID=" + buildId + ")";
+                    arti.setBuildInfo(buildInfoLink);
+                    arti.setChecksum(checksum);
+                    arti.setComponent(comp);
+                    arti.setGroupId(artiGrpId);
+                    arti.setType(typeName);
+                    arti.setVersion(version);
+                    this.dataService.addArtifact(arti);
+                } else {
+                    if (arti.getComponent() == null && comp != null) {
+                        arti.setComponent(comp);
+                        this.dataService.addArtifact(arti);
+                    }
+                }
+                
             }
         }
     }
@@ -240,45 +248,85 @@ public class BrewBuildCollector {
     }
 
     @SuppressWarnings("rawtypes")
-    private Map getTaskInfo(String taskId) throws XmlRpcException {
+    private Map getTaskInfo(Integer taskId) throws XmlRpcException {
         Object[] taskInfoParams = new Object[] {taskId, true};
         Map taskInfo = (Map)brewXmlRpcCall("getTaskInfo", taskInfoParams);
         return taskInfo;
     }
     
     @SuppressWarnings("rawtypes")
-    private Map getMavenArchives(String archiveId) throws XmlRpcException {
+    private Map getMavenArchives(Integer archiveId) throws XmlRpcException {
         Object[] archiveParams = new Object[] {archiveId, true};
         Map mavenArchives = (Map)brewXmlRpcCall("getMavenArchive", archiveParams);
         return mavenArchives;
     }
     
-    private Object[] getTaskRequest(String taskId) throws XmlRpcException {
+    private Object[] getTaskRequest(Integer taskId) throws XmlRpcException {
         Object[] taskInfoParams = new Object[] {taskId};
         return (Object[])brewXmlRpcCall("getTaskRequest", taskInfoParams);
     }
     
-    private Object[] listMavenBuildArchives(String meadBuildId) throws XmlRpcException {
+    private Object[] listMavenBuildArchives(Integer meadBuildId) throws XmlRpcException {
         Object[] meadBuildParams = new Object[] {meadBuildId};
         return (Object[])brewXmlRpcCall("listArchives", meadBuildParams);
     }
     
     @SuppressWarnings("rawtypes")
-    private Map getBuildInfo(String buildId) throws XmlRpcException {
-        Object[] buildInfoParams = new Object[] {buildId, true};
+    private Map getBuildInfo(String build) throws XmlRpcException {
+        Object[] buildInfoParams = new Object[] {build, true};
+        try {
+            Integer buildId = Integer.valueOf(build);
+            buildInfoParams = new Object[] {buildId, true};
+        } catch (NumberFormatException e) {
+            LOGGER.debug("Not a valid build ID, assume it as nvr.");
+        }
         Map buildInfo = (Map)brewXmlRpcCall("getBuild", buildInfoParams);
         return buildInfo;
     }
     
     @SuppressWarnings("rawtypes")
-    private Map getMavenBuildInfo(String buildId) throws XmlRpcException {
-        Object[] buildInfoParams = new Object[] {buildId, true};
+    private Map getMavenBuildInfo(String build) throws XmlRpcException {
+        Object[] buildInfoParams = new Object[] {build, true};
+        try {
+            Integer buildId = Integer.valueOf(build);
+            buildInfoParams = new Object[] {buildId, true};
+        } catch (NumberFormatException e) {
+            LOGGER.debug("Not a valid build ID, assume it as nvr.");
+        }
         Map buildInfo = (Map)brewXmlRpcCall("getMavenBuild", buildInfoParams);
         return buildInfo;
     }
     
     private Object brewXmlRpcCall(String methodName, Object[] params) throws XmlRpcException {
         return client.execute(methodName, params);
+    }
+    
+    private class NilFactory extends TypeFactoryImpl {
+        public NilFactory(XmlRpcController pController) {
+            super(pController);
+        }
+        
+        @Override
+        public TypeParser getParser(XmlRpcStreamConfig pConfig, NamespaceContextImpl pContext, String pURI, String pLocalName) {
+            if (NullSerializer.NIL_TAG.equals(pLocalName))return new NullParser();
+            return super.getParser(pConfig, pContext, pURI, pLocalName);
+        }
+        
+        @Override
+        public TypeSerializer getSerializer(XmlRpcStreamConfig pConfig, Object pObject) throws SAXException {
+            if (pObject == null) return new NullSerializer();
+            return super.getSerializer(pConfig, pObject);
+        }
+    }
+    
+    private class NullSerializer extends TypeSerializerImpl {
+        static final String NIL_TAG = "nil";
+        static final String NIL_CONTENT = "<nil/>";
+        
+        @Override
+        public void write(ContentHandler pHandler, Object pObject) throws SAXException {
+            write(pHandler, NIL_TAG, NIL_CONTENT);
+        }
     }
 
 }

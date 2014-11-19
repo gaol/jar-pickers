@@ -100,6 +100,7 @@
          <scope>test</scope>
       </dependency>
 
+
    </dependencies>
 
    <build>
@@ -172,6 +173,24 @@
                <!--version>7.2.0.Final</version-->
                <scope>test</scope>
             </dependency>
+	      <dependency>
+		 <groupId>org.jboss.shrinkwrap.resolver</groupId>
+		 <artifactId>shrinkwrap-resolver-api</artifactId>
+		 <version>2.0.0</version>
+		 <scope>test</scope>
+	      </dependency>
+	      <dependency>
+		 <groupId>org.jboss.shrinkwrap.resolver</groupId>
+		 <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+		 <version>2.0.0</version>
+		 <scope>test</scope>
+	      </dependency>
+	      <dependency>
+		 <groupId>org.jboss.shrinkwrap.resolver</groupId>
+		 <artifactId>shrinkwrap-resolver-api-maven</artifactId>
+		 <version>2.0.0</version>
+		 <scope>test</scope>
+	      </dependency>
          </dependencies>
       </profile>
 
