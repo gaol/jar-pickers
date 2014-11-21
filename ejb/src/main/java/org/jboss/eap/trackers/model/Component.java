@@ -69,6 +69,12 @@ public class Component implements Serializable  {
 	@Column
 	private String groupId;
 	
+	/**
+	 * This is the top level Maven groupId-artifactId
+	 */
+	@Column
+	private String topGA;
+	
 	@Column(columnDefinition = "boolean DEFAULT false")
 	private boolean isNative;
 	
@@ -77,8 +83,23 @@ public class Component implements Serializable  {
 	
 	@OneToMany(mappedBy = "component", fetch = FetchType.EAGER)
 	private List<Artifact> artis;
+	
 
 	/**
+     * @return the topGA
+     */
+    public String getTopGA() {
+        return topGA;
+    }
+
+    /**
+     * @param topGA the topGA to set
+     */
+    public void setTopGA(String topGA) {
+        this.topGA = topGA;
+    }
+
+    /**
      * @return the artis
      */
     public List<Artifact> getArtis() {

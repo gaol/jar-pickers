@@ -88,6 +88,7 @@
         isNative boolean DEFAULT false,
         name varchar(255),
         scm varchar(255),
+        topGA varchar(255),
         version varchar(255),
         primary key (id)
     );

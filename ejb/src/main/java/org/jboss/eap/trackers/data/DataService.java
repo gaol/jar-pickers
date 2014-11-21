@@ -97,7 +97,7 @@ public interface DataService {
     /**
      * Adds an Artifact
      */
-	void addArtifact(Artifact artifact) throws DataServiceException;
+	void saveArtifact(Artifact artifact) throws DataServiceException;
 	
 	/**
 	 * Adds an Artifact to a product version

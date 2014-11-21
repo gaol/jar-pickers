@@ -197,7 +197,7 @@ public class DBDataService implements DataServiceLocal {
 
 	@Override
     @RolesAllowed("tracker")
-    public void addArtifact(Artifact artifact) throws DataServiceException {
+    public void saveArtifact(Artifact artifact) throws DataServiceException {
 	    if (artifact == null) {
 	        throw new IllegalArgumentException("Artifact can't be null.");
 	    }

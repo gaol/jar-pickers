@@ -133,11 +133,26 @@ public class BrewBuildCollector {
     /**
      * Only collects Maven Artifacts, no dist-git components collected.
      */
+    @SuppressWarnings("rawtypes")
     private void collectsMaven(Map<Object, Object> buildInfo) throws DataServiceException, XmlRpcException {
         String nvr = buildInfo.get("nvr").toString();
         String build = buildInfo.get("id").toString();
         Integer buildId = Integer.valueOf(build);
-        collectAllMavenJarArtifacts(buildId, nvr, null);
+        
+        String topGA = buildInfo.get("package_name").toString();
+        Component comp = new Component();
+        comp.setName(topGA);
+        comp.setTopGA(topGA);
+        
+        Map meadMavenBuildInfo = getMavenBuildInfo(build);
+        String groupId = meadMavenBuildInfo.get("group_id").toString();
+        comp.setGroupId(groupId);
+        String version = meadMavenBuildInfo.get("version").toString();
+        comp.setVersion(version);
+        System.err.println("VERSION IS: ===========================     " + version);
+        this.dataService.saveComponent(comp);
+        
+        collectAllMavenJarArtifacts(buildId, nvr, comp);
     }
     
     /**
@@ -224,11 +239,11 @@ public class BrewBuildCollector {
                     arti.setGroupId(artiGrpId);
                     arti.setType(typeName);
                     arti.setVersion(version);
-                    this.dataService.addArtifact(arti);
+                    this.dataService.saveArtifact(arti);
                 } else {
                     if (arti.getComponent() == null && comp != null) {
                         arti.setComponent(comp);
-                        this.dataService.addArtifact(arti);
+                        this.dataService.saveArtifact(arti);
                     }
                 }
                 

@@ -81,7 +81,6 @@ public class BrewBuildCollectTest {
                 .addClass(ArtifactsUtil.class)
                 .addClass(BrewBuildCollector.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-//                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 ;
         
         for (File lib: libs) {
@@ -123,6 +122,12 @@ public class BrewBuildCollectTest {
         // after collection.
         arti = this.dataService.getArtifact("org.apache.httpcomponents", "httpcore", "4.2.1.redhat-2");
         Assert.assertNotNull(arti);
+        
+        // why choose this wield package for testing ? version differs from its artifacts.
+        Component meadComp = dataService.getComponent("org.apache.httpcomponents-project", "6-redhat-2");
+        Assert.assertNotNull(meadComp);
+        Assert.assertEquals("org.apache.httpcomponents", meadComp.getGroupId());
+        Assert.assertEquals(11, meadComp.getArtis().size());
         
         // wrapperRPM build collects both component and artifacts
         buildId = "jbossws-spi-2.3.1-1.Final_redhat_1.1.ep6.el6"; // 398060 jbossws-spi-2.3.1-1.Final_redhat_1.1.ep6.el6
