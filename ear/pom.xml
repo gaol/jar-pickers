@@ -27,6 +27,11 @@
       <artifactId>xmlrpc-client</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.ws.commons.util</groupId>
+      <artifactId>ws-commons-util</artifactId>
+      <version>1.0.2</version>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.eap.trackers</groupId>
       <artifactId>trackers-ejb</artifactId>
       <type>ejb</type>
@@ -61,6 +66,11 @@
 	           <groupId>org.apache.xmlrpc</groupId>
 	           <artifactId>xmlrpc-common</artifactId>
 		   <bundleDir>/</bundleDir>
+		   <includeInApplicationXml>true</includeInApplicationXml>
+		 </jarModule>
+	         <jarModule>
+                   <groupId>org.apache.ws.commons.util</groupId>
+                   <artifactId>ws-commons-util</artifactId>
 		   <includeInApplicationXml>true</includeInApplicationXml>
 		 </jarModule>
 	       </modules>
