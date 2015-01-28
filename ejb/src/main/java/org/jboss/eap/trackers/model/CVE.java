@@ -33,6 +33,8 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -60,6 +62,12 @@ public class CVE implements Serializable, Comparable<CVE>
    @Id
    @Column(length = 50)
    private String name;
+   
+   @Column(length = 256)
+   private String alias;
+   
+   @Column(length = 512)
+   private String title;
 
    @Column(columnDefinition = "Boolean DEFAULT TRUE")
    private boolean embargoed;
@@ -70,13 +78,67 @@ public class CVE implements Serializable, Comparable<CVE>
    @Column(length = 512)
    private String note;
    
+   @Deprecated
    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
    private Set<AffectedArtifact> affectedArtis;
    
+   @OneToOne(cascade = CascadeType.ALL) 
+   @PrimaryKeyJoinColumn
+   private CVEAffected cveAffect;
+   
+
+   /**
+    * @return the cveAffect
+    */
+   public CVEAffected getCveAffect()
+   {
+      return cveAffect;
+   }
+
+   /**
+    * @param cveAffect the cveAffect to set
+    */
+   public void setCveAffect(CVEAffected cveAffect)
+   {
+      this.cveAffect = cveAffect;
+   }
+
+   /**
+    * @return the alias
+    */
+   public String getAlias()
+   {
+      return alias;
+   }
+
+   /**
+    * @param alias the alias to set
+    */
+   public void setAlias(String alias)
+   {
+      this.alias = alias;
+   }
+
+   /**
+    * @return the title
+    */
+   public String getTitle()
+   {
+      return title;
+   }
+
+   /**
+    * @param title the title to set
+    */
+   public void setTitle(String title)
+   {
+      this.title = title;
+   }
 
    /**
      * @return the affectedArtis
      */
+   @Deprecated
     public Set<AffectedArtifact> getAffectedArtis() {
         return affectedArtis;
     }
@@ -84,6 +146,7 @@ public class CVE implements Serializable, Comparable<CVE>
     /**
      * @param affectedArtis the affectedArtis to set
      */
+   @Deprecated
     public void setAffectedArtis(Set<AffectedArtifact> affectedArtis) {
         this.affectedArtis = affectedArtis;
     }

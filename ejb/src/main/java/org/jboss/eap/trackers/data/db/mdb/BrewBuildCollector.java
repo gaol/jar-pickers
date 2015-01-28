@@ -149,7 +149,6 @@ public class BrewBuildCollector {
         comp.setGroupId(groupId);
         String version = meadMavenBuildInfo.get("version").toString();
         comp.setVersion(version);
-        System.err.println("VERSION IS: ===========================     " + version);
         this.dataService.saveComponent(comp);
         
         collectAllMavenJarArtifacts(buildId, nvr, comp);

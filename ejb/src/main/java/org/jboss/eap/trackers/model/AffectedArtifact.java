@@ -48,6 +48,7 @@ import org.jboss.eap.trackers.data.VersionScopes;
  */
 @Entity
 @XmlRootElement
+@Deprecated
 public class AffectedArtifact implements Serializable {
     
     /**

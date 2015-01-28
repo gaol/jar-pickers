@@ -32,6 +32,8 @@
 
     drop table if exists CVE cascade;
 
+    drop table if exists CVEAffected cascade;
+
     drop table if exists CVE_AffectedArtifact cascade;
 
     drop table if exists Component cascade;
@@ -69,10 +71,18 @@
 
     create table CVE (
         name varchar(50) not null,
+        alias varchar(256),
         embargoDate DATE,
         embargoed Boolean DEFAULT TRUE,
         note varchar(512),
+        title varchar(512),
         primary key (name)
+    );
+
+    create table CVEAffected (
+        cveName varchar(255) not null,
+        cveAffect TEXT,
+        primary key (cveName)
     );
 
     create table CVE_AffectedArtifact (
@@ -180,3 +190,4 @@
 
     create sequence hibernate_sequence minvalue 100;
     create sequence trackerseq minvalue 100;
+
