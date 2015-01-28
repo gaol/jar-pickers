@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
 
-import org.jboss.eap.trackers.model.AffectedArtifact;
+import org.jboss.eap.trackers.model.ArtifactCVEs;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.CVE;
 import org.jboss.eap.trackers.model.Component;
@@ -21,7 +21,7 @@ import org.jboss.eap.trackers.model.ProductVersion;
  *
  * This is a facade interface for all data operations 
  */
-public interface DataService {
+public interface DataService extends Constants {
 	
 	String ARTI_STR_REGEX = "^[^\n|^:]+:[^\n|^:]+:[^\n|^:]+[^\n]*";
 	
@@ -247,7 +247,7 @@ public interface DataService {
 	CVE getCVE(String cveName) throws DataServiceException;
 	
 	
-	List<AffectedArtifact> getAffectedArtis(String grpId, String artiId) throws DataServiceException;
+	List<ArtifactCVEs> getAffectedArtis(String grpId, String artiId) throws DataServiceException;
 	
 	/**
 	 * Gets affected product versions according to CVE Name

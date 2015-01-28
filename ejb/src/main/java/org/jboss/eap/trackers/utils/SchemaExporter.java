@@ -5,10 +5,10 @@ package org.jboss.eap.trackers.utils;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.jboss.eap.trackers.model.AffectedArtifact;
+import org.jboss.eap.trackers.model.ArtifactCVEs;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.CVE;
-import org.jboss.eap.trackers.model.CVEAffected;
+import org.jboss.eap.trackers.model.CVEStatus;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -29,8 +29,8 @@ public class SchemaExporter {
         cfg.addAnnotatedClass(Component.class);
         cfg.addAnnotatedClass(Artifact.class);
         cfg.addAnnotatedClass(CVE.class);
-        cfg.addAnnotatedClass(CVEAffected.class);
-        cfg.addAnnotatedClass(AffectedArtifact.class);
+        cfg.addAnnotatedClass(ArtifactCVEs.class);
+        cfg.addAnnotatedClass(CVEStatus.class);
         
         cfg.addURL(Artifact.class.getClassLoader().getResource("META-INF/orm.xml"));
         

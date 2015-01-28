@@ -31,9 +31,10 @@ import org.hibernate.Session;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.data.VersionScopes;
-import org.jboss.eap.trackers.model.AffectedArtifact;
+import org.jboss.eap.trackers.model.ArtifactCVEs;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.CVE;
+import org.jboss.eap.trackers.model.CVEStatus;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.model.ProductVersion;
@@ -812,13 +813,13 @@ public class DBDataService implements DataServiceLocal {
         if (cve == null) {
             return Collections.emptySet();
         }
-        Set<AffectedArtifact> artis = cve.getAffectedArtis();
+        Set<ArtifactCVEs> artis = cve.getAffectedJavaArtis();
         if (artis != null) {
             Set<Artifact> result = new HashSet<Artifact>();
-            for (AffectedArtifact arti: artis) {
-                String grpId = arti.getGroupId();
-                String artiId = arti.getName();
-                VersionScopes versionScopes = arti.getVersionScopes();
+            for (ArtifactCVEs javaArti: artis) {
+                String grpId = javaArti.getJavaGroupId();
+                String artiId = javaArti.getJavaArtifactId();
+                VersionScopes versionScopes = javaArti.getVersions();
                 for (Artifact a: getArtifacts(grpId, artiId)) {
                     if (versionScopes.isCaptured(a.getVersion())) {
                         result.add(a);
@@ -837,11 +838,11 @@ public class DBDataService implements DataServiceLocal {
             return Collections.emptySet();
         }
         Set<Component> result = new HashSet<Component>();
-        Set<AffectedArtifact> artis = cve.getAffectedArtis();
+        Set<ArtifactCVEs> artis = cve.getAffectedNativeComps();
         if (artis != null) {
-            for (AffectedArtifact arti: artis) {
-                String compName = arti.getName();
-                VersionScopes versionScopes = arti.getVersionScopes();
+            for (ArtifactCVEs arti: artis) {
+                String compName = arti.getNativeName();
+                VersionScopes versionScopes = arti.getVersions();
                 for (Component c: getComponets(compName)) {
                     if (versionScopes.isCaptured(c.getVersion())) {
                         result.add(c);
@@ -875,18 +876,18 @@ public class DBDataService implements DataServiceLocal {
         if (pv != null) {
             if (pv.getArtifacts() != null) {
                 for (Artifact arti: pv.getArtifacts()) {
-                    for (AffectedArtifact affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
-                        if (affectedArti.getVersionScopes().isCaptured(arti.getVersion())) {
-                            cves.addAll(affectedArti.getCves());
+                    for (ArtifactCVEs affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
+                        if (affectedArti.getVersions().isCaptured(arti.getVersion())) {
+                            cves.add(affectedArti.getCve());
                         }
                     }
                 }
             }
             if (pv.getNativeComps() != null) {
                 for (Component comp: pv.getNativeComps()) {
-                    for (AffectedArtifact affectedArti: getAffectedArtisByName(comp.getName())) {
-                        if (affectedArti.getVersionScopes().isCaptured(comp.getVersion())) {
-                            cves.addAll(affectedArti.getCves());
+                    for (ArtifactCVEs affectedArti: getAffectedArtisByName(comp.getName())) {
+                        if (affectedArti.getVersions().isCaptured(comp.getVersion())) {
+                            cves.add(affectedArti.getCve());
                         }
                     }
                 }
@@ -896,16 +897,15 @@ public class DBDataService implements DataServiceLocal {
     }
     
     @Override
-    public List<AffectedArtifact> getAffectedArtis(String grpId, String artiId) throws DataServiceException {
-        return this.em.createNamedQuery(Queries.QUERY_LOAD_AFFECTED_ARTIS_BY_GRP_AND_ARTIID, AffectedArtifact.class)
-                .setParameter("groupId", grpId)
-                .setParameter("artifactId", artiId)
-                .getResultList();
+    public List<ArtifactCVEs> getAffectedArtis(String grpId, String artiId) throws DataServiceException {
+       String hql = "SELECT a FROM ArtifactCVEs a WHERE a.identifier = :identifier";
+       TypedQuery<ArtifactCVEs> query = this.em.createQuery(hql, ArtifactCVEs.class).setParameter("identifier", "java:" + grpId + ":" + artiId);
+       return query.getResultList();
     }
     
-    public List<AffectedArtifact> getAffectedArtisByName(String name) throws DataServiceException {
-        String hql = "SELECT a FROM AffectedArtifact a WHERE a.name = :name";
-        TypedQuery<AffectedArtifact> query = this.em.createQuery(hql, AffectedArtifact.class).setParameter("name", name);
+    public List<ArtifactCVEs> getAffectedArtisByName(String name) throws DataServiceException {
+        String hql = "SELECT a FROM ArtifactCVEs a WHERE a.identifier = :identifier";
+        TypedQuery<ArtifactCVEs> query = this.em.createQuery(hql, ArtifactCVEs.class).setParameter("identifier", "native:" + name);
         return query.getResultList();
     }
     
@@ -919,9 +919,9 @@ public class DBDataService implements DataServiceLocal {
             return new TreeSet<CVE>();
         }
         SortedSet<CVE> cves = new TreeSet<CVE>();
-        for (AffectedArtifact affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
-            if (affectedArti.getVersionScopes().isCaptured(arti.getVersion())) {
-                cves.addAll(affectedArti.getCves());
+        for (ArtifactCVEs affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
+            if (affectedArti.getVersions().isCaptured(arti.getVersion())) {
+                cves.add(affectedArti.getCve());
             }
         }
         return cves;
@@ -934,9 +934,9 @@ public class DBDataService implements DataServiceLocal {
             return new TreeSet<CVE>();
         }
         SortedSet<CVE> cves = new TreeSet<CVE>();
-        for (AffectedArtifact affectedArti: getAffectedArtisByName(nativeComp.getName())) {
-            if (affectedArti.getVersionScopes().isCaptured(nativeComp.getVersion())) {
-                cves.addAll(affectedArti.getCves());
+        for (ArtifactCVEs affectedArti: getAffectedArtisByName(nativeComp.getName())) {
+            if (affectedArti.getVersions().isCaptured(nativeComp.getVersion())) {
+                cves.add(affectedArti.getCve());
             }
         }
         return cves;
@@ -986,23 +986,22 @@ public class DBDataService implements DataServiceLocal {
     public CVE cveAffected(String cveName, String groupId, String name, String versionScope) throws IllegalArgumentException,
             DataServiceException {
         CVE cve = newCVE(cveName);
-        AffectedArtifact affectedArti = new AffectedArtifact();
-        affectedArti.setGroupId(groupId);
-        affectedArti.setName(name);
-        affectedArti.setVersionScopes(new VersionScopes(versionScope));
-        SortedSet<CVE> cveSet = new TreeSet<CVE>();
-        cveSet.add(cve);
-        affectedArti.setCves(cveSet);
+        ArtifactCVEs affectedArti = new ArtifactCVEs();
+        affectedArti.setIdentifier(JAVA_ARTI_PREFIX + SPLITTER + groupId + SPLITTER + name);
+        affectedArti.setVersions(new VersionScopes(versionScope));
+//        affectedArti.setStatus(CVEStatus.NEW);
+        affectedArti.setCve(cve);
+        this.em.persist(affectedArti);
         
-        Set<AffectedArtifact> affectedArtis = cve.getAffectedArtis();
-        if (affectedArtis == null) {
-            affectedArtis = new HashSet<AffectedArtifact>();
-            cve.setAffectedArtis(affectedArtis);
-        }
-        affectedArtis.add(affectedArti);
-        
-        Session session = (Session)em.getDelegate();
-        session.saveOrUpdate(cve);
+//        Set<ArtifactCVEs> affectedArtis = cve.getAffectedArtis();
+//        if (affectedArtis == null) {
+//            affectedArtis = new HashSet<ArtifactCVEs>();
+//            cve.setAffectedArtis(affectedArtis);
+//        }
+//        affectedArtis.add(affectedArti);
+//        
+//        Session session = (Session)em.getDelegate();
+//        session.saveOrUpdate(affectedArti);
         return getCVE(cveName);
     }
 	

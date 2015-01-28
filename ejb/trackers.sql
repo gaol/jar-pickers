@@ -2,11 +2,8 @@
     alter table Artifact 
         drop constraint FK_f6mejfa67masq4an2vaffx8fm;
 
-    alter table CVE_AffectedArtifact 
-        drop constraint FK_a2lb025qv6lqd4u1o1gt1v4mk;
-
-    alter table CVE_AffectedArtifact 
-        drop constraint FK_d31qrox0bd0owiquikfte9hbw;
+    alter table ArtifactCVEs 
+        drop constraint FK_71tktpsah7mt31jvv233y0s4m;
 
     alter table ProductVersion 
         drop constraint FK_d03isp2sgwg3ql7gc3ngo9um3;
@@ -26,15 +23,11 @@
     alter table ProductVersion_Component 
         drop constraint FK_lbqgdp2tcmlaxclcysmoxg6dg;
 
-    drop table if exists AffectedArtifact cascade;
-
     drop table if exists Artifact cascade;
 
+    drop table if exists ArtifactCVEs cascade;
+
     drop table if exists CVE cascade;
-
-    drop table if exists CVEAffected cascade;
-
-    drop table if exists CVE_AffectedArtifact cascade;
 
     drop table if exists Component cascade;
 
@@ -47,14 +40,6 @@
     drop table if exists ProductVersion_Component cascade;
 
     drop sequence hibernate_sequence;
-
-    create table AffectedArtifact (
-        id int8 not null,
-        artiGrpId varchar(255),
-        artiId varchar(255),
-        versionScopes varchar(512),
-        primary key (id)
-    );
 
     create table Artifact (
         id int8 not null,
@@ -69,26 +54,28 @@
         primary key (id)
     );
 
+    create table ArtifactCVEs (
+        id int8 not null,
+        brewBuilds varchar(512),
+        bugzillas varchar(512),
+        erratas varchar(512),
+        identifier varchar(255),
+        status varchar(255),
+        versions varchar(512),
+        cve_name varchar(50),
+        primary key (id)
+    );
+
     create table CVE (
         name varchar(50) not null,
         alias varchar(256),
+        cvss varchar(255),
+        description TEXT,
         embargoDate DATE,
-        embargoed Boolean DEFAULT TRUE,
+        embargoed Boolean DEFAULT FALSE,
         note varchar(512),
         title varchar(512),
         primary key (name)
-    );
-
-    create table CVEAffected (
-        cveName varchar(255) not null,
-        cveAffect TEXT,
-        primary key (cveName)
-    );
-
-    create table CVE_AffectedArtifact (
-        cves_name varchar(50) not null,
-        affectedArtis_id int8 not null,
-        primary key (cves_name, affectedArtis_id)
     );
 
     create table Component (
@@ -148,14 +135,9 @@
         foreign key (component_id) 
         references Component;
 
-    alter table CVE_AffectedArtifact 
-        add constraint FK_a2lb025qv6lqd4u1o1gt1v4mk 
-        foreign key (affectedArtis_id) 
-        references AffectedArtifact;
-
-    alter table CVE_AffectedArtifact 
-        add constraint FK_d31qrox0bd0owiquikfte9hbw 
-        foreign key (cves_name) 
+    alter table ArtifactCVEs 
+        add constraint FK_71tktpsah7mt31jvv233y0s4m 
+        foreign key (cve_name) 
         references CVE;
 
     alter table ProductVersion 
@@ -187,8 +169,6 @@
         add constraint FK_lbqgdp2tcmlaxclcysmoxg6dg 
         foreign key (pvs_id) 
         references ProductVersion;
-
-    alter table cveaffected ADD foreign key (cvename) references cve(name);
 
     create sequence hibernate_sequence minvalue 100;
     create sequence trackerseq minvalue 100;

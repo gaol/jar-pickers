@@ -31,6 +31,7 @@ import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.CVE;
 import org.jboss.eap.trackers.model.ProductVersion;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -83,6 +84,7 @@ public class CVETest extends AbstractTrackersTest {
         
     }
     
+//    @Ignore
     @Test
     public void testUpdateCVEs() throws Exception
     {

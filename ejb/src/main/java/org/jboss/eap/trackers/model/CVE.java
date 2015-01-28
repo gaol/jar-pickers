@@ -24,6 +24,7 @@ package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -32,13 +33,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.jboss.eap.trackers.data.Constants;
 import org.jboss.eap.trackers.data.DataService;
 
 /**
@@ -48,7 +48,7 @@ import org.jboss.eap.trackers.data.DataService;
 @Entity
 @Table
 @XmlRootElement
-public class CVE implements Serializable, Comparable<CVE>
+public class CVE implements Serializable, Comparable<CVE>, Constants
 {
 
    /**
@@ -62,14 +62,14 @@ public class CVE implements Serializable, Comparable<CVE>
    @Id
    @Column(length = 50)
    private String name;
-   
+
    @Column(length = 256)
    private String alias;
-   
+
    @Column(length = 512)
    private String title;
 
-   @Column(columnDefinition = "Boolean DEFAULT TRUE")
+   @Column(columnDefinition = "Boolean DEFAULT FALSE")
    private boolean embargoed;
 
    @Column(columnDefinition = "DATE")
@@ -77,30 +77,46 @@ public class CVE implements Serializable, Comparable<CVE>
 
    @Column(length = 512)
    private String note;
-   
-   @Deprecated
-   @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-   private Set<AffectedArtifact> affectedArtis;
-   
-   @OneToOne(cascade = CascadeType.ALL) 
-   @PrimaryKeyJoinColumn
-   private CVEAffected cveAffect;
-   
+
+   @Column(columnDefinition = "TEXT")
+   private String description;
+
+   @Column
+   private String cvss;
+
+   @OneToMany(mappedBy = "cve", fetch = FetchType.EAGER, cascade = {CascadeType.REMOVE})
+   private Set<ArtifactCVEs> affectedArtis;
 
    /**
-    * @return the cveAffect
+    * @return the cvss
     */
-   public CVEAffected getCveAffect()
+   public String getCvss()
    {
-      return cveAffect;
+      return cvss;
    }
 
    /**
-    * @param cveAffect the cveAffect to set
+    * @param cvss the cvss to set
     */
-   public void setCveAffect(CVEAffected cveAffect)
+   public void setCvss(String cvss)
    {
-      this.cveAffect = cveAffect;
+      this.cvss = cvss;
+   }
+
+   /**
+    * @return the description
+    */
+   public String getDescription()
+   {
+      return description;
+   }
+
+   /**
+    * @param description the description to set
+    */
+   public void setDescription(String description)
+   {
+      this.description = description;
    }
 
    /**
@@ -138,22 +154,58 @@ public class CVE implements Serializable, Comparable<CVE>
    /**
      * @return the affectedArtis
      */
-   @Deprecated
-    public Set<AffectedArtifact> getAffectedArtis() {
-        return affectedArtis;
-    }
-    
-    /**
-     * @param affectedArtis the affectedArtis to set
-     */
-   @Deprecated
-    public void setAffectedArtis(Set<AffectedArtifact> affectedArtis) {
-        this.affectedArtis = affectedArtis;
-    }
-    
-    /**
-    * @return the embargoed
+   public Set<ArtifactCVEs> getAffectedArtis()
+   {
+      return affectedArtis;
+   }
+
+   /**
+    * @return the affectedArtis
     */
+   public Set<ArtifactCVEs> getAffectedJavaArtis()
+   {
+      if (null == affectedArtis)
+      {
+         return null;
+      }
+      Set<ArtifactCVEs> javaArtis = new HashSet<ArtifactCVEs>();
+      for (ArtifactCVEs artiCVEs: this.affectedArtis) {
+         if (artiCVEs.getIdentifier().startsWith(JAVA_ARTI_PREFIX)) {
+            javaArtis.add(artiCVEs);
+         }
+      }
+      return javaArtis;
+   }
+
+   /**
+    * @return the affectedArtis
+    */
+   public Set<ArtifactCVEs> getAffectedNativeComps()
+   {
+      if (null == affectedArtis)
+      {
+         return null;
+      }
+      Set<ArtifactCVEs> nativeArtis = new HashSet<ArtifactCVEs>();
+      for (ArtifactCVEs artiCVEs: this.affectedArtis) {
+         if (artiCVEs.getIdentifier().startsWith(NATIVE_ARTI_PREFIX)) {
+            nativeArtis.add(artiCVEs);
+         }
+      }
+      return nativeArtis;
+   }
+
+   /**
+    * @param affectedArtis the affectedArtis to set
+    */
+   public void setAffectedArtis(Set<ArtifactCVEs> affectedArtis)
+   {
+      this.affectedArtis = affectedArtis;
+   }
+
+   /**
+   * @return the embargoed
+   */
    public boolean getEmbargoed()
    {
       return embargoed;
@@ -196,7 +248,6 @@ public class CVE implements Serializable, Comparable<CVE>
    {
       this.note = note;
    }
-
 
    /**
     * @param embargoed the embargoed to set
@@ -262,37 +313,44 @@ public class CVE implements Serializable, Comparable<CVE>
          return false;
       return true;
    }
-   
+
    @Override
-    public int compareTo(CVE c) {
-        if (c == null) {
-            return 1;
-        }
-        // compare cve name only
-        if (this.name != null && c.name == null)
-        {
-            return 1;
-        }
-        if (this.name == null && c.name != null) {
-            return -1;
-        }
-        if (this.name != null && c.name != null) {
-            Matcher m = DataService.CVE_NAME_PATTERN.matcher(this.name);
-            if (m.matches()) {
-                int year = Integer.valueOf(m.group(1));
-                int number = Integer.valueOf(m.group(2));
-                m = DataService.CVE_NAME_PATTERN.matcher(c.name);
-                if (m.matches()) {
-                    int year2 = Integer.valueOf(m.group(1));
-                    int number2 = Integer.valueOf(m.group(2));
-                    if (year - year2 != 0) {
-                        return year - year2;
-                    }
-                    return number - number2;
-                }
+   public int compareTo(CVE c)
+   {
+      if (c == null)
+      {
+         return 1;
+      }
+      // compare cve name only
+      if (this.name != null && c.name == null)
+      {
+         return 1;
+      }
+      if (this.name == null && c.name != null)
+      {
+         return -1;
+      }
+      if (this.name != null && c.name != null)
+      {
+         Matcher m = DataService.CVE_NAME_PATTERN.matcher(this.name);
+         if (m.matches())
+         {
+            int year = Integer.valueOf(m.group(1));
+            int number = Integer.valueOf(m.group(2));
+            m = DataService.CVE_NAME_PATTERN.matcher(c.name);
+            if (m.matches())
+            {
+               int year2 = Integer.valueOf(m.group(1));
+               int number2 = Integer.valueOf(m.group(2));
+               if (year - year2 != 0)
+               {
+                  return year - year2;
+               }
+               return number - number2;
             }
-        }
-        return 0;
-    }
+         }
+      }
+      return 0;
+   }
 
 }

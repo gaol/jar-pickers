@@ -11,6 +11,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.db.DBDataService;
 import org.jboss.eap.trackers.data.db.DataServiceLocal;
+import org.jboss.eap.trackers.model.CVEStatus;
 import org.jboss.eap.trackers.model.Product;
 import org.jboss.eap.trackers.utils.ArtifactsUtil;
 import org.jboss.logging.Logger;
@@ -42,6 +43,7 @@ public abstract class AbstractTrackersTest {
 				.addPackage(Product.class.getPackage())
 				.addPackage(AbstractTrackersTest.class.getPackage())
 				.addClass(ArtifactsUtil.class)
+				.addClass(CVEStatus.class)
 				.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 	}
 

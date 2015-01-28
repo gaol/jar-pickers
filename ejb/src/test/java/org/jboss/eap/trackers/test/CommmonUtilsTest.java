@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.VersionScopes;
+import org.jboss.eap.trackers.model.ArtifactCVEs;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -219,4 +220,21 @@ public class CommmonUtilsTest {
        new VersionScopes(scope);
        Assert.fail("SHOULD NOT EXECUTE HERE!");
     }
+	
+	@Test
+	public void testArtiCVEsPattern() throws Exception
+	{
+	   ArtifactCVEs artiCVEs = new ArtifactCVEs();
+	   artiCVEs.setIdentifier("java:org.jgroup:jgroup");
+	   
+	   Assert.assertTrue(artiCVEs.isJavaArtifact());
+	   Assert.assertEquals("org.jgroup", artiCVEs.getJavaGroupId());
+	   Assert.assertEquals("jgroup", artiCVEs.getJavaArtifactId());
+	   
+	   artiCVEs.setIdentifier("native:openssl");
+	   Assert.assertFalse(artiCVEs.isJavaArtifact());
+       Assert.assertEquals("openssl", artiCVEs.getNativeName());
+	   
+	}
+
 }
