@@ -188,6 +188,8 @@
         foreign key (pvs_id) 
         references ProductVersion;
 
+    alter table cveaffected ADD foreign key (cvename) references cve(name);
+
     create sequence hibernate_sequence minvalue 100;
     create sequence trackerseq minvalue 100;
 
