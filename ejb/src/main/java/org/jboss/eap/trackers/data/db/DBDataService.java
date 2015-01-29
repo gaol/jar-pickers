@@ -819,7 +819,7 @@ public class DBDataService implements DataServiceLocal {
             for (ArtifactCVEs javaArti: artis) {
                 String grpId = javaArti.getJavaGroupId();
                 String artiId = javaArti.getJavaArtifactId();
-                VersionScopes versionScopes = javaArti.getVersions();
+                VersionScopes versionScopes = javaArti.getVersionScopes();
                 for (Artifact a: getArtifacts(grpId, artiId)) {
                     if (versionScopes.isCaptured(a.getVersion())) {
                         result.add(a);
@@ -842,7 +842,7 @@ public class DBDataService implements DataServiceLocal {
         if (artis != null) {
             for (ArtifactCVEs arti: artis) {
                 String compName = arti.getNativeName();
-                VersionScopes versionScopes = arti.getVersions();
+                VersionScopes versionScopes = arti.getVersionScopes();
                 for (Component c: getComponets(compName)) {
                     if (versionScopes.isCaptured(c.getVersion())) {
                         result.add(c);
@@ -877,7 +877,7 @@ public class DBDataService implements DataServiceLocal {
             if (pv.getArtifacts() != null) {
                 for (Artifact arti: pv.getArtifacts()) {
                     for (ArtifactCVEs affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
-                        if (affectedArti.getVersions().isCaptured(arti.getVersion())) {
+                        if (affectedArti.getVersionScopes().isCaptured(arti.getVersion())) {
                             cves.add(affectedArti.getCve());
                         }
                     }
@@ -886,7 +886,7 @@ public class DBDataService implements DataServiceLocal {
             if (pv.getNativeComps() != null) {
                 for (Component comp: pv.getNativeComps()) {
                     for (ArtifactCVEs affectedArti: getAffectedArtisByName(comp.getName())) {
-                        if (affectedArti.getVersions().isCaptured(comp.getVersion())) {
+                        if (affectedArti.getVersionScopes().isCaptured(comp.getVersion())) {
                             cves.add(affectedArti.getCve());
                         }
                     }
@@ -920,7 +920,7 @@ public class DBDataService implements DataServiceLocal {
         }
         SortedSet<CVE> cves = new TreeSet<CVE>();
         for (ArtifactCVEs affectedArti: getAffectedArtis(arti.getGroupId(), arti.getArtifactId())) {
-            if (affectedArti.getVersions().isCaptured(arti.getVersion())) {
+            if (affectedArti.getVersionScopes().isCaptured(arti.getVersion())) {
                 cves.add(affectedArti.getCve());
             }
         }
@@ -935,7 +935,7 @@ public class DBDataService implements DataServiceLocal {
         }
         SortedSet<CVE> cves = new TreeSet<CVE>();
         for (ArtifactCVEs affectedArti: getAffectedArtisByName(nativeComp.getName())) {
-            if (affectedArti.getVersions().isCaptured(nativeComp.getVersion())) {
+            if (affectedArti.getVersionScopes().isCaptured(nativeComp.getVersion())) {
                 cves.add(affectedArti.getCve());
             }
         }
@@ -988,20 +988,10 @@ public class DBDataService implements DataServiceLocal {
         CVE cve = newCVE(cveName);
         ArtifactCVEs affectedArti = new ArtifactCVEs();
         affectedArti.setIdentifier(JAVA_ARTI_PREFIX + SPLITTER + groupId + SPLITTER + name);
-        affectedArti.setVersions(new VersionScopes(versionScope));
-//        affectedArti.setStatus(CVEStatus.NEW);
+        affectedArti.setVersions(versionScope);
+        affectedArti.setStatus(CVEStatus.NEW);
         affectedArti.setCve(cve);
         this.em.persist(affectedArti);
-        
-//        Set<ArtifactCVEs> affectedArtis = cve.getAffectedArtis();
-//        if (affectedArtis == null) {
-//            affectedArtis = new HashSet<ArtifactCVEs>();
-//            cve.setAffectedArtis(affectedArtis);
-//        }
-//        affectedArtis.add(affectedArti);
-//        
-//        Session session = (Session)em.getDelegate();
-//        session.saveOrUpdate(affectedArti);
         return getCVE(cveName);
     }
 	

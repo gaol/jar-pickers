@@ -23,7 +23,6 @@
 package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
-import java.util.SortedSet;
 import java.util.regex.Matcher;
 
 import javax.persistence.Column;
@@ -34,13 +33,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.hibernate.annotations.Sort;
-import org.hibernate.annotations.SortType;
-import org.hibernate.annotations.Type;
 import org.jboss.eap.trackers.data.Constants;
 import org.jboss.eap.trackers.data.VersionScopes;
 
@@ -70,9 +65,11 @@ public class ArtifactCVEs implements Serializable, Constants {
      * version scopes on the affected artifacts.
      * 
      */
-    @Column(length = 512, nullable = true)
-    @Type(type = "org.jboss.eap.trackers.data.db.VersionScopeUserType")
-    private VersionScopes versions;
+    @Column(length = 512)
+    private String versions;
+    
+    @Column(length = 512)
+    private String fixedVersions;
     
     /**
      * name can be an Maven groupId:artifactId or a component name.
@@ -145,17 +142,47 @@ public class ArtifactCVEs implements Serializable, Constants {
    /**
     * @return the versions
     */
-   public VersionScopes getVersions()
+   public String getVersions()
    {
       return versions;
+   }
+   
+   public VersionScopes getVersionScopes() {
+      if (this.versions == null || this.versions.length() == 0) {
+         return null;
+      }
+      return new VersionScopes(this.versions);
+   }
+   
+   public VersionScopes getFixedVersionScopes() {
+      if (this.fixedVersions == null || this.fixedVersions.length() == 0) {
+         return null;
+      }
+      return new VersionScopes(this.fixedVersions);
    }
 
    /**
     * @param versions the versions to set
     */
-   public void setVersions(VersionScopes versions)
+   public void setVersions(String versions)
    {
       this.versions = versions;
+   }
+
+   /**
+    * @return the fixedVersions
+    */
+   public String getFixedVersions()
+   {
+      return fixedVersions;
+   }
+
+   /**
+    * @param fixedVersions the fixedVersions to set
+    */
+   public void setFixedVersions(String fixedVersions)
+   {
+      this.fixedVersions = fixedVersions;
    }
 
    /**

@@ -59,6 +59,7 @@
         brewBuilds varchar(512),
         bugzillas varchar(512),
         erratas varchar(512),
+        fixedVersions varchar(512),
         identifier varchar(255),
         status varchar(255),
         versions varchar(512),
