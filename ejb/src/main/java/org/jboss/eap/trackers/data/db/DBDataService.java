@@ -220,7 +220,15 @@ public class DBDataService implements DataServiceLocal {
 			String artiVersion, String type, String checksum) throws DataServiceException {
 		ProductVersion pv = getProductVersion(productName, version);
 		if (pv == null) {
-			throw new DataServiceException("No ProductVersion found: " + productName + ":" + version);
+		   // try to add a pv
+		   Product prd = getProductByName(productName);
+		   if (prd == null) {
+		      throw new DataServiceException("No Product found: " + productName);
+		   }
+		   pv = new ProductVersion();
+		   pv.setVersion(version);
+		   pv.setProduct(prd);
+		   this.em.persist(pv);
 		}
 		List<Artifact> artifacts = pv.getArtifacts();
 		if (artifacts == null) {

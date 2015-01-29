@@ -228,10 +228,10 @@ public class BrewBuildCollector {
                 String version = mavenArchiveInfo.get("version").toString();
                 
                 Artifact arti = this.dataService.getArtifact(artiGrpId, artiId, version);
+                String buildInfoLink = "[" + meadBuildNVR + "](https://brewweb.devel.redhat.com/buildinfo?buildID=" + buildId + ")";
                 if (arti == null) {
                     arti = new Artifact();
                     arti.setArtifactId(artiId);
-                    String buildInfoLink = "[" + meadBuildNVR + "](https://brewweb.devel.redhat.com/buildinfo?buildID=" + buildId + ")";
                     arti.setBuildInfo(buildInfoLink);
                     arti.setChecksum(checksum);
                     arti.setComponent(comp);
@@ -240,12 +240,22 @@ public class BrewBuildCollector {
                     arti.setVersion(version);
                     this.dataService.saveArtifact(arti);
                 } else {
-                    if (arti.getComponent() == null && comp != null) {
-                        arti.setComponent(comp);
-                        this.dataService.saveArtifact(arti);
+                   if (arti.getBuildInfo() != null && arti.getBuildInfo().trim().length() > 0
+                         && arti.getChecksum() != null && arti.getChecksum().trim().length() > 0)
+                   {
+                      continue;
+                   }
+                   arti.setBuildInfo(buildInfoLink);
+                   arti.setChecksum(checksum);
+                    if (comp != null) {
+                       if (arti.getComponent() == null || arti.getComponentName().contains("-")) { // contains '-' means it is a top-level groupId (in most cases!!)
+                          if (!comp.getName().contains("-")) { // new component is NOT a top-level groupId
+                             arti.setComponent(comp);
+                          }
+                       }
                     }
+                    this.dataService.saveArtifact(arti);
                 }
-                
             }
         }
     }
