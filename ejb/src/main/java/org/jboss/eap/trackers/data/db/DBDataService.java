@@ -258,10 +258,9 @@ public class DBDataService implements DataServiceLocal {
 			artiVers = new ArrayList<ProductVersion>();
 			arti.setPvs(artiVers);
 		}
-		if (artiVers.contains(pv)) {
-			throw new DataServiceException("Wrong state");
+		if (!artiVers.contains(pv)) {
+		   artiVers.add(pv);
 		}
-		artiVers.add(pv);
 		this.em.merge(arti);
 	}
 	
