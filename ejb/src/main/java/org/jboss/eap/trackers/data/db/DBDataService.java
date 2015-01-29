@@ -249,10 +249,9 @@ public class DBDataService implements DataServiceLocal {
 			arti.setChecksum(checksum);
 			this.em.persist(arti);
 		}
-		if (artifacts.contains(arti)) {
-			throw new DataServiceException("Artifact: " + arti.toString() + " has been associated with the Product Version: " + pv.toString());
+		if (!artifacts.contains(arti)) {
+		   artifacts.add(arti);
 		}
-		artifacts.add(arti);
 		this.em.merge(pv);
 		List<ProductVersion> artiVers = arti.getPvs();
 		if (artiVers == null) {
