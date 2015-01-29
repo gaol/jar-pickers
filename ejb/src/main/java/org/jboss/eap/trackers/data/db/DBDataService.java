@@ -30,7 +30,7 @@ import javax.persistence.TypedQuery;
 import org.hibernate.Session;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.DataServiceException;
-import org.jboss.eap.trackers.data.VersionScopes;
+import org.jboss.eap.trackers.data.versioning.VersionRanges;
 import org.jboss.eap.trackers.model.ArtifactCVEs;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.CVE;
@@ -819,7 +819,7 @@ public class DBDataService implements DataServiceLocal {
             for (ArtifactCVEs javaArti: artis) {
                 String grpId = javaArti.getJavaGroupId();
                 String artiId = javaArti.getJavaArtifactId();
-                VersionScopes versionScopes = javaArti.getVersionScopes();
+                VersionRanges versionScopes = javaArti.getVersionScopes();
                 for (Artifact a: getArtifacts(grpId, artiId)) {
                     if (versionScopes.isCaptured(a.getVersion())) {
                         result.add(a);
@@ -842,7 +842,7 @@ public class DBDataService implements DataServiceLocal {
         if (artis != null) {
             for (ArtifactCVEs arti: artis) {
                 String compName = arti.getNativeName();
-                VersionScopes versionScopes = arti.getVersionScopes();
+                VersionRanges versionScopes = arti.getVersionScopes();
                 for (Component c: getComponets(compName)) {
                     if (versionScopes.isCaptured(c.getVersion())) {
                         result.add(c);

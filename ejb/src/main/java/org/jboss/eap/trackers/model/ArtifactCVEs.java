@@ -37,7 +37,7 @@ import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jboss.eap.trackers.data.Constants;
-import org.jboss.eap.trackers.data.VersionScopes;
+import org.jboss.eap.trackers.data.versioning.VersionRanges;
 
 /**
  * 
@@ -147,18 +147,18 @@ public class ArtifactCVEs implements Serializable, Constants {
       return versions;
    }
    
-   public VersionScopes getVersionScopes() {
+   public VersionRanges getVersionScopes() {
       if (this.versions == null || this.versions.length() == 0) {
          return null;
       }
-      return new VersionScopes(this.versions);
+      return new VersionRanges(this.versions);
    }
    
-   public VersionScopes getFixedVersionScopes() {
+   public VersionRanges getFixedVersionScopes() {
       if (this.fixedVersions == null || this.fixedVersions.length() == 0) {
          return null;
       }
-      return new VersionScopes(this.fixedVersions);
+      return new VersionRanges(this.fixedVersions);
    }
 
    /**

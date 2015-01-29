@@ -31,7 +31,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.type.StringType;
 import org.hibernate.usertype.UserType;
-import org.jboss.eap.trackers.data.VersionScopes;
+import org.jboss.eap.trackers.data.versioning.VersionRanges;
 
 /**
  * 
@@ -49,10 +49,10 @@ public class VersionScopeUserType implements UserType {
     public Object deepCopy(Object obj) throws HibernateException {
         if (obj == null)
             return null;
-        if (! (obj instanceof VersionScopes)) {
+        if (! (obj instanceof VersionRanges)) {
             throw new UnsupportedOperationException("Can't convert: " + obj.getClass().getName());
         }
-        return ((VersionScopes)obj).clone();
+        return ((VersionRanges)obj).clone();
     }
 
     @Override
@@ -83,7 +83,7 @@ public class VersionScopeUserType implements UserType {
             SQLException {
         String str = rs.getString(names[0]);
         if (str != null && str.length() > 0) {
-            return new VersionScopes(str);
+            return new VersionRanges(str);
         }
         return null;
     }
@@ -92,7 +92,7 @@ public class VersionScopeUserType implements UserType {
     public void nullSafeSet(PreparedStatement ps, Object value, int index, SessionImplementor session) throws HibernateException,
             SQLException {
         if (value != null) {
-            VersionScopes scope = (VersionScopes)value;
+            VersionRanges scope = (VersionRanges)value;
             StringType.INSTANCE.nullSafeSet(ps, scope.toString(), index, session);
         }
     }
@@ -105,7 +105,7 @@ public class VersionScopeUserType implements UserType {
     @SuppressWarnings("rawtypes")
     @Override
     public Class returnedClass() {
-        return VersionScopes.class;
+        return VersionRanges.class;
     }
 
     @Override
