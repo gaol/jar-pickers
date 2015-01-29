@@ -102,7 +102,7 @@ public class CVETest extends AbstractTrackersTest {
                 Assert.assertEquals("Test Note", cve.getNote());
                 
                 // this step only can be performed manually in real world
-                cve = dataService.cveAffected("CVE-2012-0001", "org.jboss.ironjacamar", "ironjacamar-common-impl", "<=1.0.2.Final");
+                cve = dataService.cveAffected("CVE-2012-0001", "org.jboss.ironjacamar", "ironjacamar-common-impl", "(,1.0.2.Final]");
                 Assert.assertEquals("CVE-2012-0001", cve.getName());
                 
                 Set<Artifact> artifacts = dataService.affectedArtifacts("CVE-2012-0001");

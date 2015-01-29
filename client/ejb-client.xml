@@ -34,6 +34,7 @@
       <unpackOptions>
         <includes>
           <include>org/jboss/eap/trackers/data/*.class</include>
+          <include>org/jboss/eap/trackers/data/versioning/*.class</include>
           <include>org/jboss/eap/trackers/model/Artifact.class</include>
           <include>org/jboss/eap/trackers/model/Component.class</include>
           <include>org/jboss/eap/trackers/model/Product.class</include>

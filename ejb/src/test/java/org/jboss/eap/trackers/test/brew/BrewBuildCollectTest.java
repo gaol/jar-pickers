@@ -34,6 +34,7 @@ import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.db.DBDataService;
 import org.jboss.eap.trackers.data.db.DataServiceLocal;
 import org.jboss.eap.trackers.data.db.mdb.BrewBuildCollector;
+import org.jboss.eap.trackers.data.versioning.VersionRanges;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
@@ -77,6 +78,7 @@ public class BrewBuildCollectTest {
                 .addPackage(DataService.class.getPackage())
                 .addPackage(DBDataService.class.getPackage())
                 .addPackage(Product.class.getPackage())
+                .addPackage(VersionRanges.class.getPackage())
                 .addPackage(AbstractTrackersTest.class.getPackage())
                 .addClass(ArtifactsUtil.class)
                 .addClass(BrewBuildCollector.class)

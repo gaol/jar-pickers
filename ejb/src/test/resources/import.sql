@@ -65,6 +65,6 @@ insert into cve (name) values ('CVE-2013-0017')
 insert into cve (name) values ('CVE-2014-3566')
 
 
-insert into ArtifactCVEs (id, cve_name, identifier, versions, status) values (1, 'CVE-2014-3547', 'java:org.jboss.ironjacamar:ironjacamar-common-impl', '<=1.0.2.Final', 'NEW')
-insert into ArtifactCVEs (id, cve_name, identifier, versions) values (2, 'CVE-2014-3566', 'native:openssl', '<=1.0.1')
+insert into ArtifactCVEs (id, cve_name, identifier, versions, status) values (1, 'CVE-2014-3547', 'java:org.jboss.ironjacamar:ironjacamar-common-impl', '[,1.0.2.Final]', 'NEW')
+insert into ArtifactCVEs (id, cve_name, identifier, versions) values (2, 'CVE-2014-3566', 'native:openssl', '[,1.0.1]')
 

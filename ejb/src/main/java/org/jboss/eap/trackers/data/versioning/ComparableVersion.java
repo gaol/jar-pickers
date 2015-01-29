@@ -22,6 +22,7 @@ package org.jboss.eap.trackers.data.versioning;
  * under the License.
  */
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,8 +62,13 @@ import java.util.Stack;
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
-class ComparableVersion implements Comparable<ComparableVersion>
+class ComparableVersion implements Serializable, Comparable<ComparableVersion>
 {
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+
    private String value;
 
    private String canonical;

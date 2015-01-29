@@ -3,8 +3,6 @@
  */
 package org.jboss.eap.trackers.test;
 
-import java.util.regex.Matcher;
-
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.versioning.VersionRanges;
 import org.jboss.eap.trackers.model.ArtifactCVEs;
@@ -92,7 +90,7 @@ public class CommmonUtilsTest {
 	   VersionRanges verRanges = new VersionRanges("2.2.21");
 	   
 	   Assert.assertTrue(verRanges.isCaptured("2.2.21"));
-//	   Assert.assertFalse(verRanges.isCaptured("2.2.20"));
+	   Assert.assertFalse(verRanges.isCaptured("2.2.20"));
 	   
 	   verRanges = new VersionRanges("[3.2.2,)");
        Assert.assertTrue(verRanges.isCaptured("3.2.2"));
@@ -116,36 +114,29 @@ public class CommmonUtilsTest {
        Assert.assertFalse(verRanges.isCaptured("1.1.2.Final-redhat-5"));
        Assert.assertFalse(verRanges.isCaptured("1.1.2.Final-redhat-10"));
        
-       verRanges = new VersionRanges("(, 7.5.0.Final-redhat-17]");
+       verRanges = new VersionRanges("(, 7.5.0.Final-redhat-17] : [7.6.3.Final, 7.7.Final-redhat-2]");
        
        Assert.assertTrue(verRanges.isCaptured("7.4.0.Final"));
        Assert.assertTrue(verRanges.isCaptured("7.4.7.Final-redhat-1"));
        Assert.assertTrue(verRanges.isCaptured("7.5.0.Final-redhat-16"));
        Assert.assertTrue(verRanges.isCaptured("7.3.4.Final-redhat-1"));
        
+       Assert.assertTrue(verRanges.isCaptured("7.6.3.Final-redhat-1"));
+       Assert.assertTrue(verRanges.isCaptured("7.6.3.Final-redhat-2"));
+       Assert.assertTrue(verRanges.isCaptured("7.6.4"));
+       Assert.assertTrue(verRanges.isCaptured("7.7.Final-redhat-1"));
+       Assert.assertTrue(verRanges.isCaptured("7.7.Final-redhat-2"));
+      
+       Assert.assertFalse(verRanges.isCaptured("7.5.4"));
+       Assert.assertFalse(verRanges.isCaptured("7.5.7.Final"));
+       Assert.assertFalse(verRanges.isCaptured("7.6.0.Final-redhat"));
+       
+       Assert.assertFalse(verRanges.isCaptured("7.6.3.beta"));
+       Assert.assertFalse(verRanges.isCaptured("7.6.3.alpha"));
+       Assert.assertFalse(verRanges.isCaptured("7.6.3.cr1"));
+       Assert.assertFalse(verRanges.isCaptured("7.7.Final-redhat-10"));
        
 	}
-	
-	@Test(expected = IllegalArgumentException.class)
-	public void testIllegalVersionScope1() {
-	   String scope = "<=2.6.1,2.7"; // series must is the main stream of the same major or minor version stream.
-       new VersionRanges(scope);
-       Assert.fail("SHOULD NOT EXECUTE HERE!");
-	}
-	
-	@Test(expected = IllegalArgumentException.class)
-    public void testIllegalVersionScope2() {
-       String scope = "==2.6.1,2.7"; // when '==' is used, there should NO seriers defined.
-       new VersionRanges(scope);
-       Assert.fail("SHOULD NOT EXECUTE HERE!");
-    }
-	
-	@Test(expected = IllegalArgumentException.class)
-    public void testIllegalVersionScope3() {
-       String scope = "<=2.6.,2.7"; // version or series must not ends|starts with dot
-       new VersionRanges(scope);
-       Assert.fail("SHOULD NOT EXECUTE HERE!");
-    }
 	
 	@Test
 	public void testArtiCVEsPattern() throws Exception
