@@ -104,6 +104,7 @@
         isOneOff boolean DEFAULT false,
         note varchar(255),
         version varchar(255),
+        buildInfo varchar(512),
         parent_id int8,
         product_id int8,
         primary key (id)

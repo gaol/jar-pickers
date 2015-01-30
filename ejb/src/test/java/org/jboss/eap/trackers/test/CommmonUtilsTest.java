@@ -136,6 +136,16 @@ public class CommmonUtilsTest {
        Assert.assertFalse(verRanges.isCaptured("7.6.3.cr1"));
        Assert.assertFalse(verRanges.isCaptured("7.7.Final-redhat-10"));
        
+       verRanges = new VersionRanges("[1.0.1, 1.0.1k)");
+       
+       Assert.assertTrue(verRanges.isCaptured("1.0.1"));
+       Assert.assertTrue(verRanges.isCaptured("1.0.1a"));
+       Assert.assertTrue(verRanges.isCaptured("1.0.1b"));
+       
+       Assert.assertFalse(verRanges.isCaptured("1.0.1l"));
+       Assert.assertFalse(verRanges.isCaptured("1.0.1m"));
+       Assert.assertFalse(verRanges.isCaptured("1.0.1p"));
+       Assert.assertFalse(verRanges.isCaptured("1.0.0"));
 	}
 	
 	@Test

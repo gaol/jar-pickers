@@ -39,32 +39,47 @@ import org.jboss.eap.trackers.data.db.mdb.BrewBuildCollector;
  * @author lgao
  *
  */
-@WebServlet(name = "BrewBuildServlet", urlPatterns = {"/brewBuild"})
+@WebServlet(name = "BrewBuildServlet", urlPatterns =
+{"/brewBuild"})
 @RolesAllowed("tracker")
-public class BrewBuildCollectServlet extends HttpServlet {
+public class BrewBuildCollectServlet extends HttpServlet
+{
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-    
-    @Inject
-    private BrewBuildCollector collector;
-    
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String build = req.getParameter("build");
-        if (build != null && build.trim().length() > 0) {
-            try {
-                this.collector.collectBrewBuild(build);
-                PrintWriter out = resp.getWriter();
-                out.println("Build: " + build + " has been collected successfully!");
-                out.flush();
-                out.close();
-            } catch (Exception e) {
-                throw new ServletException("Can't collect brew build information", e);
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+
+   @Inject
+   private BrewBuildCollector collector;
+
+   @Override
+   protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
+   {
+      String build = req.getParameter("build");
+      if (build != null && build.trim().length() > 0)
+      {
+         try
+         {
+            String name = req.getParameter("name");
+            String version = req.getParameter("version");
+            if (name != null && name.trim().length() > 0 && version != null && version.trim().length() > 0) {
+               this.collector.collectBrewBuild(build, name, version);
             }
-        }
-    }
+            else
+            {
+               this.collector.collectBrewBuild(build);
+            }
+            PrintWriter out = resp.getWriter();
+            out.println("Build: " + build + " has been collected successfully!");
+            out.flush();
+            out.close();
+         }
+         catch (Exception e)
+         {
+            throw new ServletException("Can't collect brew build information", e);
+         }
+      }
+   }
 
 }
