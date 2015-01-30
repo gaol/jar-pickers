@@ -38,6 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.jboss.eap.trackers.data.Constants;
 import org.jboss.eap.trackers.data.versioning.VersionRanges;
 
@@ -50,6 +51,7 @@ import org.jboss.eap.trackers.data.versioning.VersionRanges;
  */
 @Entity
 @XmlRootElement
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ArtifactCVEs implements Serializable, Constants {
     
     /**

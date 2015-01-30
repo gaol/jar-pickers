@@ -29,7 +29,7 @@ public class MainApp {
 	
 	public static final String CONFIG_HOST_PORT = "irc.port";
 	public static final String CONFIG_USER_NAME = "irc.username";
-	public static final String DEFAULT_IRC_USER_NAME = "trackerbot";
+	public static final String DEFAULT_IRC_USER_NAME = "trackerbotTest";
 	
 	public static final String CONFIG_NICK_NAME = "irc.nickname";
 	public static final String CONFIG_REAL_NAME = "irc.realname";

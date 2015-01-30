@@ -38,6 +38,7 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.jboss.eap.trackers.data.Constants;
 import org.jboss.eap.trackers.data.DataService;
 
@@ -48,6 +49,7 @@ import org.jboss.eap.trackers.data.DataService;
 @Entity
 @Table
 @XmlRootElement
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CVE implements Serializable, Comparable<CVE>, Constants
 {
 

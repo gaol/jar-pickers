@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import javax.ws.rs.core.GenericType;
+
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.CVE;
 import org.jboss.eap.trackers.model.Component;
@@ -41,7 +43,6 @@ public class CVEListAnswer extends AbstractAnswer {
     /**
      * cves_of EAP:6.2.4
      */
-    @SuppressWarnings("unchecked")
     @Override
     public Answer answer() throws Exception {
         // first try pv, then component, then artifacts by artiId and version.
@@ -50,7 +51,8 @@ public class CVEListAnswer extends AbstractAnswer {
             String name = matcher.group(1);
             String version = matcher.group(2);
             Set<CVE> cves = new HashSet<CVE>();
-
+            GenericType<Set<CVE>> genericType = new GenericType<Set<CVE>>(){};
+            
             // test pv
             ProductVersion pv = RestAPInvoker.getRestEntity(getRestAPIBase() + "/pv/" + name.toUpperCase() + ":" + version, null,
                     ProductVersion.class);
@@ -62,11 +64,11 @@ public class CVEListAnswer extends AbstractAnswer {
                 if (comp == null) {
                     // test artiId + version of Artifact
                     List<Artifact> artifacts = RestAPInvoker.getRestEntity(getRestAPIBase() + "/artis/" + name + ":" + version,
-                            null, List.class);
+                            null, new GenericType<List<Artifact>>(){});
                     if (artifacts != null && artifacts.size() > 0) {
                         for (Artifact arti : artifacts) {
                             cves.addAll(RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/a/" + arti.getGroupId() + ":"
-                                    + arti.getArtifactId() + ":" + arti.getVersion(), null, Set.class));
+                                    + arti.getArtifactId() + ":" + arti.getVersion(), null, genericType));
                         }
                     }
                 } else {
@@ -75,13 +77,13 @@ public class CVEListAnswer extends AbstractAnswer {
                     if (artifacts != null && artifacts.size() > 0) {
                         for (Artifact arti : artifacts) {
                             cves.addAll(RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/a/" + arti.getGroupId() + ":"
-                                    + arti.getArtifactId() + ":" + arti.getVersion(), null, Set.class));
+                                    + arti.getArtifactId() + ":" + arti.getVersion(), null, genericType));
                         }
                     }
                 }
             } else {
                 // cves of pv
-                cves = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/p/" + name + ":" + version, null, Set.class);
+                cves = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/p/" + name + ":" + version, null, genericType);
             }
             Answer answer = new Answer();
             answer.setAnswered(true);

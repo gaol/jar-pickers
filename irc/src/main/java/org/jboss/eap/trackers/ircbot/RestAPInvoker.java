@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -63,4 +64,28 @@ public final class RestAPInvoker {
         }
         throw new IOException("Wrong response: " + resp.getStatus());
     }
+    
+    public static <T> T getRestEntity(String apiURL, HashMap<String, String> data, GenericType<T> genericType) throws IOException {
+       ClientBuilder builder = ClientBuilder.newBuilder();
+       Client client = builder.build();
+       
+       WebTarget target = client.target(apiURL);
+       if (data != null && data.size() > 0) {
+           for (Map.Entry<String, String> entry: data.entrySet()) {
+               target.queryParam(entry.getKey(), entry.getValue());
+           }
+       }
+       Response resp = target.request().buildGet().invoke();
+       int status = resp.getStatus();
+       if (status == 200) {
+           MediaType mediaType = resp.getMediaType();
+           if (mediaType.equals(MediaType.APPLICATION_JSON_TYPE)) {
+               return resp.readEntity(genericType);
+           }
+           return null;
+       } else if (status == 404) {
+           return null;
+       }
+       throw new IOException("Wrong response: " + resp.getStatus());
+   }
 }
