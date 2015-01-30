@@ -49,7 +49,7 @@ public class ProductsOfCVEAnswer extends AbstractAnswer {
             if (pvs != null && pvs.size() > 0) {
                 StringBuilder sb = new StringBuilder();
                 for (ProductVersion pv: pvs) {
-                    sb.append("[" + pv.getProduct().getName().toUpperCase() + ":" + pv.getVersion() + "] ");
+                    sb.append("[" + pv.getName().toUpperCase() + ":" + pv.getVersion() + "] ");
                 }
                 answer.setAnswer(sb.toString());
             } else {

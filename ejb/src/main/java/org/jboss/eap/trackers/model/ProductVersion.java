@@ -18,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -90,9 +91,25 @@ public class ProductVersion implements Serializable {
 	
 	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	private List<Artifact> artifacts;
-
 	
-	/**
+	@Transient
+	private transient String name;
+	
+   /**
+    * @param name the prdName to set
+    */
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+   
+   @XmlElement(name = "name")
+   @JsonProperty("name")
+   public String getName() {
+       return this.name;
+   }
+
+   /**
      * @return the isOneOff
      */
 	@XmlAttribute
@@ -121,15 +138,6 @@ public class ProductVersion implements Serializable {
 	 */
 	public void setParent(ProductVersion parent) {
 		this.parent = parent;
-	}
-	
-	@XmlElement(name = "name")
-	@JsonProperty("name")
-	public String getName() {
-	    if (this.product == null) {
-	        return "";
-	    }
-	    return this.product.getName();
 	}
 	
 	@XmlElement(name = "parent")

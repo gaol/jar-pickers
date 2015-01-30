@@ -107,6 +107,9 @@ public class DBDataService implements DataServiceLocal {
 				.setParameter("name", productName)
 				.setParameter("version", version)
 				.getResultList();
+		for (ProductVersion pv : pvs) {
+		   pv.setName(pv.getProduct().getName());
+		}
 		return pvs.size() > 0 ? pvs.get(0) : null;
 	}
 	
