@@ -796,6 +796,9 @@ public class DBDataService implements DataServiceLocal {
                 }
             }
         }
+        for (ProductVersion pv: pvs) {
+           pv.setName(pv.getProduct().getName());
+        }
         return pvs;
     }
     
