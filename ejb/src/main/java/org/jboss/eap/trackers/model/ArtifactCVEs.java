@@ -35,7 +35,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.jboss.eap.trackers.data.Constants;
 import org.jboss.eap.trackers.data.versioning.VersionRanges;
 
@@ -126,6 +128,8 @@ public class ArtifactCVEs implements Serializable, Constants {
    /**
     * @return the cve
     */
+   @XmlTransient
+   @JsonIgnore
    public CVE getCve()
    {
       return cve;
@@ -147,6 +151,8 @@ public class ArtifactCVEs implements Serializable, Constants {
       return versions;
    }
    
+   @XmlTransient
+   @JsonIgnore
    public VersionRanges getVersionScopes() {
       if (this.versions == null || this.versions.length() == 0) {
          return null;
@@ -154,6 +160,8 @@ public class ArtifactCVEs implements Serializable, Constants {
       return new VersionRanges(this.versions);
    }
    
+   @XmlTransient
+   @JsonIgnore
    public VersionRanges getFixedVersionScopes() {
       if (this.fixedVersions == null || this.fixedVersions.length() == 0) {
          return null;
