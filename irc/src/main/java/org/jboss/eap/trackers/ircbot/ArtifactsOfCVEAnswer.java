@@ -25,6 +25,8 @@ package org.jboss.eap.trackers.ircbot;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import javax.ws.rs.core.GenericType;
+
 import org.jboss.eap.trackers.model.Artifact;
 
 /**
@@ -38,13 +40,12 @@ public class ArtifactsOfCVEAnswer extends AbstractAnswer {
     /**
      * artifacts of CVE-xxxx-xxxx
      */
-    @SuppressWarnings("unchecked")
     @Override
     public Answer answer() throws Exception {
         Matcher matcher = getPattern().matcher(getQuestion());
         if (matcher.matches()) {
             String cve = matcher.group(1);
-            Set<Artifact> artifacts = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/a/" + cve, null, Set.class);
+            Set<Artifact> artifacts = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/a/" + cve, null, new GenericType<Set<Artifact>>(){});
             Answer answer = new Answer();
             answer.setAnswered(true);
             if (artifacts != null && artifacts.size() > 0) {

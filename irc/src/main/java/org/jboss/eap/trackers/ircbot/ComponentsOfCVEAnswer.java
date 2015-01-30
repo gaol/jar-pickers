@@ -25,6 +25,8 @@ package org.jboss.eap.trackers.ircbot;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import javax.ws.rs.core.GenericType;
+
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
 
@@ -37,13 +39,12 @@ public class ComponentsOfCVEAnswer extends AbstractAnswer {
     /**
      * components of CVE-xxxx-xxxx
      */
-    @SuppressWarnings("unchecked")
     @Override
     public Answer answer() throws Exception {
         Matcher matcher = getPattern().matcher(getQuestion());
         if (matcher.matches()) {
             String cve = matcher.group(1);
-            Set<Component> nativeComps = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/c/" + cve, null, Set.class);
+            Set<Component> nativeComps = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/c/" + cve, null, new GenericType<Set<Component>>(){});
             Answer answer = new Answer();
             answer.setAnswered(true);
             StringBuilder sb = new StringBuilder();
@@ -55,7 +56,7 @@ public class ComponentsOfCVEAnswer extends AbstractAnswer {
                 }
                 answer.setAnswer(sb.toString());
             }
-            Set<Artifact> artifacts = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/a/" + cve, null, Set.class);
+            Set<Artifact> artifacts = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/a/" + cve, null, new GenericType<Set<Artifact>>(){});
             if (artifacts != null && artifacts.size() > 0) {
                 // normal components
                 boolean first = true;

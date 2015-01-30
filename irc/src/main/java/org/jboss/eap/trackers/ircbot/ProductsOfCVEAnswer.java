@@ -25,6 +25,8 @@ package org.jboss.eap.trackers.ircbot;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import javax.ws.rs.core.GenericType;
+
 import org.jboss.eap.trackers.model.ProductVersion;
 
 /**
@@ -36,13 +38,12 @@ public class ProductsOfCVEAnswer extends AbstractAnswer {
     /**
      * products of CVE-xxxx-xxxx
      */
-    @SuppressWarnings("unchecked")
     @Override
     public Answer answer() throws Exception {
         Matcher matcher = getPattern().matcher(getQuestion());
         if (matcher.matches()) {
             String cve = matcher.group(1);
-            Set<ProductVersion> pvs = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/p/" + cve, null, Set.class);
+            Set<ProductVersion> pvs = RestAPInvoker.getRestEntity(getRestAPIBase() + "/cves/p/" + cve, null, new GenericType<Set<ProductVersion>>(){});
             Answer answer = new Answer();
             answer.setAnswered(true);
             if (pvs != null && pvs.size() > 0) {
