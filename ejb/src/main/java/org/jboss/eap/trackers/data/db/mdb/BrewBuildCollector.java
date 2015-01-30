@@ -48,6 +48,7 @@ import org.jboss.eap.trackers.data.DataServiceException;
 import org.jboss.eap.trackers.data.db.DataServiceLocal;
 import org.jboss.eap.trackers.model.Artifact;
 import org.jboss.eap.trackers.model.Component;
+import org.jboss.eap.trackers.model.ProductVersion;
 import org.jboss.logging.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -131,6 +132,7 @@ public class BrewBuildCollector
       }
 
       String buildId = buildInfo.get("id").toString();
+      String nvr = buildInfo.get("nvr").toString();
       Integer taskId = Integer.valueOf(buildInfo.get("task_id").toString());
 
       Map taskInfo = getTaskInfo(taskId);
@@ -139,10 +141,21 @@ public class BrewBuildCollector
          throw new RuntimeException("Task: " + taskId + " is not found after build: " + build + " has been found.");
       }
 
+      if (prodName != null && prodName.trim().length() > 0 && version != null && version.trim().length() > 0)
+      {
+         ProductVersion pv = dataService.getProductVersion(prodName, version);
+         if (pv == null)
+         {
+            throw new RuntimeException("No product version is found: " + prodName + ":" + version);
+         }
+         pv.setBuildInfo("[" + nvr + "](https://brewweb.devel.redhat.com/buildinfo?buildID=" + buildId + ")");
+         dataService.saveEntity(pv);
+      }
+
       String buildMethod = (String) taskInfo.get("method");
       if (buildMethod.contains("maven"))
       {
-         collectsMaven(buildInfo, prodName, version);
+         collectsMaven(buildInfo, null, prodName, version);
          return;
       }
       else if (buildMethod.contains("build"))
@@ -163,30 +176,92 @@ public class BrewBuildCollector
          return;
       }
    }
+   
+   /**
+    * Collects builds artifacts according to the build id or nvr.
+    * 
+    * This collects mead build for a known component.
+    * 
+    * @param build the build id, or nvr
+    * @param packageName the package name
+    * @param packageVersion the version
+    * @throws Exception any exception
+    */
+   @SuppressWarnings(
+   {"unchecked", "rawtypes"})
+   public void collectMeadBuild(final String build, final String packageName, final String packageVersion) throws Exception
+   {
+      if (build == null)
+      {
+         LOGGER.warn("Null build, ignore.");
+         return;
+      }
+
+      if (packageName != null && packageName.trim().length() > 0 && packageVersion != null && packageVersion.trim().length() > 0)
+      {
+         Map buildInfo = getBuildInfo(build);
+         if ((buildInfo == null) || buildInfo.isEmpty())
+         {
+            LOGGER.warn("Build: " + build + " is not found.");
+            return;
+         }
+         Integer taskId = Integer.valueOf(buildInfo.get("task_id").toString());
+         String nvr = buildInfo.get("nvr").toString();
+         Map taskInfo = getTaskInfo(taskId);
+         if ((taskInfo == null) || taskInfo.isEmpty())
+         {
+            throw new RuntimeException("Task: " + taskId + " is not found after build: " + build + " has been found.");
+         }
+         String buildMethod = (String) taskInfo.get("method");
+         if (buildMethod.contains("maven"))
+         {
+            Component comp = dataService.getComponent(packageName, packageVersion);
+            if (comp == null) {
+               comp = new Component();
+               comp.setName(packageName);
+               comp.setVersion(packageVersion);
+               this.dataService.saveComponent(comp);
+            }
+            collectsMaven(buildInfo, comp, null, null);
+            return;
+         }
+         else
+         {
+            LOGGER.info("Build: " + nvr + " [" + buildMethod + "] not interested.");
+            return;
+         }
+      }
+      else
+      {
+         LOGGER.info("No package name and version specified, collect the build: " + build + " only");
+         collectBrewBuild(build);
+      }
+   }
 
    /**
     * Only collects Maven Artifacts, no dist-git components collected.
     */
    @SuppressWarnings("rawtypes")
-   private void collectsMaven(Map<Object, Object> buildInfo, final String prodName, final String prdVersion)
+   private void collectsMaven(Map<Object, Object> buildInfo, Component comp, final String prodName, final String prdVersion)
          throws DataServiceException, XmlRpcException
    {
       String nvr = buildInfo.get("nvr").toString();
       String build = buildInfo.get("id").toString();
       Integer buildId = Integer.valueOf(build);
 
-      String topGA = buildInfo.get("package_name").toString();
-      Component comp = new Component();
-      comp.setName(topGA);
-      comp.setTopGA(topGA);
+      if (comp == null) {
+         String topGA = buildInfo.get("package_name").toString();
+         comp = new Component();
+         comp.setName(topGA);
+         comp.setTopGA(topGA);
 
-      Map meadMavenBuildInfo = getMavenBuildInfo(build);
-      String groupId = meadMavenBuildInfo.get("group_id").toString();
-      comp.setGroupId(groupId);
-      String version = meadMavenBuildInfo.get("version").toString();
-      comp.setVersion(version);
-      this.dataService.saveComponent(comp);
-
+         Map meadMavenBuildInfo = getMavenBuildInfo(build);
+         String groupId = meadMavenBuildInfo.get("group_id").toString();
+         comp.setGroupId(groupId);
+         String version = meadMavenBuildInfo.get("version").toString();
+         comp.setVersion(version);
+         this.dataService.saveComponent(comp);
+      }
       collectAllMavenJarArtifacts(buildId, nvr, comp, prodName, prdVersion);
    }
 
@@ -264,7 +339,7 @@ public class BrewBuildCollector
          String fileName = mavenArchiveMap.get("filename").toString().trim().toLowerCase();
          if (typeName.equals("jar") && !fileName.endsWith("-sources.jar") && !fileName.endsWith("-javadoc.jar"))
          { // no sources nor javadoc jars
-            // only collect jar
+           // only collect jar
             Integer id = Integer.valueOf(mavenArchiveMap.get("id").toString());
             String checksum = mavenArchiveMap.get("checksum").toString();
 
@@ -315,7 +390,8 @@ public class BrewBuildCollector
                }
                this.dataService.saveArtifact(arti);
             }
-            if (prodName != null && prodName.trim().length() > 0 && prdVersion != null && prdVersion.trim().length() > 0)
+            if (prodName != null && prodName.trim().length() > 0 && prdVersion != null
+                  && prdVersion.trim().length() > 0)
             {
                this.dataService.addArtifact(prodName, prdVersion, artiGrpId, artiId, version);
             }

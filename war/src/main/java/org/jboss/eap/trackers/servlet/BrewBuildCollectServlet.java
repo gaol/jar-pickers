@@ -63,8 +63,19 @@ public class BrewBuildCollectServlet extends HttpServlet
          {
             String name = req.getParameter("name");
             String version = req.getParameter("version");
-            if (name != null && name.trim().length() > 0 && version != null && version.trim().length() > 0) {
-               this.collector.collectBrewBuild(build, name, version);
+            if (name != null && name.trim().length() > 0 && version != null && version.trim().length() > 0)
+            {
+               String mead = req.getParameter("mead");
+               if (mead != null && mead.trim().equalsIgnoreCase("true"))
+               {
+                  // in this case, the name and version is for package
+                  this.collector.collectMeadBuild(build, name, version);
+               }
+               else
+               {
+                  // in this case, the name and version is for product version
+                  this.collector.collectBrewBuild(build, name, version);
+               }
             }
             else
             {
