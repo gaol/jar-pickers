@@ -60,6 +60,7 @@ public class CVEReportTest {
 				.addAsResource("comps.txt", "comps.txt")
 				.addAsWebInfResource(webInfFile, "web.xml")
 				.addManifest()
+				.addAsManifestResource("jboss-deployment-structure.xml")
 				.addAsLibraries(ejb);
 	}
 

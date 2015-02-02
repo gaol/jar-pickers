@@ -49,6 +49,11 @@
          <plugin>
             <artifactId>maven-ear-plugin</artifactId>
             <configuration>
+              <archive>
+                <manifestEntries>
+                  <Dependencies>org.codehaus.jackson.jackson-mapper-asl</Dependencies>
+                </manifestEntries>
+              </archive>
 	       <filtering>true</filtering>
 	       <library-directory>/</library-directory>
 	       <modules>
