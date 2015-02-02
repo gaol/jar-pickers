@@ -11,6 +11,7 @@ import org.jboss.eap.trackers.model.CVE;
 import org.jboss.eap.trackers.model.CVEStatus;
 import org.jboss.eap.trackers.model.Component;
 import org.jboss.eap.trackers.model.Product;
+import org.jboss.eap.trackers.model.ProductCVE;
 import org.jboss.eap.trackers.model.ProductVersion;
 
 /**
@@ -31,6 +32,7 @@ public class SchemaExporter {
         cfg.addAnnotatedClass(CVE.class);
         cfg.addAnnotatedClass(ArtifactCVEs.class);
         cfg.addAnnotatedClass(CVEStatus.class);
+        cfg.addAnnotatedClass(ProductCVE.class);
         
         cfg.addURL(Artifact.class.getClassLoader().getResource("META-INF/orm.xml"));
         

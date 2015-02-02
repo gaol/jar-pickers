@@ -104,7 +104,26 @@ public class ArtifactCVEs implements Serializable, Constants {
     @Column(length = 512)
     private String erratas;
     
+    @Column(length = 512)
+    private String note;
+    
     /**
+    * @return the note
+    */
+   public String getNote()
+   {
+      return note;
+   }
+
+   /**
+    * @param note the note to set
+    */
+   public void setNote(String note)
+   {
+      this.note = note;
+   }
+
+   /**
      * Status of CVE
      */
     @Enumerated(EnumType.STRING)

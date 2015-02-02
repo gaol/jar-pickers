@@ -5,6 +5,12 @@
     alter table ArtifactCVEs 
         drop constraint FK_71tktpsah7mt31jvv233y0s4m;
 
+    alter table ProductCVE 
+        drop constraint FK_d9y9evprn8w5khdpydvl3fc08;
+
+    alter table ProductCVE 
+        drop constraint FK_kvnsyt9qhdvcigna9oousfwl1;
+
     alter table ProductVersion 
         drop constraint FK_d03isp2sgwg3ql7gc3ngo9um3;
 
@@ -32,6 +38,8 @@
     drop table if exists Component cascade;
 
     drop table if exists Product cascade;
+
+    drop table if exists ProductCVE cascade;
 
     drop table if exists ProductVersion cascade;
 
@@ -61,6 +69,7 @@
         erratas varchar(512),
         fixedVersions varchar(512),
         identifier varchar(255),
+        note varchar(512),
         status varchar(255),
         versions varchar(512),
         cve_name varchar(50),
@@ -99,12 +108,23 @@
         primary key (id)
     );
 
+    create table ProductCVE (
+        id  bigserial not null,
+        bugzilla varchar(255),
+        build varchar(255),
+        errata varchar(255),
+        note varchar(255),
+        cve_name varchar(50),
+        pv_id int8,
+        primary key (id)
+    );
+
     create table ProductVersion (
         id int8 not null,
+        buildInfo varchar(512),
         isOneOff boolean DEFAULT false,
         note varchar(255),
         version varchar(255),
-        buildInfo varchar(512),
         parent_id int8,
         product_id int8,
         primary key (id)
@@ -141,6 +161,16 @@
         add constraint FK_71tktpsah7mt31jvv233y0s4m 
         foreign key (cve_name) 
         references CVE;
+
+    alter table ProductCVE 
+        add constraint FK_d9y9evprn8w5khdpydvl3fc08 
+        foreign key (cve_name) 
+        references CVE;
+
+    alter table ProductCVE 
+        add constraint FK_kvnsyt9qhdvcigna9oousfwl1 
+        foreign key (pv_id) 
+        references ProductVersion;
 
     alter table ProductVersion 
         add constraint FK_d03isp2sgwg3ql7gc3ngo9um3 

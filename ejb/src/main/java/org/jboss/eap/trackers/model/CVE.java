@@ -88,6 +88,25 @@ public class CVE implements Serializable, Comparable<CVE>, Constants
 
    @OneToMany(mappedBy = "cve", fetch = FetchType.EAGER, cascade = {CascadeType.REMOVE})
    private Set<ArtifactCVEs> affectedArtis;
+   
+   @OneToMany(mappedBy = "cve", fetch = FetchType.EAGER, cascade = {CascadeType.REMOVE})
+   private Set<ProductCVE> ProductCVE;
+   
+   /**
+    * @return the productCVE
+    */
+   public Set<ProductCVE> getProductCVE()
+   {
+      return ProductCVE;
+   }
+
+   /**
+    * @param productCVE the productCVE to set
+    */
+   public void setProductCVE(Set<ProductCVE> productCVE)
+   {
+      ProductCVE = productCVE;
+   }
 
    /**
     * @return the cvss
