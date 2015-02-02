@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.security.PermitAll;
-import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -32,9 +31,6 @@ import org.jboss.eap.trackers.model.ProductCVE;
 @ApplicationScoped
 public class CVEReportService
 {
-
-   @EJB
-   private DataServiceLocal dataService;
 
    @Inject
    private EntityManager em;
