@@ -28,7 +28,7 @@ public class CVEReport implements Serializable
    
    private Date latestModified;
    
-   private List<AffectedProduct> cveAffectedProducts = new ArrayList<CVEReport.AffectedProduct>();
+   private List<CVEReportSection> sections = new ArrayList<CVEReport.CVEReportSection>();
 
    /**
     * @return the latestModified
@@ -48,26 +48,26 @@ public class CVEReport implements Serializable
 
 
    /**
-    * @return the cveAffectedProducts
+    * @return the sections
     */
    @XmlElement(name = "reports")
-   public List<AffectedProduct> getCveAffectedProducts()
+   public List<CVEReportSection> getSections()
    {
-      return cveAffectedProducts;
+      return sections;
    }
 
 
    /**
-    * @param cveAffectedProducts the cveAffectedProducts to set
+    * @param sections the sections to set
     */
-   public void setCveAffectedProducts(List<AffectedProduct> cveAffectedProducts)
+   public void setSections(List<CVEReportSection> sections)
    {
-      this.cveAffectedProducts = cveAffectedProducts;
+      this.sections = sections;
    }
 
 
-   @XmlRootElement(name = "report")
-   public static class AffectedProduct implements Serializable
+   @XmlRootElement(name = "section")
+   public static class CVEReportSection implements Serializable
    {
 
       /**
@@ -77,9 +77,55 @@ public class CVEReport implements Serializable
       
       private String cve;
       
+      private List<CVEReportElement> elements = new ArrayList<CVEReport.CVEReportElement>();
+      
+      /**
+       * @return the cve
+       */
+      public String getCve()
+      {
+         return cve;
+      }
+      
+      /**
+       * @param cve the cve to set
+       */
+      public void setCve(String cve)
+      {
+         this.cve = cve;
+      }
+
+      /**
+       * @return the elements
+       */
+      public List<CVEReportElement> getElements()
+      {
+         return elements;
+      }
+
+      /**
+       * @param elements the elements to set
+       */
+      public void setElements(List<CVEReportElement> elements)
+      {
+         this.elements = elements;
+      }
+      
+   }
+   
+   public static class CVEReportElement implements Serializable
+   {
+
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 1L;
+      
       private String name;
       
       private String version;
+      
+      private String component;
       
       private String bugzilla;
       
@@ -88,22 +134,22 @@ public class CVEReport implements Serializable
       private String build;
       
       private String note;
-      
+
 
       /**
-       * @return the cve
+       * @return the component
        */
-      public String getCve()
+      public String getComponent()
       {
-         return cve;
+         return component;
       }
 
       /**
-       * @param cve the cve to set
+       * @param component the component to set
        */
-      public void setCve(String cve)
+      public void setComponent(String component)
       {
-         this.cve = cve;
+         this.component = component;
       }
 
       /**
@@ -201,6 +247,7 @@ public class CVEReport implements Serializable
       {
          this.note = note;
       }
+      
       
    }
 }

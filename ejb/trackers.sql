@@ -8,9 +8,6 @@
     alter table ProductCVE 
         drop constraint FK_d9y9evprn8w5khdpydvl3fc08;
 
-    alter table ProductCVE 
-        drop constraint FK_kvnsyt9qhdvcigna9oousfwl1;
-
     alter table ProductVersion 
         drop constraint FK_d03isp2sgwg3ql7gc3ngo9um3;
 
@@ -112,10 +109,12 @@
         id  bigserial not null,
         bugzilla varchar(255),
         build varchar(255),
+        component varchar(255),
         errata varchar(255),
+        name varchar(255),
         note varchar(255),
+        version varchar(255),
         cve_name varchar(50),
-        pv_id int8,
         primary key (id)
     );
 
@@ -149,6 +148,9 @@
     alter table Product 
         add constraint UK_gxubutkbk5o2a6aakbe7q9kww unique (name);
 
+    alter table ProductCVE 
+        add constraint UK_hgrn517pdalmujmuo9p6ue4wu unique (cve_name, name, version, component, bugzilla);
+
     alter table ProductVersion 
         add constraint UK_k4scqst1t4ju2fxah7f3h6y40 unique (product_id, version);
 
@@ -166,11 +168,6 @@
         add constraint FK_d9y9evprn8w5khdpydvl3fc08 
         foreign key (cve_name) 
         references CVE;
-
-    alter table ProductCVE 
-        add constraint FK_kvnsyt9qhdvcigna9oousfwl1 
-        foreign key (pv_id) 
-        references ProductVersion;
 
     alter table ProductVersion 
         add constraint FK_d03isp2sgwg3ql7gc3ngo9um3 
@@ -204,4 +201,5 @@
 
     create sequence hibernate_sequence minvalue 100;
     create sequence trackerseq minvalue 100;
+
 

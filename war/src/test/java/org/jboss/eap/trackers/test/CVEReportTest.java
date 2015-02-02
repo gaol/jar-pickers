@@ -9,7 +9,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.eap.trackers.data.DataService;
 import org.jboss.eap.trackers.data.db.CVEReport;
-import org.jboss.eap.trackers.data.db.CVEReport.AffectedProduct;
+import org.jboss.eap.trackers.data.db.CVEReport.CVEReportElement;
+import org.jboss.eap.trackers.data.db.CVEReport.CVEReportSection;
 import org.jboss.eap.trackers.data.db.DBDataService;
 import org.jboss.eap.trackers.data.db.DataServiceLocal;
 import org.jboss.eap.trackers.data.versioning.VersionRanges;
@@ -73,28 +74,39 @@ public class CVEReportTest {
 		request.accept(MediaType.APPLICATION_JSON_TYPE);
 		ClientResponse<CVEReport> resp = request.get(CVEReport.class, CVEReport.class);
 		CVEReport report = resp.getEntity();
+		
 		Assert.assertNotNull(report);
-		Assert.assertNotNull(report.getCveAffectedProducts());
-		Assert.assertEquals(2, report.getCveAffectedProducts().size());
+		Assert.assertNotNull(report.getSections());
+		Assert.assertEquals(2, report.getSections().size());
 		
 		// order by cve name desc
-		AffectedProduct affPrd = report.getCveAffectedProducts().get(0);
-		Assert.assertEquals("CVE-2014-3566", affPrd.getCve());
-		Assert.assertEquals("1182872", affPrd.getBugzilla());
-		Assert.assertEquals("123457", affPrd.getErrata());
-		Assert.assertEquals("openssl-1.0.1k.el6", affPrd.getBuild());
-		Assert.assertEquals("native example", affPrd.getNote());
-		Assert.assertEquals("EWS", affPrd.getName());
-		Assert.assertEquals("2.1.0", affPrd.getVersion());
+		CVEReportSection section = report.getSections().get(0);
+		Assert.assertEquals("CVE-2014-3566", section.getCve());
 		
-		affPrd = report.getCveAffectedProducts().get(1);
-        Assert.assertEquals("CVE-2014-3547", affPrd.getCve());
-        Assert.assertEquals("1182871", affPrd.getBugzilla());
-        Assert.assertEquals("123456", affPrd.getErrata());
-        Assert.assertEquals("commons-codec-commons-codec-1.4.0.redhat_4-1", affPrd.getBuild());
-        Assert.assertEquals("java artifacts example", affPrd.getNote());
-        Assert.assertEquals("EAP", affPrd.getName());
-        Assert.assertEquals("6.2.4", affPrd.getVersion());
+		Assert.assertNotNull(section.getElements());
+		Assert.assertEquals(1, section.getElements().size());
+		
+		CVEReportElement element = section.getElements().get(0);
+		Assert.assertEquals("1182872", element.getBugzilla());
+		Assert.assertEquals("123457", element.getErrata());
+		Assert.assertEquals("openssl-1.0.1k.el6", element.getBuild());
+		Assert.assertEquals("native example", element.getNote());
+		Assert.assertEquals("EWS2", element.getName());
+		Assert.assertEquals("2.1.0", element.getVersion());
+		
+		section = report.getSections().get(1);
+        Assert.assertEquals("CVE-2014-3547", section.getCve());
+        
+        element = section.getElements().get(0);
+        Assert.assertNotNull(section.getElements());
+        Assert.assertEquals(1, section.getElements().size());
+        
+        Assert.assertEquals("1182871", element.getBugzilla());
+        Assert.assertEquals("123456", element.getErrata());
+        Assert.assertEquals("commons-codec-commons-codec-1.4.0.redhat_4-1", element.getBuild());
+        Assert.assertEquals("java artifacts example", element.getNote());
+        Assert.assertEquals("EAP6", element.getName());
+        Assert.assertEquals("6.2.4", element.getVersion());
 	}
 
 }

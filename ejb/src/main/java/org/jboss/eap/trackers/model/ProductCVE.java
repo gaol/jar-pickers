@@ -11,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -26,6 +28,7 @@ import org.jboss.eap.trackers.data.Constants;
 @Entity
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"cve_name", "name", "version", "component", "bugzilla"})})
 public class ProductCVE implements Serializable, Constants
 {
 
@@ -41,8 +44,11 @@ public class ProductCVE implements Serializable, Constants
    @ManyToOne(fetch = FetchType.EAGER)
    private CVE cve;
    
-   @ManyToOne(fetch = FetchType.EAGER)
-   private ProductVersion pv;
+   private String name;
+   
+   private String version;
+   
+   private String component;
    
    private String bugzilla; // bug id, like: 1182872, etc
    
@@ -51,6 +57,54 @@ public class ProductCVE implements Serializable, Constants
    private String build;
    
    private String note;
+   
+   /**
+    * @return the name
+    */
+   public String getName()
+   {
+      return name;
+   }
+
+   /**
+    * @param name the name to set
+    */
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   /**
+    * @return the version
+    */
+   public String getVersion()
+   {
+      return version;
+   }
+
+   /**
+    * @param version the version to set
+    */
+   public void setVersion(String version)
+   {
+      this.version = version;
+   }
+
+   /**
+    * @return the component
+    */
+   public String getComponent()
+   {
+      return component;
+   }
+
+   /**
+    * @param component the component to set
+    */
+   public void setComponent(String component)
+   {
+      this.component = component;
+   }
 
    /**
     * @return the id
@@ -82,22 +136,6 @@ public class ProductCVE implements Serializable, Constants
    public void setCve(CVE cve)
    {
       this.cve = cve;
-   }
-
-   /**
-    * @return the pv
-    */
-   public ProductVersion getPv()
-   {
-      return pv;
-   }
-
-   /**
-    * @param pv the pv to set
-    */
-   public void setPv(ProductVersion pv)
-   {
-      this.pv = pv;
    }
 
    /**
