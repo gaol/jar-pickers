@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -49,11 +50,11 @@ public class CVEReport implements Serializable
    /**
     * @return the cveAffectedProducts
     */
+   @XmlElement(name = "reports")
    public List<AffectedProduct> getCveAffectedProducts()
    {
       return cveAffectedProducts;
    }
-
 
 
    /**
@@ -65,7 +66,7 @@ public class CVEReport implements Serializable
    }
 
 
-   @XmlRootElement
+   @XmlRootElement(name = "report")
    public static class AffectedProduct implements Serializable
    {
 
