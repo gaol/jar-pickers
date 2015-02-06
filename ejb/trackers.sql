@@ -29,6 +29,8 @@
 
     drop table if exists CVE cascade;
 
+    drop table if exists CVELastUpdated cascade;
+
     drop table if exists Component cascade;
 
     drop table if exists Product cascade;
@@ -80,6 +82,12 @@
         note varchar(512),
         title varchar(512),
         primary key (name)
+    );
+
+    create table CVELastUpdated (
+        id int4 not null,
+        last_updated timestamp,
+        primary key (id)
     );
 
     create table Component (
@@ -193,5 +201,4 @@
         foreign key (pvs_id) 
         references ProductVersion;
 
-    create sequence hibernate_sequence minvalue 100;
-    create sequence trackerseq minvalue 100;
+    create sequence hibernate_sequence;
