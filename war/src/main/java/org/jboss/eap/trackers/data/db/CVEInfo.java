@@ -33,7 +33,7 @@ public class CVEInfo {
 		this.product_version = product_version;
 	}
 	public String getBugzilla() {
-		return (bugzilla == null ? "" : "<a href=\"https://bugzilla.redhat.com/show_bug.cgi?id=" + bugzilla + "\" target=\"_blank\">" + bugzilla + "</a>");
+		return bugzilla;
 	}
 	public void setBugzilla(String bugzilla) {
 		this.bugzilla = bugzilla;
