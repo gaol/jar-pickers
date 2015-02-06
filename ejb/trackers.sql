@@ -5,9 +5,6 @@
     alter table ArtifactCVEs 
         drop constraint FK_71tktpsah7mt31jvv233y0s4m;
 
-    alter table ProductCVE 
-        drop constraint FK_d9y9evprn8w5khdpydvl3fc08;
-
     alter table ProductVersion 
         drop constraint FK_d03isp2sgwg3ql7gc3ngo9um3;
 
@@ -108,13 +105,15 @@
     create table ProductCVE (
         id  bigserial not null,
         bugzilla varchar(255),
+        bugzillaStatus varchar(255),
         build varchar(255),
         component varchar(255),
+        cve varchar(255),
         errata varchar(255),
+        fixedIn varchar(255),
         name varchar(255),
         note varchar(255),
         version varchar(255),
-        cve_name varchar(50),
         primary key (id)
     );
 
@@ -149,7 +148,7 @@
         add constraint UK_gxubutkbk5o2a6aakbe7q9kww unique (name);
 
     alter table ProductCVE 
-        add constraint UK_hgrn517pdalmujmuo9p6ue4wu unique (cve_name, name, version, component, bugzilla);
+        add constraint UK_ij06kjelq222hyp4j1i3yy68l unique (cve, name, version, component, bugzilla);
 
     alter table ProductVersion 
         add constraint UK_k4scqst1t4ju2fxah7f3h6y40 unique (product_id, version);
@@ -161,11 +160,6 @@
 
     alter table ArtifactCVEs 
         add constraint FK_71tktpsah7mt31jvv233y0s4m 
-        foreign key (cve_name) 
-        references CVE;
-
-    alter table ProductCVE 
-        add constraint FK_d9y9evprn8w5khdpydvl3fc08 
         foreign key (cve_name) 
         references CVE;
 
@@ -201,5 +195,3 @@
 
     create sequence hibernate_sequence minvalue 100;
     create sequence trackerseq minvalue 100;
-
-

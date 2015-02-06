@@ -6,11 +6,9 @@ package org.jboss.eap.trackers.model;
 import java.io.Serializable;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,7 +26,7 @@ import org.jboss.eap.trackers.data.Constants;
 @Entity
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"cve_name", "name", "version", "component", "bugzilla"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"cve", "name", "version", "component", "bugzilla"})})
 public class ProductCVE implements Serializable, Constants
 {
 
@@ -41,16 +39,19 @@ public class ProductCVE implements Serializable, Constants
    @GeneratedValue(strategy = GenerationType.IDENTITY)
    private Long id;
    
-   @ManyToOne(fetch = FetchType.EAGER)
-   private CVE cve;
+   private String cve;
    
    private String name;
    
    private String version;
    
+   private String fixedIn;
+   
    private String component;
    
    private String bugzilla; // bug id, like: 1182872, etc
+   
+   private String bugzillaStatus;
    
    private String errata; // errata id, like: 
    
@@ -59,6 +60,20 @@ public class ProductCVE implements Serializable, Constants
    private String note;
    
    /**
+     * @return the bugzillaStatus
+     */
+    public String getBugzillaStatus() {
+        return bugzillaStatus;
+    }
+    
+    /**
+     * @param bugzillaStatus the bugzillaStatus to set
+     */
+    public void setBugzillaStatus(String bugzillaStatus) {
+        this.bugzillaStatus = bugzillaStatus;
+    }
+    
+    /**
     * @return the name
     */
    public String getName()
@@ -121,24 +136,37 @@ public class ProductCVE implements Serializable, Constants
    {
       this.id = id;
    }
+   
 
    /**
-    * @return the cve
-    */
-   public CVE getCve()
-   {
-      return cve;
-   }
+     * @return the fixedIn
+     */
+    public String getFixedIn() {
+        return fixedIn;
+    }
+    
+    /**
+     * @param fixedIn the fixedIn to set
+     */
+    public void setFixedIn(String fixedIn) {
+        this.fixedIn = fixedIn;
+    }
+    
+    /**
+     * @return the cve
+     */
+    public String getCve() {
+        return cve;
+    }
+    
+    /**
+     * @param cve the cve to set
+     */
+    public void setCve(String cve) {
+        this.cve = cve;
+    }
 
-   /**
-    * @param cve the cve to set
-    */
-   public void setCve(CVE cve)
-   {
-      this.cve = cve;
-   }
-
-   /**
+    /**
     * @return the bugzilla
     */
    public String getBugzilla()
@@ -201,6 +229,5 @@ public class ProductCVE implements Serializable, Constants
    {
       this.note = note;
    }
-   
 
 }

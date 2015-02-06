@@ -42,7 +42,7 @@ public class CVEReportService
       String hql = "SELECT pc FROM " + ProductCVE.class.getSimpleName() + " pc ORDER by pc.cve desc";
       List<ProductCVE> cves = em.createQuery(hql, ProductCVE.class).getResultList();
 
-      hql = "SELECT distinct pc.cve.name FROM " + ProductCVE.class.getSimpleName() + " pc ORDER by pc.cve desc";
+      hql = "SELECT distinct pc.cve FROM " + ProductCVE.class.getSimpleName() + " pc ORDER by pc.cve desc";
       List<String> distinctCVEs = em.createQuery(hql, String.class).getResultList();
       CVEReport report = new CVEReport();
       if (distinctCVEs != null && distinctCVEs.size() > 0)
@@ -75,7 +75,7 @@ public class CVEReportService
    {
       List<ProductCVE> subs = new ArrayList<ProductCVE>();
       for (ProductCVE prdCVE: cves) {
-         if (prdCVE.getCve().getName().equals(cve)) {
+         if (prdCVE.getCve().equals(cve)) {
             subs.add(prdCVE);
          }
       }
