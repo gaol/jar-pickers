@@ -28,7 +28,7 @@ import org.jboss.eap.trackers.model.ProductCVE;
  * It almost delegates all invocation to the DataService
  * 
  */
-@Path("/cvereport2")
+@Path("/cvereport")
 @PermitAll
 @ApplicationScoped
 public class CVEReportServicePro {
