@@ -29,11 +29,17 @@ class Bugzilla():
       self.bz.login(self.uname, self.pawd)
   
   def getBugList(self, queryLink):
+    """
+     Given a bugzilla search full link, returns a bug list
+    """
     self.bzLogin()
     query = self.bz.url_to_query(queryLink)
     return self.bz.query(query)
 
   def getBug(self, bid):
+    """
+     Given a bugzilla id or a CVE name, returns a bug 
+    """
     self.bzLogin()
     try:
       return self.bz.getbug(bid)
@@ -44,48 +50,72 @@ class Bugzilla():
       raise f
 
   def getBugProduct(self, bid):
+    """
+     get's the affected product of a bugzilla by given bugzilla id
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
     return bug.product
 
   def getBugVersion(self, bid):
+    """
+     get's the first affected version a bugzilla by given bugzilla id
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
     return bug.version
 
   def getBugComponent(self, bid):
+    """
+     get's the affected component a bugzilla by given bugzilla id
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
     return bug.component
 
   def getBugSummary(self, bid):
+    """
+     get's the summary of a bugzilla by given bugzilla id
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
     return bug.summary
 
   def getBugTargetReleases(self, bid):
+    """
+     get's the target release of a bugzilla by given bugzilla id
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
     return " ".join(bug.target_release)
 
   def getBugTargetMileStone(self, bid):
+    """
+     get's the target milestone of a bugzilla by given bugzilla id
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
     return bug.target_milestone
 
   def getBugStatus(self, bid):
+    """
+     get's the status of a bugzilla by given bugzilla id
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
     return bug.status
 
   def getBugResolution(self, bid):
+    """
+     get's the resolution of a bugzilla by given bugzilla id, only when status is 'CLOSED', otherwise, None
+    """
     bug = self.getBug(bid)
     if bug is None:
       return None
@@ -94,6 +124,9 @@ class Bugzilla():
     return None
 
   def getBugFixedIn(self, bug):
+    """
+     get's the composition of target release and target milestone of a bugzilla by given bugzilla id
+    """
     if bug is None:
       return None
     target_release = " ".join(bug.target_release)

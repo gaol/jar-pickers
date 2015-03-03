@@ -54,6 +54,13 @@ def filterCVE(cves):
 # CVE Class
 class CVE():
   def __init__(self):
+    """
+    You can update cve database connection by:
+    cve.db_host=xxx.xxx.xxx.xxx
+    cve.db_port=5432
+    cve.db_name=trackers
+    cve.db_user=trackers
+    """
     self.db_host = "10.66.78.40"
     self.db_port = 5432
     self.db_name = "trackers"
@@ -62,17 +69,32 @@ class CVE():
     self.bugzilla = bugzillautils.Bugzilla()
 
   def setBugzillaLogin(self, uname, pawd):
+    """
+    Sets Bugzilla login, for example:
+    cve.setBugzillaLogin("lgao@redhat.com", "my-bugzilla-password")
+
+    If you don't set the Bugzilla Login, it will prompt you for input, setBugzillLogin can be used in a batch cli
+    """
     self.bugzilla.uname = uname
     self.bugzilla.pawd = pawd
 
   # Gets CVE database connection
   def getCVEDBConn(self):
+    """
+     Gets a connection to the CVE database
+    """
     return psycopg2.connect(database = self.db_name, user = self.db_user, host = self.db_host, port = self.db_port)
 
   # update each CVE bugzilla status and fixed_in_version (target_release)
   def cveUpdateAll(self):
     """
-      It iterates all CVE information in productcve table, update those item that bugzillaStatus != 'CLOSED'
+      It iterates all CVE information in ProductCVE table, update those item that bugzillaStatus != 'CLOSED'
+
+      It will Update bugzilla status, target_release, target_milestone.
+
+      you can invoke it like:
+
+      cve.cveUpdateAll()
     """
     conn = self.getCVEDBConn()
     cur = conn.cursor(cursor_factory = psycopg2.extras.DictCursor)
@@ -118,6 +140,12 @@ class CVE():
     self.executeCVEDBSQL(sql)
 
   def executeCVEDBSQL(self, sql):
+    """
+      If you have a sql want to execute(update/delete) directly in CVE database, call this method:
+  
+      sql = "delete from productcve where cve is null"
+      cve.executeCVEDBSQL(sql)
+    """
     conn = self.getCVEDBConn()
     cur = conn.cursor()
     cur.execute(sql)
@@ -126,7 +154,7 @@ class CVE():
     
   def cveUpdateTop10(self):
     """
-      It iterates all CVE information in productcve table. The latest 10 CVEs
+      It iterates all CVE information in productcve table. The latest 10 CVEs, order by CVE number desc
     """
     conn = self.getCVEDBConn()
     cur = conn.cursor(cursor_factory = psycopg2.extras.DictCursor)
@@ -138,6 +166,9 @@ class CVE():
     conn.close()
   
   def collect(self):
+    """
+      Collects CVEs using a small bugzilla search
+    """
     bzList = self.bugzilla.getBugList(URL_CVE_LIST)
     for bug in bzList:
       cves = self.extractCVEs(bug.summary)
@@ -151,15 +182,20 @@ class CVE():
           others = " ".join(cves[1:])
         # there is no way to know from summary the exactly CVE name, like it contains string: "incomplete fix for CVE-xxxx-xxxx"
         # so only picks up the higher CVE number, and leave others in note
-        self.recordCVEBug(cve, bug, others)
+        self._recordCVEBug(cve, bug, others)
       else:
         # no cve names found in summary
         print "No CVE names found in summary: '%s' of bugzilla: %s" % (bug.summary, bug.id)
 
   def extractCVEs(self, title):
+    """
+     Returns a CVE name list from a string, usually it means the titile in the bugzilla
+
+     For example: print cve.extractCVEs("CVE-2014-0058 Red Hat JBoss EAP6: Plain text password logging during security audit")
+    """
     return CVE_RE.findall(title)
 
-  def recordCVEBug(self, cve, bug, note = None):
+  def _recordCVEBug(self, cve, bug, note = None):
     if cve is None or bug is None:
       print "Both CVE and bug can't be None"
       return
@@ -186,6 +222,11 @@ class CVE():
 
 
   def checkCVE(self, cve, bug = None, note = None):
+    """
+     If you want to check single CVE, you can call this method:
+
+     cve.checkCVE("CVE-2014-0058")
+    """
     m = CVE_RE.match(cve)
     if not m:
       print "Not a valid CVE name: %s" % cve
@@ -201,9 +242,12 @@ class CVE():
       for dep in depends:
         depData = self.bugzilla.getBug(dep)
         if not depData is None:
-          self.recordCVEBug(cve, depData, note)
+          self._recordCVEBug(cve, depData, note)
 
   def collectCVEs(self):
+    """
+      Collects CVEs using a umbreall bugzilla search
+    """
     bzList = self.bugzilla.getBugList(URL_CVE_UMBRELLA_LIST)
     for bug in bzList:
       alias = bug.alias

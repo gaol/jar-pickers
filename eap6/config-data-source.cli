@@ -1,0 +1,11 @@
+batch
+
+connect
+
+/subsystem=datasources/jdbc-driver=postgresql:add(driver-name=postgresql, driver-module-name=org.postgresql)
+
+/subsystem=datasources/data-source=CVEDB:add(jndi-name=java:jboss/datasources/CVEDB, connection-url=jdbc:postgresql://10.66.78.40:5432/trackers, driver-name=postgresql, user-name=trackers, password=trackers, use-java-context=true)
+
+/subsystem=datasources/data-source=CVEDB:enable(persistent=true)
+
+run-batch

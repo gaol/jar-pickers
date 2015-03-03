@@ -5,6 +5,7 @@ package org.jboss.eap.trackers.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -51,6 +52,7 @@ public class ProductCVE implements Serializable
    
    private String errata; // errata id, like: 
    
+   @Column(length = 1024)
    private String build;
    
    private String note;
