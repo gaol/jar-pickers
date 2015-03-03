@@ -4,10 +4,10 @@
 
   <groupId>org.jboss.eap.trackers</groupId>
   <artifactId>trackers</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <version>1.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
 
-  <name>JBoss products trackers parent</name>
+  <name>JBoss products cve trackers</name>
   <url>http:/www.jboss.org</url>
 
    <properties>
@@ -18,21 +18,7 @@
       <junit.version>4.11</junit.version>
       <version.jboss.maven.plugin>7.3.Final</version.jboss.maven.plugin>
       <version.jboss.bom>1.0.7.Final</version.jboss.bom>
-      <camel.version>2.13.2</camel.version>
-      <resteasy.client.version>3.0.8.Final</resteasy.client.version>
-      <httpclient.version>4.3.4</httpclient.version>
-      <httpcore.version>4.3.2</httpcore.version>
-      <jackson.version>1.9.9</jackson.version>
-      <xmlrpc.version>3.1.3</xmlrpc.version>
    </properties>
-
-  <modules>
-    <module>ejb</module>
-    <module>client</module>
-    <module>war</module>
-    <module>ear</module>
-    <module>irc</module>
-  </modules>
 
  <!-- Dependencies version and common configurations -->
   <dependencyManagement>
@@ -59,146 +45,75 @@
              <scope>import</scope>
          </dependency>
 
-    <dependency>
-      <groupId>org.apache.xmlrpc</groupId>
-      <artifactId>xmlrpc-common</artifactId>
-      <version>${xmlrpc.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.xmlrpc</groupId>
-      <artifactId>xmlrpc-client</artifactId>
-      <version>${xmlrpc.version}</version>
-    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+
+   <dependencies>
+
+      <!-- Declare the APIs we depend on and need for compilation. All of 
+         them are provided by JBoss AS 7 -->
+
+      <!-- Import the EJB API, we use provided scope as the API is included 
+         in JBoss AS 7 -->
       <dependency>
-         <groupId>org.jdom</groupId>
-         <artifactId>jdom</artifactId>
+         <groupId>org.jboss.spec.javax.servlet</groupId>
+         <artifactId>jboss-servlet-api_3.0_spec</artifactId>
          <scope>provided</scope>
-        <version>1.1.3</version>
+      </dependency>
+
+      <!-- Import the CDI API, we use provided scope as the API is included 
+         in JBoss AS 7 -->
+      <dependency>
+         <groupId>javax.enterprise</groupId>
+         <artifactId>cdi-api</artifactId>
+         <scope>provided</scope>
       </dependency>
       <dependency>
-         <groupId>org.hibernate</groupId>
-         <artifactId>hibernate-core</artifactId>
+         <groupId>org.jboss.spec.javax.ws.rs</groupId>
+         <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
          <scope>provided</scope>
-        <version>4.2.13.Final</version>
       </dependency>
       <dependency>
-         <groupId>org.hibernate</groupId>
-         <artifactId>hibernate-validator</artifactId>
+         <groupId>org.jboss.spec.javax.annotation</groupId>
+         <artifactId>jboss-annotations-api_1.1_spec</artifactId>
          <scope>provided</scope>
-        <version>4.3.1.Final</version>
       </dependency>
+
+      <!-- Import the JPA API, we use provided scope as the API is included 
+         in JBoss AS 7 -->
       <dependency>
          <groupId>org.hibernate.javax.persistence</groupId>
          <artifactId>hibernate-jpa-2.0-api</artifactId>
          <scope>provided</scope>
-        <version>1.0.1.Final</version>
       </dependency>
+
+      <!-- Test scope dependencies -->
       <dependency>
-        <groupId>com.google.code.gson</groupId>
-        <artifactId>gson</artifactId>
-        <version>2.2.4</version>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
       </dependency>
+
+      <!-- Optional, but highly recommended -->
+      <!-- Arquillian allows you to test enterprise code such as EJBs and 
+         Transactional(JTA) JPA from JUnit/TestNG -->
       <dependency>
-        <groupId>org.apache.camel</groupId>
-        <artifactId>camel-core</artifactId>
-        <version>${camel.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.camel</groupId>
-        <artifactId>camel-irc</artifactId>
-        <version>${camel.version}</version>
+         <groupId>org.jboss.arquillian.junit</groupId>
+         <artifactId>arquillian-junit-container</artifactId>
+         <scope>test</scope>
       </dependency>
 
       <dependency>
-        <groupId>org.picketbox</groupId>
-        <artifactId>picketbox</artifactId>
-        <version>4.0.20.Final</version>
+         <groupId>org.jboss.arquillian.protocol</groupId>
+         <artifactId>arquillian-protocol-servlet</artifactId>
+         <scope>test</scope>
       </dependency>
 
-      <dependency>
-        <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>trackers-ejb</artifactId>
-        <version>${project.version}</version>
-	<type>ejb</type>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>trackers-ejb</artifactId>
-        <version>${project.version}</version>
-	<type>ejb</type>
-        <classifier>test</classifier>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>trackers-war</artifactId>
-        <version>${project.version}</version>
-	<type>war</type>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>trackers-ear</artifactId>
-        <version>${project.version}</version>
-	<type>ear</type>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.eap.trackers</groupId>
-        <artifactId>trackers-client</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
-        <scope>test</scope>
-      </dependency>
-
-    <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-      <version>2.0.9</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.aesh</groupId>
-      <artifactId>aesh</artifactId>
-      <version>0.49</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.remoting3</groupId>
-      <artifactId>jboss-remoting</artifactId>
-      <version>3.2.19.GA</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-client</artifactId>
-      <version>${resteasy.client.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-links</artifactId>
-      <version>2.3.7.Final</version>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <scope>test</scope>
-      </dependency>
-  </dependencies>
+   </dependencies>
 
  <build>
+  <finalName>${project.artifactId}</finalName>
   <pluginManagement>
     <plugins>
 	<plugin>
@@ -218,14 +133,8 @@
             <artifactId>maven-war-plugin</artifactId>
             <version>2.4</version>
             <configuration>
-               <!-- Java EE 6 doesn't require web.xml, Maven needs to catch 
-                  up! -->
                <failOnMissingWebXml>false</failOnMissingWebXml>
             </configuration>
-         </plugin>
-         <plugin>
-            <artifactId>maven-ear-plugin</artifactId>
-            <version>2.9.1</version>
          </plugin>
          <plugin>
             <groupId>org.jboss.as.plugins</groupId>
@@ -235,7 +144,24 @@
     </plugins>
   </pluginManagement>
 
- </build>
+
+  <plugins>
+         <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+	       <filtering>true</filtering>
+               <webResources>
+                 <resource>
+                   <directory>src/main/webapp/WEB-INF</directory>
+                   <filtering>true</filtering>
+                   <targetPath>WEB-INF</targetPath>
+                 </resource>
+               </webResources>
+            </configuration>
+         </plugin>
+  </plugins>
+
+</build>
 
       <repositories>
         <repository>
@@ -267,4 +193,45 @@
         </pluginRepository>
       </pluginRepositories>      
 
+   <profiles>
+      <profile>
+         <!-- The default profile skips all tests, though you can tune it 
+            to run just unit tests based on a custom pattern -->
+         <!-- Seperate profiles are provided for running all tests, including 
+            Arquillian tests that execute in the specified container -->
+         <id>default</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <version>2.4.3</version>
+                  <configuration>
+                     <skip>true</skip>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+
+      <profile>
+         <!-- An optional Arquillian testing profile that executes tests 
+            in your JBoss AS instance -->
+         <!-- This profile will start a new JBoss AS instance, and execute 
+            the test, shutting it down when done -->
+         <!-- Run with: mvn clean test -Parq-jbossas-managed -->
+         <id>arq-jbossas-managed</id>
+         <dependencies>
+            <dependency>
+               <groupId>org.jboss.as</groupId>
+               <artifactId>jboss-as-arquillian-container-managed</artifactId>
+               <!--version>7.2.0.Final</version-->
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+
+   </profiles>
 </project>
