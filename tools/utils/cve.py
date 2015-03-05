@@ -29,7 +29,7 @@ NAME_DICT = {"JBoss Enterprise Application Platform 7" : "eap7",
             }
 
 # URL to list all security tracking bugzillas
-URL_CVE_LIST = "https://bugzilla.redhat.com/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&classification=JBoss&keywords=Security%2C%20SecurityTracking%2C%20&keywords_type=anywords&known_name=All%20CVEs&list_id=3262643&product=JBoss%20Enterprise%20Application%20Platform%204&product=JBoss%20Enterprise%20Application%20Platform%205&product=JBoss%20Enterprise%20Application%20Platform%206&product=JBoss%20Enterprise%20Web%20Server%201&product=JBoss%20Enterprise%20Web%20Server%202&product=JBoss%20Web%20Server%203&query_based_on=All%20CVEs&query_format=advanced"
+URL_CVE_LIST = "https://bugzilla.redhat.com/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&classification=JBoss&keywords=Security%2C%20SecurityTracking%2C%20&keywords_type=anywords&list_id=3285743&product=JBoss%20Enterprise%20Application%20Platform%204&product=JBoss%20Enterprise%20Application%20Platform%205&product=JBoss%20Enterprise%20Application%20Platform%206&product=JBoss%20Enterprise%20Web%20Server%201&product=JBoss%20Enterprise%20Web%20Server%202&product=JBoss%20Web%20Server%203&query_format=advanced"
 
 # URL to list all umbrella CVE issues
 URL_CVE_UMBRELLA_LIST = "https://bugzilla.redhat.com/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&bug_status=POST&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&classification=Other&component=vulnerability&product=Security%20Response&status_whiteboard=jboss&status_whiteboard_type=allwordssubstr"
