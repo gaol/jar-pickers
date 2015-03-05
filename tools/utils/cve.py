@@ -12,7 +12,7 @@ except:
   print "No psycopy2 module installed, can't do anything postgresql database related operations!!"
   sys.exit(1)
 
-import brewutils
+#import brewutils
 import bugzillautils
 
 # CVE pattern
@@ -65,7 +65,7 @@ class CVE():
     self.db_port = 5432
     self.db_name = "trackers"
     self.db_user = "trackers"
-    self.brew = brewutils.BrewUtil()
+    #self.brew = brewutils.BrewUtil()
     self.bugzilla = bugzillautils.Bugzilla()
 
   def setBugzillaLogin(self, uname, pawd):
